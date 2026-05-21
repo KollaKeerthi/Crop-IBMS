@@ -3,5 +3,7 @@
     "deploymentEnabled": {
       "main": false
     }
-  }
+  },
+  "installCommand": "npm install",
+  "buildCommand": "npm run build"
 }
