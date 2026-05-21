@@ -23,7 +23,11 @@ export async function POST(req: NextRequest) {
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = CreateCropDataInputSchema.safeParse(body);
     if (!parsed.success)
-      throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     return apiOk(await createCropDataHandler(ctx, parsed.data), 201);
   } catch (err) {
     return apiError(err);

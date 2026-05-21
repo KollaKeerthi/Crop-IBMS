@@ -4,12 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -80,7 +75,12 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-start justify-between gap-2">
@@ -94,11 +94,7 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
               <DialogTitle className="text-lg leading-snug">{event.title}</DialogTitle>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
+              <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button
@@ -144,7 +140,9 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
             {event.allDay && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-20">Type</span>
-                <Badge variant="outline" className="text-xs">All Day</Badge>
+                <Badge variant="outline" className="text-xs">
+                  All Day
+                </Badge>
               </div>
             )}
 

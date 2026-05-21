@@ -59,11 +59,7 @@ export async function getProgramInfo(cropDataId: string) {
 }
 
 export async function getNursery(cropDataId: string) {
-  const rows = await db
-    .select()
-    .from(nursery)
-    .where(eq(nursery.cropDataId, cropDataId))
-    .limit(1);
+  const rows = await db.select().from(nursery).where(eq(nursery.cropDataId, cropDataId)).limit(1);
   return rows[0] ?? null;
 }
 
@@ -72,18 +68,12 @@ export async function getModule(cropDataId: string, moduleType: string) {
     .select()
     .from(cropDataModules)
     .where(
-      and(
-        eq(cropDataModules.cropDataId, cropDataId),
-        eq(cropDataModules.moduleType, moduleType)
-      )
+      and(eq(cropDataModules.cropDataId, cropDataId), eq(cropDataModules.moduleType, moduleType))
     )
     .limit(1);
   return rows[0] ?? null;
 }
 
 export async function getAllModules(cropDataId: string) {
-  return db
-    .select()
-    .from(cropDataModules)
-    .where(eq(cropDataModules.cropDataId, cropDataId));
+  return db.select().from(cropDataModules).where(eq(cropDataModules.cropDataId, cropDataId));
 }

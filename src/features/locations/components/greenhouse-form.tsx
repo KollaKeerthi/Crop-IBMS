@@ -118,7 +118,12 @@ export function GreenhouseForm({ farmId, greenhouse, onSuccess }: Props) {
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea {...field} value={field.value ?? ""} placeholder="Optional notes" rows={3} />
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  placeholder="Optional notes"
+                  rows={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

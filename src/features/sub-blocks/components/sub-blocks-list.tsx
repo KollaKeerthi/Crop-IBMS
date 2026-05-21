@@ -8,12 +8,7 @@ import type { SubBlock } from "../schema";
 import { SubBlockForm } from "./sub-block-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Props = {
   blockId: string;
@@ -54,7 +49,12 @@ export function SubBlocksList({ blockId, farmId, blockName }: Props) {
         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
           Sub-blocks of {blockName}
         </p>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setCreateOpen(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs"
+          onClick={() => setCreateOpen(true)}
+        >
           <Plus className="mr-1 h-3 w-3" />
           Add Sub-block
         </Button>
@@ -126,11 +126,7 @@ export function SubBlocksList({ blockId, farmId, blockName }: Props) {
           <DialogHeader>
             <DialogTitle>Add Sub-block to {blockName}</DialogTitle>
           </DialogHeader>
-          <SubBlockForm
-            blockId={blockId}
-            farmId={farmId}
-            onSuccess={() => setCreateOpen(false)}
-          />
+          <SubBlockForm blockId={blockId} farmId={farmId} onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
 

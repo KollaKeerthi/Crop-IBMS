@@ -3,7 +3,11 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateDensityMasterInputSchema } from "@/features/density-master/schema";
-import { getDensityHandler, updateDensityHandler, deleteDensityHandler } from "@/features/density-master/handlers";
+import {
+  getDensityHandler,
+  updateDensityHandler,
+  deleteDensityHandler,
+} from "@/features/density-master/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 type Params = { params: Promise<{ densityId: string }> };

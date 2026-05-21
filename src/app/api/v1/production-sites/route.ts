@@ -3,7 +3,10 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { CreateProductionSiteInputSchema } from "@/features/production-sites/schema";
-import { listProductionSitesHandler, createProductionSiteHandler } from "@/features/production-sites/handlers";
+import {
+  listProductionSitesHandler,
+  createProductionSiteHandler,
+} from "@/features/production-sites/handlers";
 
 export async function GET() {
   try {

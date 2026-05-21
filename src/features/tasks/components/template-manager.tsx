@@ -3,22 +3,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2, ClipboardList, Plus } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,13 +55,7 @@ const PRIORITY_COLORS: Record<TaskTemplate["priority"], string> = {
   Urgent: "bg-red-100 text-red-700",
 };
 
-function TemplateCreateForm({
-  farmId,
-  onSuccess,
-}: {
-  farmId: string;
-  onSuccess: () => void;
-}) {
+function TemplateCreateForm({ farmId, onSuccess }: { farmId: string; onSuccess: () => void }) {
   const form = useForm<CreateTaskTemplateInput>({
     resolver: zodResolver(CreateTaskTemplateInputSchema) as Resolver<CreateTaskTemplateInput>,
     defaultValues: {
@@ -171,12 +155,7 @@ function TemplateCreateForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <FormLabel>Checklist</FormLabel>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => append({ text: "" })}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ text: "" })}>
               <Plus className="mr-1 h-3 w-3" />
               Add Item
             </Button>
@@ -243,7 +222,12 @@ export function TemplateManager({ farmId, open, onClose }: Props) {
 
   return (
     <>
-      <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <Sheet
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) onClose();
+        }}
+      >
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
@@ -253,11 +237,7 @@ export function TemplateManager({ farmId, open, onClose }: Props) {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => setCreateOpen(true)}
-            >
+            <Button className="w-full" variant="outline" onClick={() => setCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Template
             </Button>
@@ -279,10 +259,7 @@ export function TemplateManager({ farmId, open, onClose }: Props) {
             )}
 
             {templates?.map((template) => (
-              <div
-                key={template.id}
-                className="rounded-lg border p-4 space-y-3"
-              >
+              <div key={template.id} className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <p className="text-sm font-medium">{template.title}</p>
@@ -333,15 +310,17 @@ export function TemplateManager({ farmId, open, onClose }: Props) {
         </SheetContent>
       </Sheet>
 
-      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) setCreateOpen(false); }}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(v) => {
+          if (!v) setCreateOpen(false);
+        }}
+      >
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Template</DialogTitle>
           </DialogHeader>
-          <TemplateCreateForm
-            farmId={farmId}
-            onSuccess={() => setCreateOpen(false)}
-          />
+          <TemplateCreateForm farmId={farmId} onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
     </>

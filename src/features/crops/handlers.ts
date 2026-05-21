@@ -3,8 +3,24 @@ import { ApiError } from "@/lib/api/errors";
 import { log } from "@/lib/log";
 import { logAudit } from "@/lib/audit";
 import { listCrops, getCropById } from "./queries";
-import { insertCrop, updateCrop, deleteCrop, insertCropType, deleteCropType, insertCropVariety, deleteCropVariety } from "./mutations";
-import type { CreateCropInput, UpdateCropInput, CreateCropTypeInput, CreateCropVarietyInput, Crop, CropType, CropVariety } from "./schema";
+import {
+  insertCrop,
+  updateCrop,
+  deleteCrop,
+  insertCropType,
+  deleteCropType,
+  insertCropVariety,
+  deleteCropVariety,
+} from "./mutations";
+import type {
+  CreateCropInput,
+  UpdateCropInput,
+  CreateCropTypeInput,
+  CreateCropVarietyInput,
+  Crop,
+  CropType,
+  CropVariety,
+} from "./schema";
 
 export async function listCropsHandler(ctx: ApiContext, search?: string): Promise<Crop[]> {
   return listCrops(search);
@@ -73,7 +89,11 @@ export async function createCropTypeHandler(
   return type;
 }
 
-export async function deleteCropTypeHandler(ctx: ApiContext, cropId: string, typeId: string): Promise<void> {
+export async function deleteCropTypeHandler(
+  ctx: ApiContext,
+  cropId: string,
+  typeId: string
+): Promise<void> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
 
@@ -96,7 +116,11 @@ export async function createCropVarietyHandler(
   return variety;
 }
 
-export async function deleteCropVarietyHandler(ctx: ApiContext, cropId: string, varietyId: string): Promise<void> {
+export async function deleteCropVarietyHandler(
+  ctx: ApiContext,
+  cropId: string,
+  varietyId: string
+): Promise<void> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
 

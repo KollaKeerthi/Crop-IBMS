@@ -62,8 +62,10 @@ export async function updateTask(
   if (input.assignedTo !== undefined) updateData.assignedTo = input.assignedTo;
   if (input.priority !== undefined) updateData.priority = input.priority;
   if (input.status !== undefined) updateData.status = input.status;
-  if (input.dueDate !== undefined) updateData.dueDate = input.dueDate ? new Date(input.dueDate) : null;
-  if (input.startDate !== undefined) updateData.startDate = input.startDate ? new Date(input.startDate) : null;
+  if (input.dueDate !== undefined)
+    updateData.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+  if (input.startDate !== undefined)
+    updateData.startDate = input.startDate ? new Date(input.startDate) : null;
   if (input.estimatedHours !== undefined) updateData.estimatedHours = input.estimatedHours;
   if (input.cropId !== undefined) updateData.cropId = input.cropId;
   if (input.blockMasterId !== undefined) updateData.blockMasterId = input.blockMasterId;
@@ -112,14 +114,8 @@ export async function deleteTask(id: string, farmId: string): Promise<void> {
   await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.farmId, farmId)));
 }
 
-export async function toggleChecklistItem(
-  itemId: string,
-  completed: boolean
-): Promise<void> {
-  await db
-    .update(taskChecklistItems)
-    .set({ completed })
-    .where(eq(taskChecklistItems.id, itemId));
+export async function toggleChecklistItem(itemId: string, completed: boolean): Promise<void> {
+  await db.update(taskChecklistItems).set({ completed }).where(eq(taskChecklistItems.id, itemId));
 }
 
 export async function createTaskTemplate(
@@ -170,7 +166,9 @@ export async function updateTaskTemplate(
     .where(and(eq(taskTemplates.id, id), eq(taskTemplates.farmId, farmId)));
 
   if (input.checklistItems !== undefined) {
-    await db.delete(taskTemplateChecklistItems).where(eq(taskTemplateChecklistItems.templateId, id));
+    await db
+      .delete(taskTemplateChecklistItems)
+      .where(eq(taskTemplateChecklistItems.templateId, id));
     if (input.checklistItems.length > 0) {
       await db.insert(taskTemplateChecklistItems).values(
         input.checklistItems.map((item, idx) => ({

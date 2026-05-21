@@ -100,7 +100,10 @@ export async function addActivityToActiveTimeHandler(
   const activity = await addActivityToActiveTime(activeTimeId, input);
   if (!activity) throw new ApiError(500, "internal_error", "Could not add activity.");
 
-  log.info({ userId: ctx.userId, activeTimeId, activityId: activity.id }, "active_time.activity_added");
+  log.info(
+    { userId: ctx.userId, activeTimeId, activityId: activity.id },
+    "active_time.activity_added"
+  );
 
   return activity;
 }

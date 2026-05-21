@@ -67,12 +67,15 @@ export async function GET(req: NextRequest) {
     const wb = new ExcelJS.Workbook();
     const activeSheet = wb.addWorksheet("Active Tasks");
     const activeRows = active.length ? active : [{ Note: "No active tasks" }];
-    activeSheet.columns = Object.keys(activeRows[0]).map((header) => ({ header, key: header }));
+    activeSheet.columns = Object.keys(activeRows[0]!).map((header) => ({ header, key: header }));
     activeSheet.addRows(activeRows);
 
     const completedSheet = wb.addWorksheet("Completed");
     const completedRows = completed.length ? completed : [{ Note: "No completed tasks" }];
-    completedSheet.columns = Object.keys(completedRows[0]).map((header) => ({ header, key: header }));
+    completedSheet.columns = Object.keys(completedRows[0]!).map((header) => ({
+      header,
+      key: header,
+    }));
     completedSheet.addRows(completedRows);
 
     const buffer = Buffer.from(await wb.xlsx.writeBuffer());

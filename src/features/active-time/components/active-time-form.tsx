@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -44,7 +44,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const schema = isEdit ? UpdateActiveTimeInputSchema : CreateActiveTimeInputSchema;
 
   const form = useForm<CreateActiveTimeInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateActiveTimeInput>,
     defaultValues: {
       cropId: activeTime?.cropId ?? undefined,
       varietyId: activeTime?.varietyId ?? undefined,
@@ -139,8 +139,8 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                         !selectedCropId
                           ? "Select crop first"
                           : varieties.length === 0
-                          ? "No varieties available"
-                          : "Select a variety"
+                            ? "No varieties available"
+                            : "Select a variety"
                       }
                     />
                   </SelectTrigger>
@@ -238,8 +238,8 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
               ? "Saving..."
               : "Creating..."
             : isEdit
-            ? "Save Changes"
-            : "Create Active Time"}
+              ? "Save Changes"
+              : "Create Active Time"}
         </Button>
       </form>
     </Form>

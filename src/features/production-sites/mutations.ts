@@ -1,7 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { productionSites } from "@/db/schema";
-import type { CreateProductionSiteInput, UpdateProductionSiteInput, ProductionSite } from "./schema";
+import type {
+  CreateProductionSiteInput,
+  UpdateProductionSiteInput,
+  ProductionSite,
+} from "./schema";
 import { getProductionSiteById } from "./queries";
 
 export async function insertProductionSite(

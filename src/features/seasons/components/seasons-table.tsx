@@ -20,12 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CalendarDays } from "lucide-react";
 
 export function SeasonsTable() {
@@ -37,11 +32,7 @@ export function SeasonsTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Select a farm to manage seasons.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to manage seasons.</p>;
   }
 
   async function handleDelete(id: string) {
@@ -93,12 +84,8 @@ export function SeasonsTable() {
                 <TableCell>
                   <Badge variant="secondary">{season.year}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {season.startDate ?? "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {season.endDate ?? "—"}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{season.startDate ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{season.endDate ?? "—"}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button

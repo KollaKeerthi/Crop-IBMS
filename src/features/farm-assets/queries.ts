@@ -10,7 +10,7 @@ function toFarmAsset(row: typeof farmAssets.$inferSelect): FarmAsset {
     farmId: row.farmId,
     assetType: row.assetType,
     name: row.name ?? null,
-    geometryType: (row.geometryType as typeof GEOMETRY_TYPES[number]) ?? "Point",
+    geometryType: (row.geometryType as (typeof GEOMETRY_TYPES)[number]) ?? "Point",
     coordinates: row.coordinates,
     properties: (row.properties as Record<string, unknown> | null) ?? null,
     createdAt: row.createdAt.toISOString(),

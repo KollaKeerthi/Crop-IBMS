@@ -15,11 +15,7 @@ export async function listEventsHandler(
   return listEvents(farmId, from, to);
 }
 
-export async function getEventHandler(
-  ctx: ApiContext,
-  id: string,
-  farmId: string
-): Promise<Event> {
+export async function getEventHandler(ctx: ApiContext, id: string, farmId: string): Promise<Event> {
   const event = await getEventById(id, farmId);
   if (!event) throw new ApiError(404, "not_found", "Event not found.");
   return event;

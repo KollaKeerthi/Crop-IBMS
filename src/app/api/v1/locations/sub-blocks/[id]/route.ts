@@ -3,15 +3,9 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateSubBlockInputSchema } from "@/features/sub-blocks/schema";
-import {
-  updateSubBlockHandler,
-  deleteSubBlockHandler,
-} from "@/features/sub-blocks/handlers";
+import { updateSubBlockHandler, deleteSubBlockHandler } from "@/features/sub-blocks/handlers";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await requireAuth();
     const { id } = await params;
@@ -29,10 +23,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await requireAuth();
     const { id } = await params;

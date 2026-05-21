@@ -96,17 +96,25 @@ async function resolveFarmCenter(farmId: string, userId: string) {
   const center = polygonCenter(farm.boundaryPolygon ?? farm.boundary);
   if (center) return center;
 
-  throw new ApiError(422, "validation_error", "Farm needs a map point or boundary before auto-generating location geometry.");
+  throw new ApiError(
+    422,
+    "validation_error",
+    "Farm needs a map point or boundary before auto-generating location geometry."
+  );
 }
 
 function blockNotes(block: NonNullable<CreateFieldInput["blocks"]>[number]) {
-  return [
-    block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
-    block.rowLengthM !== undefined ? `Row Length (m): ${block.rowLengthM}` : undefined,
-    block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
-    block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
-    block.crops ? `Crops: ${block.crops}` : undefined,
-  ].filter(Boolean).join("\n") || undefined;
+  return (
+    [
+      block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
+      block.rowLengthM !== undefined ? `Row Length (m): ${block.rowLengthM}` : undefined,
+      block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
+      block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
+      block.crops ? `Crops: ${block.crops}` : undefined,
+    ]
+      .filter(Boolean)
+      .join("\n") || undefined
+  );
 }
 
 async function createGeneratedChildren({
@@ -128,68 +136,83 @@ async function createGeneratedChildren({
   blockPolygons: PolygonGeometry[];
   subBlockPolygons: PolygonGeometry[][];
 }) {
-  await Promise.all(blockInputs.map(async (blockInput, index) => {
-    const block = await insertBlock({
-      farmId,
-      parentType,
-      parentId,
-      name: blockInput.name,
-      areaSqm: parentAreaSqm ? parentAreaSqm / blockInputs.length : undefined,
-      notes: blockNotes(blockInput),
-      boundaryPolygon: blockPolygons[index],
-    });
-    if (!block) throw new ApiError(500, "internal_error", "Could not create generated block.");
-
-    await logAudit({
-      userId: ctx.userId,
-      action: "block.created",
-      resource: block.id,
-      metadata: { name: block.name, farmId, parentType, parentId, generated: true },
-    });
-
-    const subPolygons = subBlockPolygons[index] ?? [];
-    await Promise.all(subPolygons.map(async (boundaryPolygon, subIndex) => {
-      const suffix = subIndex + 1;
-      const subBlock = await insertSubBlock({
+  await Promise.all(
+    blockInputs.map(async (blockInput, index) => {
+      const block = await insertBlock({
         farmId,
-        blockId: block.id,
-        name: `${blockInput.name}.${suffix}`,
-        rows: blockInput.rows,
-        rowLengthM: blockInput.rowLengthM,
-        rowWidthM: blockInput.rowWidthM,
-        areaSqm: block.areaSqm ? block.areaSqm / subPolygons.length : undefined,
-        boundaryPolygon,
-      });
-      if (!subBlock) throw new ApiError(500, "internal_error", "Could not create generated sub-block.");
-
-      const blockMaster = await insertBlockMaster(farmId, {
-        blockName: blockInput.name,
-        subBlockName: subBlock.name,
-        areaSqm: subBlock.areaSqm ?? undefined,
-        rows: blockInput.rows,
-        rowLengthM: blockInput.rowLengthM,
-        rowWidthM: blockInput.rowWidthM,
-        fieldId: parentType === "field" ? parentId : undefined,
-        greenhouseId: parentType === "greenhouse" ? parentId : undefined,
+        parentType,
+        parentId,
+        name: blockInput.name,
+        areaSqm: parentAreaSqm ? parentAreaSqm / blockInputs.length : undefined,
         notes: blockNotes(blockInput),
+        boundaryPolygon: blockPolygons[index],
       });
-      if (!blockMaster) throw new ApiError(500, "internal_error", "Could not create generated block master row.");
+      if (!block) throw new ApiError(500, "internal_error", "Could not create generated block.");
 
       await logAudit({
         userId: ctx.userId,
-        action: "block_master.created",
-        resource: blockMaster.id,
-        metadata: { blockName: blockInput.name, subBlockName: subBlock.name, farmId, generated: true },
+        action: "block.created",
+        resource: block.id,
+        metadata: { name: block.name, farmId, parentType, parentId, generated: true },
       });
 
-      await logAudit({
-        userId: ctx.userId,
-        action: "sub_block.created",
-        resource: subBlock.id,
-        metadata: { name: subBlock.name, blockId: block.id, farmId, generated: true },
-      });
-    }));
-  }));
+      const subPolygons = subBlockPolygons[index] ?? [];
+      await Promise.all(
+        subPolygons.map(async (boundaryPolygon, subIndex) => {
+          const suffix = subIndex + 1;
+          const subBlock = await insertSubBlock({
+            farmId,
+            blockId: block.id,
+            name: `${blockInput.name}.${suffix}`,
+            rows: blockInput.rows,
+            rowLengthM: blockInput.rowLengthM,
+            rowWidthM: blockInput.rowWidthM,
+            areaSqm: block.areaSqm ? block.areaSqm / subPolygons.length : undefined,
+            boundaryPolygon,
+          });
+          if (!subBlock)
+            throw new ApiError(500, "internal_error", "Could not create generated sub-block.");
+
+          const blockMaster = await insertBlockMaster(farmId, {
+            blockName: blockInput.name,
+            subBlockName: subBlock.name,
+            areaSqm: subBlock.areaSqm ?? undefined,
+            rows: blockInput.rows,
+            rowLengthM: blockInput.rowLengthM,
+            rowWidthM: blockInput.rowWidthM,
+            fieldId: parentType === "field" ? parentId : undefined,
+            greenhouseId: parentType === "greenhouse" ? parentId : undefined,
+            notes: blockNotes(blockInput),
+          });
+          if (!blockMaster)
+            throw new ApiError(
+              500,
+              "internal_error",
+              "Could not create generated block master row."
+            );
+
+          await logAudit({
+            userId: ctx.userId,
+            action: "block_master.created",
+            resource: blockMaster.id,
+            metadata: {
+              blockName: blockInput.name,
+              subBlockName: subBlock.name,
+              farmId,
+              generated: true,
+            },
+          });
+
+          await logAudit({
+            userId: ctx.userId,
+            action: "sub_block.created",
+            resource: subBlock.id,
+            metadata: { name: subBlock.name, blockId: block.id, farmId, generated: true },
+          });
+        })
+      );
+    })
+  );
 }
 
 // ── Fields ────────────────────────────────────────────────────────────────────
@@ -231,7 +254,10 @@ export async function createFieldHandler(ctx: ApiContext, input: CreateFieldInpu
     });
   }
 
-  log.info({ userId: ctx.userId, farmId: input.farmId, fieldId: field.id }, "locations.field_created");
+  log.info(
+    { userId: ctx.userId, farmId: input.farmId, fieldId: field.id },
+    "locations.field_created"
+  );
   await logAudit({
     userId: ctx.userId,
     action: "field.created",
@@ -321,7 +347,10 @@ export async function createGreenhouseHandler(
     });
   }
 
-  log.info({ userId: ctx.userId, farmId: input.farmId, greenhouseId: greenhouse.id }, "locations.greenhouse_created");
+  log.info(
+    { userId: ctx.userId, farmId: input.farmId, greenhouseId: greenhouse.id },
+    "locations.greenhouse_created"
+  );
   await logAudit({
     userId: ctx.userId,
     action: "greenhouse.created",
@@ -378,15 +407,15 @@ export async function listBlocksHandler(
   return listBlocks(farmId, parentId, parentType);
 }
 
-export async function createBlockHandler(
-  ctx: ApiContext,
-  input: CreateBlockInput
-): Promise<Block> {
+export async function createBlockHandler(ctx: ApiContext, input: CreateBlockInput): Promise<Block> {
   await assertAccess(input.farmId, ctx.userId);
   const block = await insertBlock(input);
   if (!block) throw new ApiError(500, "internal_error", "Could not create block.");
 
-  log.info({ userId: ctx.userId, farmId: input.farmId, blockId: block.id }, "locations.block_created");
+  log.info(
+    { userId: ctx.userId, farmId: input.farmId, blockId: block.id },
+    "locations.block_created"
+  );
   await logAudit({
     userId: ctx.userId,
     action: "block.created",

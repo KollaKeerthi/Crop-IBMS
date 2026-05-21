@@ -10,11 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import type { Season } from "@/features/seasons/schema";
@@ -54,17 +50,15 @@ export function PlantingFilters({ seasons, filters, onChange }: Props) {
     filters.statuses.length === 0
       ? "All statuses"
       : filters.statuses.length === ALL_STATUSES.length
-      ? "All statuses"
-      : filters.statuses.join(", ");
+        ? "All statuses"
+        : filters.statuses.join(", ");
 
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="min-w-[180px]">
         <Select
           value={filters.seasonId ?? "all"}
-          onValueChange={(v) =>
-            onChange({ ...filters, seasonId: v === "all" ? null : v })
-          }
+          onValueChange={(v) => onChange({ ...filters, seasonId: v === "all" ? null : v })}
         >
           <SelectTrigger>
             <SelectValue placeholder="All seasons" />

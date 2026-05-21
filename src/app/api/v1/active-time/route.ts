@@ -3,10 +3,7 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { CreateActiveTimeInputSchema } from "@/features/active-time/schema";
-import {
-  listActiveTimesHandler,
-  createActiveTimeHandler,
-} from "@/features/active-time/handlers";
+import { listActiveTimesHandler, createActiveTimeHandler } from "@/features/active-time/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 export async function GET(req: NextRequest) {

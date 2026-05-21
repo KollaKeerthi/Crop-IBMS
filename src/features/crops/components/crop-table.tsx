@@ -25,12 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Leaf } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function CropTable() {
   const [search, setSearch] = useState("");
@@ -65,13 +60,8 @@ export function CropTable() {
       setDeletingId(null);
     } catch (err) {
       const isNotFound = err instanceof ApiError && err.status === 404;
-      const message =
-        err instanceof ApiError ? err.message : "Failed to delete crop.";
-      toast.error(
-        isNotFound
-          ? `${message} The list will refresh.`
-          : message
-      );
+      const message = err instanceof ApiError ? err.message : "Failed to delete crop.";
+      toast.error(isNotFound ? `${message} The list will refresh.` : message);
       // Stale UI: row exists in cache but not in DB — force a refetch so it disappears
       if (isNotFound) {
         qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY });

@@ -21,14 +21,27 @@ export async function listFarmAssetsHandler(ctx: ApiContext, farmId: string): Pr
   return listFarmAssets(farmId);
 }
 
-export async function createFarmAssetHandler(ctx: ApiContext, input: CreateFarmAssetInput): Promise<FarmAsset> {
+export async function createFarmAssetHandler(
+  ctx: ApiContext,
+  input: CreateFarmAssetInput
+): Promise<FarmAsset> {
   await assertFarmAccess(input.farmId, ctx.userId);
   const asset = await insertFarmAsset(input);
-  await logAudit({ userId: ctx.userId, action: "farm_asset.created", resource: asset.id, metadata: { assetType: input.assetType } });
+  await logAudit({
+    userId: ctx.userId,
+    action: "farm_asset.created",
+    resource: asset.id,
+    metadata: { assetType: input.assetType },
+  });
   return asset as unknown as FarmAsset;
 }
 
-export async function updateFarmAssetHandler(ctx: ApiContext, id: string, farmId: string, input: UpdateFarmAssetInput): Promise<FarmAsset> {
+export async function updateFarmAssetHandler(
+  ctx: ApiContext,
+  id: string,
+  farmId: string,
+  input: UpdateFarmAssetInput
+): Promise<FarmAsset> {
   await assertFarmAccess(farmId, ctx.userId);
   const existing = await getFarmAssetById(id, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Asset not found.");
@@ -38,7 +51,11 @@ export async function updateFarmAssetHandler(ctx: ApiContext, id: string, farmId
   return updated as unknown as FarmAsset;
 }
 
-export async function deleteFarmAssetHandler(ctx: ApiContext, id: string, farmId: string): Promise<void> {
+export async function deleteFarmAssetHandler(
+  ctx: ApiContext,
+  id: string,
+  farmId: string
+): Promise<void> {
   await assertFarmAccess(farmId, ctx.userId);
   const existing = await getFarmAssetById(id, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Asset not found.");

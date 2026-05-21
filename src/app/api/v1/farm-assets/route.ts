@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
     const farmId = req.nextUrl.searchParams.get("farmId");
     if (!farmId) throw new ApiError(400, "missing_farm_id", "farmId is required.");
     return apiOk(await listFarmAssetsHandler(ctx, farmId));
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -20,7 +22,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = CreateFarmAssetInputSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+    if (!parsed.success)
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     return apiOk(await createFarmAssetHandler(ctx, parsed.data), 201);
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }

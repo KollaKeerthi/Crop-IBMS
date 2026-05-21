@@ -11,8 +11,16 @@ function toSeason(row: SeasonRow): Season {
     farmId: row.farmId,
     name: row.name,
     year: row.year,
-    startDate: row.startDate ? (row.startDate instanceof Date ? row.startDate.toISOString().split("T")[0] : String(row.startDate)) : null,
-    endDate: row.endDate ? (row.endDate instanceof Date ? row.endDate.toISOString().split("T")[0] : String(row.endDate)) : null,
+    startDate: row.startDate
+      ? row.startDate instanceof Date
+        ? row.startDate.toISOString().split("T")[0]!
+        : String(row.startDate)
+      : null,
+    endDate: row.endDate
+      ? row.endDate instanceof Date
+        ? row.endDate.toISOString().split("T")[0]!
+        : String(row.endDate)
+      : null,
     createdAt: row.createdAt.toISOString(),
   };
 }

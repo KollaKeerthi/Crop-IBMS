@@ -1,7 +1,13 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { activeTimes, activeTimeActivities } from "@/db/schema";
-import type { CreateActiveTimeInput, UpdateActiveTimeInput, AddActivityToActiveTimeInput, ActiveTime, ActiveTimeActivity } from "./schema";
+import type {
+  CreateActiveTimeInput,
+  UpdateActiveTimeInput,
+  AddActivityToActiveTimeInput,
+  ActiveTime,
+  ActiveTimeActivity,
+} from "./schema";
 import { getActiveTimeById } from "./queries";
 
 export async function createActiveTime(
@@ -26,10 +32,7 @@ export async function createActiveTime(
   return getActiveTimeById(row.id, farmId);
 }
 
-export async function updateActiveTime(
-  id: string,
-  input: UpdateActiveTimeInput
-): Promise<void> {
+export async function updateActiveTime(id: string, input: UpdateActiveTimeInput): Promise<void> {
   await db
     .update(activeTimes)
     .set({
@@ -77,7 +80,5 @@ export async function addActivityToActiveTime(
 }
 
 export async function removeActivityFromActiveTime(activityId: string): Promise<void> {
-  await db
-    .delete(activeTimeActivities)
-    .where(eq(activeTimeActivities.id, activityId));
+  await db.delete(activeTimeActivities).where(eq(activeTimeActivities.id, activityId));
 }

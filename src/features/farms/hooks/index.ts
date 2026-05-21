@@ -21,8 +21,7 @@ export function useCreateFarm() {
 export function useUpdateFarm() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateFarmInput }) =>
-      updateFarm(id, input),
+    mutationFn: ({ id, input }: { id: string; input: UpdateFarmInput }) => updateFarm(id, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: FARMS_QUERY_KEY }),
   });
 }

@@ -77,9 +77,7 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
   };
 
   const displayName =
-    record.cropName ??
-    (record.block ? `${record.block}` : null) ??
-    record.id.slice(0, 8);
+    record.cropName ?? (record.block ? `${record.block}` : null) ?? record.id.slice(0, 8);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-8">

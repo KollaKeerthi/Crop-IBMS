@@ -56,7 +56,9 @@ export function TaskCard({ task, farmId }: Props) {
             {task.assignedTo && (
               <span className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span className="truncate max-w-[60px] font-mono">{task.assignedTo.slice(0, 8)}</span>
+                <span className="truncate max-w-[60px] font-mono">
+                  {task.assignedTo.slice(0, 8)}
+                </span>
               </span>
             )}
             {totalCount > 0 && (

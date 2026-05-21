@@ -72,10 +72,7 @@ export async function listTasks(farmId: string, filters?: TaskFilters): Promise<
     .select()
     .from(tasks)
     .where(and(...conditions))
-    .orderBy(
-      asc(tasks.dueDate),
-      desc(tasks.createdAt)
-    );
+    .orderBy(asc(tasks.dueDate), desc(tasks.createdAt));
 
   if (taskRows.length === 0) return [];
 

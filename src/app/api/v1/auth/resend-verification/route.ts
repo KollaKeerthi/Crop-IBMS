@@ -11,12 +11,18 @@ export async function POST(req: NextRequest) {
 
     const parsed = ResendVerificationInputSchema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     }
 
     await resendVerificationHandler(parsed.data.email);
     // Always return success to prevent email enumeration
-    return apiOk({ message: "If an unverified account exists for that email, a new link has been sent." });
+    return apiOk({
+      message: "If an unverified account exists for that email, a new link has been sent.",
+    });
   } catch (err) {
     return apiError(err);
   }

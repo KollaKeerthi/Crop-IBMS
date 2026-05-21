@@ -8,12 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFarm } from "@/lib/farm-context";
 import { useEvents, useDeleteEvent } from "../hooks";
 import { CalendarView } from "./calendar-view";
@@ -148,7 +143,9 @@ export function EventsView() {
                   </div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">
                     {event.allDay ? (
-                      <Badge variant="outline" className="text-xs">All Day</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        All Day
+                      </Badge>
                     ) : (
                       <>
                         {event.startTime ?? "—"}
@@ -189,7 +186,12 @@ export function EventsView() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) setCreateOpen(false); }}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(v) => {
+          if (!v) setCreateOpen(false);
+        }}
+      >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Event</DialogTitle>

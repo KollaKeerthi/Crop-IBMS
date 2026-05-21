@@ -33,11 +33,7 @@ export async function listTasksHandler(
   return listTasks(farmId, filters);
 }
 
-export async function getTaskHandler(
-  ctx: ApiContext,
-  id: string,
-  farmId: string
-): Promise<Task> {
+export async function getTaskHandler(ctx: ApiContext, id: string, farmId: string): Promise<Task> {
   const task = await getTaskById(id, farmId);
   if (!task) throw new ApiError(404, "not_found", "Task not found.");
   return task;
@@ -177,7 +173,10 @@ export async function createTaskFromTemplateHandler(
   const task = await createTaskFromTemplate(templateId, farmId, overrides);
   if (!task) throw new ApiError(404, "not_found", "Task template not found.");
 
-  log.info({ userId: ctx.userId, farmId, taskId: task.id, templateId }, "tasks.created_from_template");
+  log.info(
+    { userId: ctx.userId, farmId, taskId: task.id, templateId },
+    "tasks.created_from_template"
+  );
   await logAudit({
     userId: ctx.userId,
     action: "task.created",

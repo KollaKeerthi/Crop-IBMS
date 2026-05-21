@@ -8,7 +8,9 @@ import {
 } from "./schema";
 
 export function listActivities(farmId: string): Promise<Activity[]> {
-  return apiFetch(`/api/v1/activities?farmId=${farmId}`, { responseSchema: ActivitiesResponseSchema });
+  return apiFetch(`/api/v1/activities?farmId=${farmId}`, {
+    responseSchema: ActivitiesResponseSchema,
+  });
 }
 
 export function createActivity(farmId: string, input: CreateActivityInput): Promise<Activity> {
@@ -19,7 +21,11 @@ export function createActivity(farmId: string, input: CreateActivityInput): Prom
   });
 }
 
-export function updateActivity(farmId: string, id: string, input: UpdateActivityInput): Promise<Activity> {
+export function updateActivity(
+  farmId: string,
+  id: string,
+  input: UpdateActivityInput
+): Promise<Activity> {
   return apiFetch(`/api/v1/activities/${id}?farmId=${farmId}`, {
     method: "PATCH",
     body: input,

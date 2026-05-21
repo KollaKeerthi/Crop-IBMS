@@ -7,7 +7,10 @@ type FarmContextValue = {
   setSelectedFarmId: (id: string) => void;
 };
 
-const FarmContext = createContext<FarmContextValue>({ selectedFarmId: null, setSelectedFarmId: () => {} });
+const FarmContext = createContext<FarmContextValue>({
+  selectedFarmId: null,
+  setSelectedFarmId: () => {},
+});
 
 const FARM_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
@@ -15,13 +18,21 @@ function writeFarmCookie(id: string) {
   document.cookie = `selected_farm_id=${id};path=/;max-age=${FARM_COOKIE_MAX_AGE};SameSite=Lax`;
 }
 
-export function FarmProvider({ children, defaultFarmId }: { children: ReactNode; defaultFarmId?: string | null }) {
+export function FarmProvider({
+  children,
+  defaultFarmId,
+}: {
+  children: ReactNode;
+  defaultFarmId?: string | null;
+}) {
   const [selectedFarmId, setSelectedFarmIdState] = useState<string | null>(defaultFarmId ?? null);
 
   // Persist layout default (first farm) so server components see the same selection.
   useEffect(() => {
     if (!defaultFarmId) return;
-    const hasCookie = document.cookie.split(";").some((c) => c.trim().startsWith("selected_farm_id="));
+    const hasCookie = document.cookie
+      .split(";")
+      .some((c) => c.trim().startsWith("selected_farm_id="));
     if (!hasCookie) writeFarmCookie(defaultFarmId);
   }, [defaultFarmId]);
 
@@ -30,7 +41,11 @@ export function FarmProvider({ children, defaultFarmId }: { children: ReactNode;
     writeFarmCookie(id);
   }
 
-  return <FarmContext.Provider value={{ selectedFarmId, setSelectedFarmId }}>{children}</FarmContext.Provider>;
+  return (
+    <FarmContext.Provider value={{ selectedFarmId, setSelectedFarmId }}>
+      {children}
+    </FarmContext.Provider>
+  );
 }
 
 export function useFarm() {

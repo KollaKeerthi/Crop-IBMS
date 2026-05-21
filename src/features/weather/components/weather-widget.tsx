@@ -51,9 +51,11 @@ function WeatherConditionIcon({
   if (code <= 2) return <CloudSun className={className} {...props} />;
   if (code === 3) return <Cloud className={className} {...props} />;
   if ([45, 48].includes(code)) return <CloudFog className={className} {...props} />;
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return <Snowflake className={className} {...props} />;
+  if ([71, 73, 75, 77, 85, 86].includes(code))
+    return <Snowflake className={className} {...props} />;
   if ([95, 96, 99].includes(code)) return <Zap className={className} {...props} />;
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return <CloudRain className={className} {...props} />;
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code))
+    return <CloudRain className={className} {...props} />;
   return <Cloud className={className} {...props} />;
 }
 
@@ -80,13 +82,7 @@ function MetricColumn({
   );
 }
 
-function WidgetShell({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+function WidgetShell({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={cn(

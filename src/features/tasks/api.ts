@@ -50,7 +50,11 @@ export function updateTask(farmId: string, id: string, input: UpdateTaskInput): 
   });
 }
 
-export function updateTaskStatus(farmId: string, id: string, status: Task["status"]): Promise<Task> {
+export function updateTaskStatus(
+  farmId: string,
+  id: string,
+  status: Task["status"]
+): Promise<Task> {
   return apiFetch(`/api/v1/tasks/${id}/status?farmId=${farmId}`, {
     method: "PATCH",
     body: { status },

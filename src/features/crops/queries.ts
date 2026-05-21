@@ -44,7 +44,11 @@ function toCrop(row: CropRow, types: CropType[], varieties: CropVariety[]): Crop
 
 export async function listCrops(search?: string): Promise<Crop[]> {
   const cropRows = search
-    ? await db.select().from(crops).where(ilike(crops.name, `%${search}%`)).orderBy(crops.name)
+    ? await db
+        .select()
+        .from(crops)
+        .where(ilike(crops.name, `%${search}%`))
+        .orderBy(crops.name)
     : await db.select().from(crops).orderBy(crops.name);
 
   if (cropRows.length === 0) return [];

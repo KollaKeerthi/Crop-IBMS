@@ -6,10 +6,7 @@ import { apiError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
 import { logAudit } from "@/lib/audit";
-import {
-  exchangeCodeForToken,
-  isCalendarProvider,
-} from "@/lib/integrations/calendar-oauth";
+import { exchangeCodeForToken, isCalendarProvider } from "@/lib/integrations/calendar-oauth";
 
 type Params = { params: Promise<{ provider: string }> };
 

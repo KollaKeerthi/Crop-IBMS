@@ -66,8 +66,7 @@ export function removeActivityFromActiveTime(
   activeTimeId: string,
   activityId: string
 ): Promise<void> {
-  return apiFetch(
-    `/api/v1/active-time/${activeTimeId}/activities/${activityId}?farmId=${farmId}`,
-    { method: "DELETE" }
-  );
+  return apiFetch(`/api/v1/active-time/${activeTimeId}/activities/${activityId}?farmId=${farmId}`, {
+    method: "DELETE",
+  });
 }

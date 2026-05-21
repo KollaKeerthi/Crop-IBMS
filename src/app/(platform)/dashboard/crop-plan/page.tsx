@@ -46,8 +46,8 @@ export default function CropPlanPage() {
       <div>
         <h1 className="text-2xl font-semibold">Crop Planning</h1>
         <p className="text-sm text-muted-foreground">
-          One place to manage your crop planning setup, growing seasons, activity templates,
-          block masters, and more.
+          One place to manage your crop planning setup, growing seasons, activity templates, block
+          masters, and more.
         </p>
       </div>
 
@@ -61,7 +61,9 @@ export default function CropPlanPage() {
             <div className="flex items-center gap-3">
               <item.icon className="size-6 text-primary" />
               <div>
-                <h2 className="text-lg font-semibold transition group-hover:text-primary">{item.title}</h2>
+                <h2 className="text-lg font-semibold transition group-hover:text-primary">
+                  {item.title}
+                </h2>
                 <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
               </div>
             </div>

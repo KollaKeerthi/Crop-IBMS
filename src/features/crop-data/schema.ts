@@ -38,13 +38,13 @@ export const UpdateNurseryInputSchema = z.object({
   endDate: z.string().optional(),
   seedlingsCount: z.number().int().optional(),
   germinationRate: z.number().optional(),
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
   notes: z.string().optional(),
 });
 export type UpdateNurseryInput = z.infer<typeof UpdateNurseryInputSchema>;
 
 export const UpdateModuleInputSchema = z.object({
-  data: z.record(z.unknown()),
+  data: z.record(z.string(), z.unknown()),
 });
 export type UpdateModuleInput = z.infer<typeof UpdateModuleInputSchema>;
 

@@ -23,10 +23,9 @@ export function updateCropData(id: string, input: UpdateCropDataInput) {
 }
 
 export function deleteCropData(id: string, farmId: string) {
-  return apiFetch<void>(
-    `/api/v1/crop-data/${id}?farmId=${encodeURIComponent(farmId)}`,
-    { method: "DELETE" }
-  );
+  return apiFetch<void>(`/api/v1/crop-data/${id}?farmId=${encodeURIComponent(farmId)}`, {
+    method: "DELETE",
+  });
 }
 
 export function updateProgramInfo(

@@ -3,7 +3,11 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateSeasonInputSchema } from "@/features/seasons/schema";
-import { getSeasonHandler, updateSeasonHandler, deleteSeasonHandler } from "@/features/seasons/handlers";
+import {
+  getSeasonHandler,
+  updateSeasonHandler,
+  deleteSeasonHandler,
+} from "@/features/seasons/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 type Params = { params: Promise<{ seasonId: string }> };

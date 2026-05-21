@@ -9,7 +9,14 @@ import { toast } from "sonner";
 import { ArrowLeft, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { FarmForm } from "@/features/farms/components/farm-form";
 import type { Farm } from "@/features/farms/schema";
 import { apiFetch } from "@/lib/api/client";
@@ -25,13 +32,7 @@ function writeSelectedFarmCookie(farmId: string) {
   document.cookie = `selected_farm_id=${farmId};path=/;max-age=${FARM_COOKIE_MAX_AGE};SameSite=Lax`;
 }
 
-function NameStep({
-  initialName,
-  onNext,
-}: {
-  initialName: string;
-  onNext: () => void;
-}) {
+function NameStep({ initialName, onNext }: { initialName: string; onNext: () => void }) {
   const form = useForm<NameInput>({
     resolver: zodResolver(NameSchema),
     defaultValues: { name: initialName },
@@ -53,7 +54,9 @@ function NameStep({
     <div className="space-y-6">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold">What&apos;s your name?</h2>
-        <p className="text-sm text-muted-foreground">This is how you&apos;ll appear to your team.</p>
+        <p className="text-sm text-muted-foreground">
+          This is how you&apos;ll appear to your team.
+        </p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -79,13 +82,7 @@ function NameStep({
   );
 }
 
-function FarmStep({
-  onDone,
-  onBack,
-}: {
-  onDone: (farm?: Farm) => void;
-  onBack: () => void;
-}) {
+function FarmStep({ onDone, onBack }: { onDone: (farm?: Farm) => void; onBack: () => void }) {
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">

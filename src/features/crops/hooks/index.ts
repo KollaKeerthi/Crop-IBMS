@@ -12,7 +12,12 @@ import {
   createCropVariety,
   deleteCropVariety,
 } from "../api";
-import type { CreateCropInput, UpdateCropInput, CreateCropTypeInput, CreateCropVarietyInput } from "../schema";
+import type {
+  CreateCropInput,
+  UpdateCropInput,
+  CreateCropTypeInput,
+  CreateCropVarietyInput,
+} from "../schema";
 
 export const CROPS_QUERY_KEY = ["crops"];
 export const cropKey = (id: string) => ["crops", id];

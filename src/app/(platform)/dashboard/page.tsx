@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const { selectedFarmId } = await resolveSelectedFarmId(session.user.id);
 
-  let farm: (typeof farms.$inferSelect) | null = null;
+  let farm: typeof farms.$inferSelect | null = null;
 
   if (selectedFarmId) {
     const farmRows = await db.select().from(farms).where(eq(farms.id, selectedFarmId)).limit(1);

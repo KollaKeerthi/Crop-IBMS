@@ -7,7 +7,7 @@ type PlantingRow = typeof plantings.$inferSelect;
 
 function formatDate(d: Date | null | undefined): string | null {
   if (!d) return null;
-  return d instanceof Date ? d.toISOString().split("T")[0] : null;
+  return d instanceof Date ? d.toISOString().split("T")[0]! : null;
 }
 
 function buildPlanting(

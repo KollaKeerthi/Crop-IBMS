@@ -16,12 +16,7 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Event } from "../schema";
 import { EventDetailDialog } from "./event-detail-dialog";
 import { EventForm } from "./event-form";
@@ -71,9 +66,7 @@ export function CalendarView({ events, farmId }: Props) {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-base font-semibold">
-            {format(currentMonth, "MMMM yyyy")}
-          </h2>
+          <h2 className="text-base font-semibold">{format(currentMonth, "MMMM yyyy")}</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -86,10 +79,7 @@ export function CalendarView({ events, farmId }: Props) {
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b bg-muted/20">
           {DAY_HEADERS.map((d) => (
-            <div
-              key={d}
-              className="py-2 text-center text-xs font-medium text-muted-foreground"
-            >
+            <div key={d} className="py-2 text-center text-xs font-medium text-muted-foreground">
               {d}
             </div>
           ))}
@@ -117,8 +107,8 @@ export function CalendarView({ events, farmId }: Props) {
                     isToday
                       ? "bg-primary text-primary-foreground"
                       : isCurrentMonth
-                      ? "text-foreground"
-                      : "text-muted-foreground"
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {format(day, "d")}
@@ -166,7 +156,9 @@ export function CalendarView({ events, farmId }: Props) {
       {/* Create Event Dialog */}
       <Dialog
         open={!!createDate}
-        onOpenChange={(v) => { if (!v) setCreateDate(null); }}
+        onOpenChange={(v) => {
+          if (!v) setCreateDate(null);
+        }}
       >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>

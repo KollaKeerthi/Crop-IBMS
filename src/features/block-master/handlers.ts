@@ -6,11 +6,18 @@ import { listBlockMaster, getBlockById } from "./queries";
 import { insertBlock, updateBlock, deleteBlock } from "./mutations";
 import type { CreateBlockMasterInput, UpdateBlockMasterInput, BlockMaster } from "./schema";
 
-export async function listBlockMasterHandler(ctx: ApiContext, farmId: string): Promise<BlockMaster[]> {
+export async function listBlockMasterHandler(
+  ctx: ApiContext,
+  farmId: string
+): Promise<BlockMaster[]> {
   return listBlockMaster(farmId);
 }
 
-export async function getBlockHandler(ctx: ApiContext, blockId: string, farmId: string): Promise<BlockMaster> {
+export async function getBlockHandler(
+  ctx: ApiContext,
+  blockId: string,
+  farmId: string
+): Promise<BlockMaster> {
   const block = await getBlockById(blockId, farmId);
   if (!block) throw new ApiError(404, "not_found", "Block not found.");
   return block;
@@ -53,7 +60,11 @@ export async function updateBlockHandler(
   return updated;
 }
 
-export async function deleteBlockHandler(ctx: ApiContext, blockId: string, farmId: string): Promise<void> {
+export async function deleteBlockHandler(
+  ctx: ApiContext,
+  blockId: string,
+  farmId: string
+): Promise<void> {
   const existing = await getBlockById(blockId, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Block not found.");
 

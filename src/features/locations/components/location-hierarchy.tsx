@@ -4,7 +4,12 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Layers, Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
-import { useLocationHierarchy, useDeleteField, useDeleteGreenhouse, useDeleteBlock } from "../hooks";
+import {
+  useLocationHierarchy,
+  useDeleteField,
+  useDeleteGreenhouse,
+  useDeleteBlock,
+} from "../hooks";
 import type { FieldWithBlocks, GreenhouseWithBlocks, Block, Field, Greenhouse } from "../schema";
 import { FieldForm } from "./field-form";
 import { GreenhouseForm } from "./greenhouse-form";
@@ -13,12 +18,7 @@ import { SubBlocksList } from "@/features/sub-blocks/components/sub-blocks-list"
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // ── Delete confirm dialog ─────────────────────────────────────────────────────
 
@@ -185,9 +185,7 @@ function FieldSection({ item, farmId }: { item: FieldWithBlocks; farmId: string 
       {expanded && (
         <div className="border-t">
           {item.blocks.length > 0 ? (
-            item.blocks.map((block) => (
-              <BlockRow key={block.id} block={block} farmId={farmId} />
-            ))
+            item.blocks.map((block) => <BlockRow key={block.id} block={block} farmId={farmId} />)
           ) : (
             <p className="py-3 pl-8 text-xs text-muted-foreground">No blocks yet.</p>
           )}
@@ -211,11 +209,7 @@ function FieldSection({ item, farmId }: { item: FieldWithBlocks; farmId: string 
           <DialogHeader>
             <DialogTitle>Edit Field</DialogTitle>
           </DialogHeader>
-          <FieldForm
-            farmId={farmId}
-            field={item as Field}
-            onSuccess={() => setEditOpen(false)}
-          />
+          <FieldForm farmId={farmId} field={item as Field} onSuccess={() => setEditOpen(false)} />
         </DialogContent>
       </Dialog>
 
@@ -306,9 +300,7 @@ function GreenhouseSection({ item, farmId }: { item: GreenhouseWithBlocks; farmI
       {expanded && (
         <div className="border-t">
           {item.blocks.length > 0 ? (
-            item.blocks.map((block) => (
-              <BlockRow key={block.id} block={block} farmId={farmId} />
-            ))
+            item.blocks.map((block) => <BlockRow key={block.id} block={block} farmId={farmId} />)
           ) : (
             <p className="py-3 pl-8 text-xs text-muted-foreground">No blocks yet.</p>
           )}
@@ -376,9 +368,7 @@ export function LocationHierarchy() {
   const [addGreenhouseOpen, setAddGreenhouseOpen] = useState(false);
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to view its locations.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to view its locations.</p>;
   }
 
   if (isLoading) {

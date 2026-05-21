@@ -52,9 +52,7 @@ const MANAGEMENT_ITEMS: NavItem[] = [
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
 ];
 
-const INTELLIGENCE_ITEMS: NavItem[] = [
-  { label: "AI Assistant", href: "/dashboard/ai", icon: Bot },
-];
+const INTELLIGENCE_ITEMS: NavItem[] = [{ label: "AI Assistant", href: "/dashboard/ai", icon: Bot }];
 
 const PLATFORM_ITEMS: NavItem[] = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -156,7 +154,7 @@ export function Sidebar({
             "flex w-full items-center gap-2 rounded-md text-sm font-medium hover:bg-muted transition-colors",
             collapsed ? "h-9 justify-center" : "px-2 py-1.5"
           )}
-          title={collapsed ? selectedFarm?.name ?? "Select a farm" : undefined}
+          title={collapsed ? (selectedFarm?.name ?? "Select a farm") : undefined}
         >
           {collapsed ? (
             <Tractor className="size-4 text-muted-foreground" />
@@ -188,9 +186,7 @@ export function Sidebar({
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
               >
                 <span className="min-w-0 flex-1 truncate text-left">{farm.name}</span>
-                {farm.id === selectedFarmId && (
-                  <Check className="size-3.5 text-primary shrink-0" />
-                )}
+                {farm.id === selectedFarmId && <Check className="size-3.5 text-primary shrink-0" />}
               </button>
             ))}
           </div>

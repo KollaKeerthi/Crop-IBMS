@@ -31,7 +31,10 @@ export async function listDensityMaster(farmId: string): Promise<DensityMaster[]
   return rows.map(toDensity);
 }
 
-export async function getDensityById(densityId: string, farmId: string): Promise<DensityMaster | null> {
+export async function getDensityById(
+  densityId: string,
+  farmId: string
+): Promise<DensityMaster | null> {
   const [row] = await db
     .select()
     .from(densityMaster)

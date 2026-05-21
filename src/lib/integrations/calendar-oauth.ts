@@ -104,7 +104,11 @@ export async function exchangeCodeForToken(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new ApiError(502, "oauth_exchange_failed", `Token exchange failed: ${text.slice(0, 200)}`);
+    throw new ApiError(
+      502,
+      "oauth_exchange_failed",
+      `Token exchange failed: ${text.slice(0, 200)}`
+    );
   }
   const json = (await res.json()) as {
     access_token: string;

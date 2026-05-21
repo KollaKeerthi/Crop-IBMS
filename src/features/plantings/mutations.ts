@@ -37,10 +37,7 @@ export async function createPlanting(input: CreatePlantingInput): Promise<Planti
   return getPlantingById(row.id, input.farmId);
 }
 
-export async function updatePlanting(
-  id: string,
-  input: UpdatePlantingInput
-): Promise<void> {
+export async function updatePlanting(id: string, input: UpdatePlantingInput): Promise<void> {
   await db
     .update(plantings)
     .set({

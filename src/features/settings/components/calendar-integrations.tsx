@@ -53,8 +53,8 @@ export function CalendarIntegrations() {
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold">External Service Sync</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Connect your agriculture workspace with global calendar services.
-          Once connected, every task you create, update, or delete will automatically sync in the background.
+          Connect your agriculture workspace with global calendar services. Once connected, every
+          task you create, update, or delete will automatically sync in the background.
         </p>
       </div>
 

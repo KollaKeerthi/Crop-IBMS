@@ -32,7 +32,7 @@ async function fetchPhoton(url: string): Promise<PhotonResponse | null> {
 function parseFeature(feature: PhotonFeature | null | undefined): GeocodeResult | null {
   if (!feature?.geometry?.coordinates) return null;
   const [lon, lat] = feature.geometry.coordinates;
-  const p = feature.properties ?? {};
+  const p = (feature.properties ?? {}) as Record<string, string | undefined>;
   const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
   return {
     lat,
@@ -54,9 +54,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
   for (let i = 0; i < parts.length; i++) {
     const query = parts.slice(i).join(", ");
     try {
-      const data = await fetchPhoton(
-        `${PHOTON_BASE}/api/?q=${encodeURIComponent(query)}&limit=1`
-      );
+      const data = await fetchPhoton(`${PHOTON_BASE}/api/?q=${encodeURIComponent(query)}&limit=1`);
       const result = parseFeature(data?.features?.[0]);
       if (result) return result;
     } catch {
@@ -66,14 +64,18 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
   return null;
 }
 
-export async function reverseGeocode(lat: number, lon: number): Promise<ReverseGeocodeResult | null> {
+export async function reverseGeocode(
+  lat: number,
+  lon: number
+): Promise<ReverseGeocodeResult | null> {
   try {
     const data = await fetchPhoton(`${PHOTON_BASE}/reverse?lat=${lat}&lon=${lon}`);
     const feature = data?.features?.[0];
     if (!feature) return null;
-    const p = feature.properties ?? {};
-    const addressParts = [p.housenumber, p.street, p.city ?? p.town ?? p.village, p.state]
-      .filter(Boolean);
+    const p = (feature.properties ?? {}) as Record<string, string | undefined>;
+    const addressParts = [p.housenumber, p.street, p.city ?? p.town ?? p.village, p.state].filter(
+      Boolean
+    );
     return {
       address: addressParts.join(", "),
       country: p.country ?? "",

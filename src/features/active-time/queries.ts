@@ -63,7 +63,7 @@ export async function listActiveTimes(farmId: string): Promise<ActiveTime[]> {
     .from(activeTimeActivities)
     .where(
       ids.length === 1
-        ? eq(activeTimeActivities.activeTimeId, ids[0])
+        ? eq(activeTimeActivities.activeTimeId, ids[0]!)
         : inArray(activeTimeActivities.activeTimeId, ids)
     );
 

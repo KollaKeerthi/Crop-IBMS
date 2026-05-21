@@ -1,7 +1,12 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listDensityMaster, createDensityMaster, updateDensityMaster, deleteDensityMaster } from "../api";
+import {
+  listDensityMaster,
+  createDensityMaster,
+  updateDensityMaster,
+  deleteDensityMaster,
+} from "../api";
 import type { CreateDensityMasterInput, UpdateDensityMasterInput } from "../schema";
 
 export const densityKey = (farmId: string) => ["density-master", farmId];

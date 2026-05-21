@@ -16,14 +16,20 @@ export async function POST(req: NextRequest) {
       return apiError(new ApiError(400, "invalid_input", "message and farmId are required."));
     }
 
-    const { message, farmId, history = [] } = body as {
+    const {
+      message,
+      farmId,
+      history = [],
+    } = body as {
       message: string;
       farmId: string;
       history: { role: "user" | "assistant"; content: string }[];
     };
 
     // Verify farm access
-    const membership = await db.select().from(farmMemberships)
+    const membership = await db
+      .select()
+      .from(farmMemberships)
       .where(and(eq(farmMemberships.userId, ctx.userId), eq(farmMemberships.farmId, farmId)))
       .limit(1);
     if (!membership[0]) return apiError(new ApiError(403, "forbidden", "No access to this farm."));
@@ -31,16 +37,21 @@ export async function POST(req: NextRequest) {
     // Gather farm context for the AI
     const [farmData, taskList, plantingList, cropList] = await Promise.all([
       db.select().from(farms).where(eq(farms.id, farmId)).limit(1),
-      db.select().from(tasks).where(eq(tasks.farmId, farmId)).orderBy(desc(tasks.createdAt)).limit(10),
+      db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.farmId, farmId))
+        .orderBy(desc(tasks.createdAt))
+        .limit(10),
       db.select().from(plantings).where(eq(plantings.farmId, farmId)).limit(10),
       db.select().from(crops).limit(20),
     ]);
 
     const farmContext = `
 Farm: ${farmData[0]?.name ?? "Unknown"}, Location: ${farmData[0]?.location ?? "Unknown"}
-Recent Tasks (${taskList.length}): ${taskList.map(t => `${t.title} (${t.status})`).join(", ") || "None"}
+Recent Tasks (${taskList.length}): ${taskList.map((t) => `${t.title} (${t.status})`).join(", ") || "None"}
 Plantings (${plantingList.length}): ${plantingList.length} plantings on record
-Crops available: ${cropList.map(c => c.name).join(", ") || "None"}
+Crops available: ${cropList.map((c) => c.name).join(", ") || "None"}
     `.trim();
 
     const systemPrompt = `You are an agricultural management assistant for ${farmData[0]?.name ?? "this farm"}.
@@ -66,10 +77,9 @@ In the meantime, here's what I can tell you about your farm:
 
 Your question was: "${message}"`;
 
-      return new Response(
-        JSON.stringify({ response: fallbackResponse }),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ response: fallbackResponse }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Build messages for Anthropic API (no system role in messages array)
@@ -122,14 +132,19 @@ Your question was: "${message}"`;
                 if (data === "[DONE]") continue;
                 try {
                   const parsed = JSON.parse(data);
-                  if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
+                  if (
+                    parsed.type === "content_block_delta" &&
+                    parsed.delta?.type === "text_delta"
+                  ) {
                     const text = parsed.delta.text;
                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
                   }
                   if (parsed.type === "message_stop") {
                     controller.enqueue(encoder.encode("data: [DONE]\n\n"));
                   }
-                } catch { /* skip unparseable lines */ }
+                } catch {
+                  /* skip unparseable lines */
+                }
               }
             }
           }

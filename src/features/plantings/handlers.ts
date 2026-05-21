@@ -31,7 +31,10 @@ export async function createPlantingHandler(
   const planting = await createPlanting(input);
   if (!planting) throw new ApiError(500, "internal_error", "Could not create planting.");
 
-  log.info({ userId: ctx.userId, farmId: input.farmId, plantingId: planting.id }, "planting.created");
+  log.info(
+    { userId: ctx.userId, farmId: input.farmId, plantingId: planting.id },
+    "planting.created"
+  );
   await logAudit({
     userId: ctx.userId,
     action: "planting.created",

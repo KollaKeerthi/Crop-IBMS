@@ -10,12 +10,7 @@ import { InviteForm } from "./invite-form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,8 +67,8 @@ function RemoveDialog({ member, onClose, onConfirm, isPending }: RemoveDialogPro
           <DialogTitle>Remove Member</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          Are you sure you want to remove{" "}
-          <strong>{member?.name ?? member?.email}</strong> from this farm?
+          Are you sure you want to remove <strong>{member?.name ?? member?.email}</strong> from this
+          farm?
         </p>
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={onClose}>
@@ -108,9 +103,7 @@ export function MemberList({ currentUserId }: MemberListProps) {
   const canManageRoles = currentMember?.role === "OWNER" || currentMember?.role === "MANAGER";
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to manage team members.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to manage team members.</p>;
   }
 
   async function handleChangeRole(member: Member, newRole: MemberRole) {

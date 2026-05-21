@@ -5,9 +5,4 @@ export { EventDetailDialog } from "./components/event-detail-dialog";
 
 export { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from "./hooks";
 
-export type {
-  Event,
-  CreateEventInput,
-  UpdateEventInput,
-  RecurrenceType,
-} from "./schema";
+export type { Event, CreateEventInput, UpdateEventInput, RecurrenceType } from "./schema";

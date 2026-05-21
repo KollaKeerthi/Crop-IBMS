@@ -21,12 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Timer } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function ActiveTimeTable() {
   const { selectedFarmId } = useFarm();
@@ -37,9 +32,7 @@ export function ActiveTimeTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to manage active times.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to manage active times.</p>;
   }
 
   async function handleDelete(id: string) {

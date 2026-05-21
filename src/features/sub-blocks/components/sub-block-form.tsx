@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -34,7 +34,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
   const schema = isEdit ? UpdateSubBlockInputSchema : CreateSubBlockInputSchema;
 
   const form = useForm<CreateSubBlockInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateSubBlockInput>,
     defaultValues: {
       blockId,
       farmId,
@@ -130,9 +130,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     placeholder="—"
                     value={field.value ?? ""}
                     onChange={(e) =>
-                      field.onChange(
-                        e.target.value === "" ? undefined : parseFloat(e.target.value)
-                      )
+                      field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
                     }
                   />
                 </FormControl>
@@ -157,9 +155,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     placeholder="—"
                     value={field.value ?? ""}
                     onChange={(e) =>
-                      field.onChange(
-                        e.target.value === "" ? undefined : parseFloat(e.target.value)
-                      )
+                      field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
                     }
                   />
                 </FormControl>
@@ -181,9 +177,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     placeholder="—"
                     value={field.value ?? ""}
                     onChange={(e) =>
-                      field.onChange(
-                        e.target.value === "" ? undefined : parseFloat(e.target.value)
-                      )
+                      field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
                     }
                   />
                 </FormControl>

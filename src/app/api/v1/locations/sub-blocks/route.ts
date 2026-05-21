@@ -3,10 +3,7 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { CreateSubBlockInputSchema } from "@/features/sub-blocks/schema";
-import {
-  listSubBlocksHandler,
-  createSubBlockHandler,
-} from "@/features/sub-blocks/handlers";
+import { listSubBlocksHandler, createSubBlockHandler } from "@/features/sub-blocks/handlers";
 
 export async function GET(req: NextRequest) {
   try {

@@ -52,7 +52,9 @@ export function Topbar({ user }: { user: User }) {
         <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-muted/50 rounded-full pl-1 pr-2 py-1 transition-colors">
           <Avatar className="h-7 w-7">
             {user.image && <AvatarImage src={user.image} alt={user.name ?? user.email} />}
-            <AvatarFallback className="text-xs">{getInitials(user.name, user.email)}</AvatarFallback>
+            <AvatarFallback className="text-xs">
+              {getInitials(user.name, user.email)}
+            </AvatarFallback>
           </Avatar>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </DropdownMenuTrigger>

@@ -1,9 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
-import type {
-  CreateVariabilityInput,
-  UpdateVariabilityInput,
-  Variability,
-} from "./schema";
+import type { CreateVariabilityInput, UpdateVariabilityInput, Variability } from "./schema";
 
 export async function fetchVariability(farmId: string | null): Promise<Variability[]> {
   const qs = farmId ? `?farmId=${encodeURIComponent(farmId)}` : "";

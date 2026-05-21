@@ -3,7 +3,11 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateBlockMasterInputSchema } from "@/features/block-master/schema";
-import { getBlockHandler, updateBlockHandler, deleteBlockHandler } from "@/features/block-master/handlers";
+import {
+  getBlockHandler,
+  updateBlockHandler,
+  deleteBlockHandler,
+} from "@/features/block-master/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 type Params = { params: Promise<{ blockId: string }> };

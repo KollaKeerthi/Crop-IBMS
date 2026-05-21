@@ -33,9 +33,7 @@ export function SectionHeader({
               </span>
             )}
           </div>
-          {description && (
-            <p className="mt-1 text-small text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="mt-1 text-small text-muted-foreground">{description}</p>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>

@@ -16,8 +16,8 @@ function renderVerifiedEmailState(verifiedEmail: string) {
         </div>
         <h1 className="text-2xl font-semibold">Email verified!</h1>
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{verifiedEmail}</span> is confirmed.
-          You can now sign in.
+          <span className="font-medium text-foreground">{verifiedEmail}</span> is confirmed. You can
+          now sign in.
         </p>
       </div>
       <Link href="/login">
@@ -49,7 +49,10 @@ function renderVerificationErrorState({
       </div>
       <div className="space-y-3 text-center">
         <VerifyEmailClient email={recoveredEmail ?? undefined} />
-        <Link href="/login" className="block text-sm text-muted-foreground underline underline-offset-4">
+        <Link
+          href="/login"
+          className="block text-sm text-muted-foreground underline underline-offset-4"
+        >
           Back to sign in
         </Link>
       </div>

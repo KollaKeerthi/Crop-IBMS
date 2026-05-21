@@ -6,12 +6,7 @@ import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TaskForm } from "./task-form";
 import type { Task } from "../schema";
 import { useDeleteTask } from "../hooks";
@@ -106,20 +101,35 @@ export function TaskTable({ tasks, farmId }: Props) {
         <div className="overflow-x-auto">
           <div className="min-w-240">
             <div className="grid grid-cols-[2fr_120px_120px_160px_140px_140px_100px] border-b px-9 py-4 text-sm font-semibold tracking-wide text-muted-foreground">
-              <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("title")}>
+              <button
+                className="text-left transition-colors hover:text-foreground"
+                onClick={() => handleSort("title")}
+              >
                 Subject <SortIcon col="title" sortKey={sortKey} sortDir={sortDir} />
               </button>
-              <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("priority")}>
+              <button
+                className="text-left transition-colors hover:text-foreground"
+                onClick={() => handleSort("priority")}
+              >
                 Priority <SortIcon col="priority" sortKey={sortKey} sortDir={sortDir} />
               </button>
-              <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("status")}>
+              <button
+                className="text-left transition-colors hover:text-foreground"
+                onClick={() => handleSort("status")}
+              >
                 Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <div>Assignee</div>
-              <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("startDate")}>
+              <button
+                className="text-left transition-colors hover:text-foreground"
+                onClick={() => handleSort("startDate")}
+              >
                 Start Date <SortIcon col="startDate" sortKey={sortKey} sortDir={sortDir} />
               </button>
-              <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("dueDate")}>
+              <button
+                className="text-left transition-colors hover:text-foreground"
+                onClick={() => handleSort("dueDate")}
+              >
                 Due Date <SortIcon col="dueDate" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <div>Actions</div>
@@ -144,7 +154,9 @@ export function TaskTable({ tasks, farmId }: Props) {
                   <span className="truncate text-sm font-medium">{task.title}</span>
                 </div>
                 <div>
-                  <Badge className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</Badge>
+                  <Badge className={`text-xs ${PRIORITY_COLORS[task.priority]}`}>
+                    {task.priority}
+                  </Badge>
                 </div>
                 <div className="text-sm">{STATUS_LABELS[task.status]}</div>
                 <div className="truncate text-xs font-mono text-muted-foreground">
@@ -181,7 +193,12 @@ export function TaskTable({ tasks, farmId }: Props) {
         </div>
       </div>
 
-      <Dialog open={!!editTask} onOpenChange={(open) => { if (!open) setEditTask(null); }}>
+      <Dialog
+        open={!!editTask}
+        onOpenChange={(open) => {
+          if (!open) setEditTask(null);
+        }}
+      >
         <DialogContent className="!max-w-[1100px] !w-[96vw] max-h-[90vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle className="px-5 pt-5">Edit task</DialogTitle>

@@ -13,21 +13,17 @@ import { PlantingsTimeline } from "./plantings-timeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const STATUS_VARIANT: Record<PlantingStatus, "default" | "secondary" | "outline" | "destructive"> = {
-  Growing: "default",
-  Planted: "default",
-  Nursery: "secondary",
-  Planned: "outline",
-  Harvested: "secondary",
-  Cancelled: "destructive",
-};
+const STATUS_VARIANT: Record<PlantingStatus, "default" | "secondary" | "outline" | "destructive"> =
+  {
+    Growing: "default",
+    Planted: "default",
+    Nursery: "secondary",
+    Planned: "outline",
+    Harvested: "secondary",
+    Cancelled: "destructive",
+  };
 
 function formatDate(s: string | null | undefined): string {
   if (!s) return "—";
@@ -52,15 +48,13 @@ export function PlantingsList() {
   const deleteMutation = useDeletePlanting(selectedFarmId ?? "");
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to manage plantings.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to manage plantings.</p>;
   }
 
   const plantings =
     filters.statuses.length > 0 && allPlantings
       ? allPlantings.filter((p) => filters.statuses.includes(p.status))
-      : allPlantings ?? [];
+      : (allPlantings ?? []);
 
   async function handleDelete(id: string) {
     try {
@@ -159,18 +153,10 @@ export function PlantingsList() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditPlanting(p)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setEditPlanting(p)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingId(p.id)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(p.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>

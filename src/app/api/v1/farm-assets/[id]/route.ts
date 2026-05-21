@@ -14,9 +14,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const body = await req.json().catch(() => null);
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = UpdateFarmAssetInputSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+    if (!parsed.success)
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     return apiOk(await updateFarmAssetHandler(ctx, id, farmId, parsed.data));
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -27,5 +34,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!farmId) throw new ApiError(400, "missing_farm_id", "farmId is required.");
     await deleteFarmAssetHandler(ctx, id, farmId);
     return apiOk(null, 204);
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }

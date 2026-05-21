@@ -15,10 +15,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const body = await req.json().catch(() => null);
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = UpdateProductionTypeInputSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+    if (!parsed.success)
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     const updated = await updateProductionType(id, parsed.data);
     return apiOk(updated);
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -27,5 +34,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     await deleteProductionType(id);
     return apiOk(null, 204);
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }

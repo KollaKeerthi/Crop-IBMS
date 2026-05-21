@@ -1,12 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  listSubBlocks,
-  createSubBlock,
-  updateSubBlock,
-  deleteSubBlock,
-} from "../api";
+import { listSubBlocks, createSubBlock, updateSubBlock, deleteSubBlock } from "../api";
 import type { CreateSubBlockInput, UpdateSubBlockInput } from "../schema";
 
 export const subBlocksKey = (blockId: string) => ["sub-blocks", blockId];

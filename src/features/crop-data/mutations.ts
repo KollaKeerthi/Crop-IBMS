@@ -33,16 +33,25 @@ export async function upsertProgramInfo(cropDataId: string, input: UpdateProgram
     .where(eq(programInfo.cropDataId, cropDataId))
     .limit(1);
 
+  const { plantingDate, ...rest } = input;
+  const dbInput = {
+    ...rest,
+    ...(plantingDate !== undefined ? { plantingDate: new Date(plantingDate) } : {}),
+  };
+
   if (existing[0]) {
     const rows = await db
       .update(programInfo)
-      .set({ ...input, updatedAt: new Date() })
+      .set({ ...dbInput, updatedAt: new Date() })
       .where(eq(programInfo.cropDataId, cropDataId))
       .returning();
     return rows[0]!;
   }
 
-  const rows = await db.insert(programInfo).values({ cropDataId, ...input }).returning();
+  const rows = await db
+    .insert(programInfo)
+    .values({ cropDataId, ...dbInput })
+    .returning();
   return rows[0]!;
 }
 
@@ -53,16 +62,26 @@ export async function upsertNursery(cropDataId: string, input: UpdateNurseryInpu
     .where(eq(nursery.cropDataId, cropDataId))
     .limit(1);
 
+  const { startDate, endDate, ...rest } = input;
+  const dbInput = {
+    ...rest,
+    ...(startDate !== undefined ? { startDate: new Date(startDate) } : {}),
+    ...(endDate !== undefined ? { endDate: new Date(endDate) } : {}),
+  };
+
   if (existing[0]) {
     const rows = await db
       .update(nursery)
-      .set({ ...input, updatedAt: new Date() })
+      .set({ ...dbInput, updatedAt: new Date() })
       .where(eq(nursery.cropDataId, cropDataId))
       .returning();
     return rows[0]!;
   }
 
-  const rows = await db.insert(nursery).values({ cropDataId, ...input }).returning();
+  const rows = await db
+    .insert(nursery)
+    .values({ cropDataId, ...dbInput })
+    .returning();
   return rows[0]!;
 }
 
@@ -75,10 +94,7 @@ export async function upsertModule(
     .select()
     .from(cropDataModules)
     .where(
-      and(
-        eq(cropDataModules.cropDataId, cropDataId),
-        eq(cropDataModules.moduleType, moduleType)
-      )
+      and(eq(cropDataModules.cropDataId, cropDataId), eq(cropDataModules.moduleType, moduleType))
     )
     .limit(1);
 
@@ -87,10 +103,7 @@ export async function upsertModule(
       .update(cropDataModules)
       .set({ data, updatedAt: new Date() })
       .where(
-        and(
-          eq(cropDataModules.cropDataId, cropDataId),
-          eq(cropDataModules.moduleType, moduleType)
-        )
+        and(eq(cropDataModules.cropDataId, cropDataId), eq(cropDataModules.moduleType, moduleType))
       )
       .returning();
     return rows[0]!;

@@ -6,15 +6,7 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
 import "./patch-leaflet-reinit"; // Must be before any MapContainer usage
 import "leaflet-draw";
-import {
-  MapContainer,
-  TileLayer,
-  Polygon,
-  Marker,
-  Popup,
-  useMap,
-  GeoJSON,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
 import { toast } from "sonner";
 import {
   Plus,
@@ -34,7 +26,14 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiError } from "@/lib/api/errors";
 import { useFarm } from "@/lib/farm-context";
-import { useLocationHierarchy, useCreateField, useCreateGreenhouse, useCreateBlock, useDeleteField, useDeleteGreenhouse } from "@/features/locations/hooks";
+import {
+  useLocationHierarchy,
+  useCreateField,
+  useCreateGreenhouse,
+  useCreateBlock,
+  useDeleteField,
+  useDeleteGreenhouse,
+} from "@/features/locations/hooks";
 import { useFarms } from "@/features/farms/hooks";
 import { FarmForm } from "@/features/farms/components/farm-form";
 import type { FieldWithBlocks, GreenhouseWithBlocks } from "@/features/locations/schema";
@@ -53,21 +52,28 @@ L.Icon.Default.mergeOptions({
 // ── Colour palette (matches old system) ──────────────────────────────────────
 
 const STYLES = {
-  farmBoundary: { color: "#16a34a", weight: 2, fillColor: "#16a34a", fillOpacity: 0.08, dashArray: "10,6" },
-  field:        { color: "#2E7D32", weight: 2, fillColor: "#81C784", fillOpacity: 0.25 },
-  fieldHover:   { color: "#1B5E20", weight: 3, fillColor: "#66BB6A", fillOpacity: 0.35 },
-  greenhouse:   { color: "#455A64", weight: 2, fillColor: "#CFD8DC", fillOpacity: 0.4 },
-  block:        { color: "#0f172a", weight: 3, fill: false },
-  blockHover:   { color: "#1e293b", weight: 4, fill: false },
-  subBlock:     { color: "#64748b", weight: 1, fillColor: "#f8fafc", fillOpacity: 0.22 },
-  drawing:      { color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.15, weight: 2 },
+  farmBoundary: {
+    color: "#16a34a",
+    weight: 2,
+    fillColor: "#16a34a",
+    fillOpacity: 0.08,
+    dashArray: "10,6",
+  },
+  field: { color: "#2E7D32", weight: 2, fillColor: "#81C784", fillOpacity: 0.25 },
+  fieldHover: { color: "#1B5E20", weight: 3, fillColor: "#66BB6A", fillOpacity: 0.35 },
+  greenhouse: { color: "#455A64", weight: 2, fillColor: "#CFD8DC", fillOpacity: 0.4 },
+  block: { color: "#0f172a", weight: 3, fill: false },
+  blockHover: { color: "#1e293b", weight: 4, fill: false },
+  subBlock: { color: "#64748b", weight: 1, fillColor: "#f8fafc", fillOpacity: 0.22 },
+  drawing: { color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.15, weight: 2 },
 } as const;
 
 const MAP_TILE_LAYERS = {
   esriSatellite: {
     label: "Esri Satellite",
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles &copy; Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    attribution:
+      "Tiles &copy; Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
     maxZoom: 19,
   },
   openStreetMap: {
@@ -82,7 +88,8 @@ const MAP_TILE_LAYERS = {
       return {
         label: "Thunderforest Landscape",
         url: `https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${key}`,
-        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; OpenStreetMap contributors',
+        attribution:
+          '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; OpenStreetMap contributors',
         maxZoom: 19,
       } as const;
     }
@@ -90,7 +97,8 @@ const MAP_TILE_LAYERS = {
     return {
       label: "Thunderforest Landscape (Stamen fallback)",
       url: "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
-      attribution: '&copy; <a href="https://stamen.com">Stamen Design</a>, &copy; OpenStreetMap contributors',
+      attribution:
+        '&copy; <a href="https://stamen.com">Stamen Design</a>, &copy; OpenStreetMap contributors',
       maxZoom: 18,
     } as const;
   })(),
@@ -105,10 +113,16 @@ function geoToLatLngs(geojson: unknown): L.LatLngExpression[] | null {
       return g.coordinates[0].map(([lng, lat]) => [lat, lng] as [number, number]);
     }
     return null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
-function boundaryPolygonOf(item: { boundary?: unknown; boundaryPolygon?: unknown; boundary_polygon?: unknown }) {
+function boundaryPolygonOf(item: {
+  boundary?: unknown;
+  boundaryPolygon?: unknown;
+  boundary_polygon?: unknown;
+}) {
   return item.boundaryPolygon ?? item.boundary_polygon ?? item.boundary ?? null;
 }
 
@@ -151,7 +165,7 @@ function AutoFitBounds({
     if (lat != null && lng != null) {
       map.flyTo([lat, lng], 16, { duration: 1.2 });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   return null;
@@ -206,7 +220,9 @@ function MapInteractionController({ drawing }: { drawing: boolean }) {
 
     const isMapDragTarget = (target: EventTarget | null) => {
       if (!(target instanceof Element)) return false;
-      return !target.closest(".leaflet-control, .leaflet-popup, button, input, textarea, select, a");
+      return !target.closest(
+        ".leaflet-control, .leaflet-popup, button, input, textarea, select, a"
+      );
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -263,7 +279,9 @@ function DrawingControl({
   onComplete,
 }: {
   mode: "marker" | "polygon" | null;
-  onComplete: (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => void;
+  onComplete: (
+    result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }
+  ) => void;
 }) {
   const map = useMap();
   const drawnRef = useRef<L.FeatureGroup | null>(null);
@@ -308,13 +326,17 @@ function DrawingControl({
     return () => {
       map.off(EventType, handleCreated);
       if (handlerRef.current) {
-        try { handlerRef.current.disable(); } catch { /* noop */ }
+        try {
+          handlerRef.current.disable();
+        } catch {
+          /* noop */
+        }
         handlerRef.current = null;
       }
       if (drawnItems) map.removeLayer(drawnItems);
       drawnRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   return null;
@@ -345,15 +367,30 @@ function CreationPanel({
   const createBlock = useCreateBlock();
 
   async function submit() {
-    if (!name.trim()) { toast.error("Name is required."); return; }
+    if (!name.trim()) {
+      toast.error("Name is required.");
+      return;
+    }
     try {
       if (pending.kind === "field") {
-        await createField.mutateAsync({ farmId, name, notes: notes || undefined, boundary: pending.boundary });
+        await createField.mutateAsync({
+          farmId,
+          name,
+          notes: notes || undefined,
+          boundary: pending.boundary,
+        });
       } else if (pending.kind === "greenhouse") {
-        await createGreenhouse.mutateAsync({ farmId, name, notes: notes || undefined, boundary: pending.boundary });
+        await createGreenhouse.mutateAsync({
+          farmId,
+          name,
+          notes: notes || undefined,
+          boundary: pending.boundary,
+        });
       } else {
         await createBlock.mutateAsync({
-          farmId, name, notes: notes || undefined,
+          farmId,
+          name,
+          notes: notes || undefined,
           boundary: pending.boundary,
           parentType: pending.parentType,
           parentId: pending.parentId,
@@ -362,7 +399,12 @@ function CreationPanel({
       toast.success(`${pending.kind.charAt(0).toUpperCase() + pending.kind.slice(1)} created.`);
       onDone();
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to save. Please try again.";
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to save. Please try again.";
       toast.error(message);
     }
   }
@@ -392,7 +434,9 @@ function CreationPanel({
         <Button size="sm" onClick={submit} disabled={saving} className="flex-1">
           {saving ? "Saving…" : `Create ${label}`}
         </Button>
-        <Button size="sm" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </div>
   );
@@ -400,7 +444,13 @@ function CreationPanel({
 
 // ── Field layer ───────────────────────────────────────────────────────────────
 
-function LegacyFieldLayer({ field, onAddBlock }: { field: FieldWithBlocks; onAddBlock: (fieldId: string) => void }) {
+function LegacyFieldLayer({
+  field,
+  onAddBlock,
+}: {
+  field: FieldWithBlocks;
+  onAddBlock: (fieldId: string) => void;
+}) {
   const deleteField = useDeleteField();
   const positions = geoToLatLngs(field.boundary);
   if (!positions) return null;
@@ -418,14 +468,22 @@ function LegacyFieldLayer({ field, onAddBlock }: { field: FieldWithBlocks; onAdd
         <Popup>
           <div className="space-y-1.5 min-w-40">
             <p className="font-semibold text-sm">{field.name}</p>
-            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">Field</Badge>
-            {field.areaSqm && <p className="text-xs text-muted-foreground">{(field.areaSqm / 10000).toFixed(2)} ha</p>}
+            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+              Field
+            </Badge>
+            {field.areaSqm && (
+              <p className="text-xs text-muted-foreground">
+                {(field.areaSqm / 10000).toFixed(2)} ha
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">{field.blocks.length} block(s)</p>
             <div className="flex gap-1 pt-1">
               <button
                 className="text-xs text-blue-600 hover:underline"
                 onClick={() => onAddBlock(field.id)}
-              >+ Add block</button>
+              >
+                + Add block
+              </button>
               <span className="text-muted-foreground">·</span>
               <button
                 className="text-xs text-destructive hover:underline"
@@ -434,7 +492,9 @@ function LegacyFieldLayer({ field, onAddBlock }: { field: FieldWithBlocks; onAdd
                   await deleteField.mutateAsync({ id: field.id, farmId: field.farmId });
                   toast.success("Field deleted.");
                 }}
-              >Delete</button>
+              >
+                Delete
+              </button>
             </div>
           </div>
         </Popup>
@@ -457,8 +517,14 @@ function LegacyFieldLayer({ field, onAddBlock }: { field: FieldWithBlocks; onAdd
             <Popup>
               <div className="space-y-1">
                 <p className="font-semibold text-sm">{block.name}</p>
-                <Badge variant="outline" className="text-xs">Block</Badge>
-                {block.areaSqm && <p className="text-xs text-muted-foreground">{(block.areaSqm / 10000).toFixed(2)} ha</p>}
+                <Badge variant="outline" className="text-xs">
+                  Block
+                </Badge>
+                {block.areaSqm && (
+                  <p className="text-xs text-muted-foreground">
+                    {(block.areaSqm / 10000).toFixed(2)} ha
+                  </p>
+                )}
               </div>
             </Popup>
           </Polygon>
@@ -470,7 +536,13 @@ function LegacyFieldLayer({ field, onAddBlock }: { field: FieldWithBlocks; onAdd
 
 // ── Greenhouse layer ──────────────────────────────────────────────────────────
 
-function LegacyGreenhouseLayer({ gh, onAddBlock }: { gh: GreenhouseWithBlocks; onAddBlock: (ghId: string) => void }) {
+function LegacyGreenhouseLayer({
+  gh,
+  onAddBlock,
+}: {
+  gh: GreenhouseWithBlocks;
+  onAddBlock: (ghId: string) => void;
+}) {
   const { selectedFarmId } = useFarm();
   const deleteGreenhouse = useDeleteGreenhouse();
   const positions = geoToLatLngs(gh.boundary);
@@ -489,14 +561,20 @@ function LegacyGreenhouseLayer({ gh, onAddBlock }: { gh: GreenhouseWithBlocks; o
         <Popup>
           <div className="space-y-1.5 min-w-40">
             <p className="font-semibold text-sm">{gh.name}</p>
-            <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">Greenhouse</Badge>
-            {gh.areaSqm && <p className="text-xs text-muted-foreground">{(gh.areaSqm / 10000).toFixed(2)} ha</p>}
+            <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">
+              Greenhouse
+            </Badge>
+            {gh.areaSqm && (
+              <p className="text-xs text-muted-foreground">{(gh.areaSqm / 10000).toFixed(2)} ha</p>
+            )}
             <p className="text-xs text-muted-foreground">{gh.blocks.length} block(s)</p>
             <div className="flex gap-1 pt-1">
               <button
                 className="text-xs text-blue-600 hover:underline"
                 onClick={() => onAddBlock(gh.id)}
-              >+ Add block</button>
+              >
+                + Add block
+              </button>
               <span className="text-muted-foreground">·</span>
               <button
                 className="text-xs text-destructive hover:underline"
@@ -507,11 +585,14 @@ function LegacyGreenhouseLayer({ gh, onAddBlock }: { gh: GreenhouseWithBlocks; o
                     await deleteGreenhouse.mutateAsync({ id: gh.id, farmId: selectedFarmId });
                     toast.success("Greenhouse deleted.");
                   } catch (err) {
-                    const message = err instanceof ApiError ? err.message : "Failed to delete greenhouse.";
+                    const message =
+                      err instanceof ApiError ? err.message : "Failed to delete greenhouse.";
                     toast.error(message);
                   }
                 }}
-              >Delete</button>
+              >
+                Delete
+              </button>
             </div>
           </div>
         </Popup>
@@ -521,15 +602,13 @@ function LegacyGreenhouseLayer({ gh, onAddBlock }: { gh: GreenhouseWithBlocks; o
         const bPositions = geoToLatLngs(block.boundary);
         if (!bPositions) return null;
         return (
-          <Polygon
-            key={block.id}
-            positions={bPositions}
-            pathOptions={STYLES.block}
-          >
+          <Polygon key={block.id} positions={bPositions} pathOptions={STYLES.block}>
             <Popup>
               <div className="space-y-1">
                 <p className="font-semibold text-sm">{block.name}</p>
-                <Badge variant="outline" className="text-xs">Block</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Block
+                </Badge>
               </div>
             </Popup>
           </Polygon>
@@ -596,15 +675,13 @@ function SubBlockBedLayer({ block }: { block: FieldWithBlocks["blocks"][number] 
         if (!positions) return null;
 
         return (
-          <Polygon
-            key={subBlock.id}
-            positions={positions}
-            pathOptions={STYLES.subBlock}
-          >
+          <Polygon key={subBlock.id} positions={positions} pathOptions={STYLES.subBlock}>
             <Popup>
               <div className="space-y-1">
                 <p className="font-semibold text-sm">{subBlock.name}</p>
-                <Badge variant="outline" className="text-xs">Sub-block</Badge>
+                <Badge variant="outline" className="text-xs">
+                  Sub-block
+                </Badge>
               </div>
             </Popup>
           </Polygon>
@@ -635,8 +712,14 @@ function BlockLayer({ blocks }: { blocks: FieldWithBlocks["blocks"] }) {
               <Popup>
                 <div className="space-y-1">
                   <p className="font-semibold text-sm">{block.name}</p>
-                  <Badge variant="outline" className="text-xs">Block</Badge>
-                  {block.areaSqm && <p className="text-xs text-muted-foreground">{(block.areaSqm / 10000).toFixed(2)} ha</p>}
+                  <Badge variant="outline" className="text-xs">
+                    Block
+                  </Badge>
+                  {block.areaSqm && (
+                    <p className="text-xs text-muted-foreground">
+                      {(block.areaSqm / 10000).toFixed(2)} ha
+                    </p>
+                  )}
                 </div>
               </Popup>
             </Polygon>
@@ -679,11 +762,22 @@ function FieldGreenhouseLayer({
               <Popup>
                 <div className="space-y-1.5 min-w-40">
                   <p className="font-semibold text-sm">{field.name}</p>
-                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">Field</Badge>
-                  {field.areaSqm && <p className="text-xs text-muted-foreground">{(field.areaSqm / 10000).toFixed(2)} ha</p>}
+                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                    Field
+                  </Badge>
+                  {field.areaSqm && (
+                    <p className="text-xs text-muted-foreground">
+                      {(field.areaSqm / 10000).toFixed(2)} ha
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">{field.blocks.length} block(s)</p>
                   <div className="flex gap-1 pt-1">
-                    <button className="text-xs text-blue-600 hover:underline" onClick={() => onAddBlock("field", field.id)}>+ Add block</button>
+                    <button
+                      className="text-xs text-blue-600 hover:underline"
+                      onClick={() => onAddBlock("field", field.id)}
+                    >
+                      + Add block
+                    </button>
                     <span className="text-muted-foreground">-</span>
                     <button
                       className="text-xs text-destructive hover:underline"
@@ -692,7 +786,9 @@ function FieldGreenhouseLayer({
                         await deleteField.mutateAsync({ id: field.id, farmId: field.farmId });
                         toast.success("Field deleted.");
                       }}
-                    >Delete</button>
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </Popup>
@@ -719,11 +815,22 @@ function FieldGreenhouseLayer({
               <Popup>
                 <div className="space-y-1.5 min-w-40">
                   <p className="font-semibold text-sm">{gh.name}</p>
-                  <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">Greenhouse</Badge>
-                  {gh.areaSqm && <p className="text-xs text-muted-foreground">{(gh.areaSqm / 10000).toFixed(2)} ha</p>}
+                  <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">
+                    Greenhouse
+                  </Badge>
+                  {gh.areaSqm && (
+                    <p className="text-xs text-muted-foreground">
+                      {(gh.areaSqm / 10000).toFixed(2)} ha
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">{gh.blocks.length} block(s)</p>
                   <div className="flex gap-1 pt-1">
-                    <button className="text-xs text-blue-600 hover:underline" onClick={() => onAddBlock("greenhouse", gh.id)}>+ Add block</button>
+                    <button
+                      className="text-xs text-blue-600 hover:underline"
+                      onClick={() => onAddBlock("greenhouse", gh.id)}
+                    >
+                      + Add block
+                    </button>
                     <span className="text-muted-foreground">-</span>
                     <button
                       className="text-xs text-destructive hover:underline"
@@ -734,11 +841,14 @@ function FieldGreenhouseLayer({
                           await deleteGreenhouse.mutateAsync({ id: gh.id, farmId: selectedFarmId });
                           toast.success("Greenhouse deleted.");
                         } catch (err) {
-                          const message = err instanceof ApiError ? err.message : "Failed to delete greenhouse.";
+                          const message =
+                            err instanceof ApiError ? err.message : "Failed to delete greenhouse.";
                           toast.error(message);
                         }
                       }}
-                    >Delete</button>
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </Popup>
@@ -783,33 +893,39 @@ export default function FullMapInner() {
     [mapInstance, setSelectedFarmId]
   );
 
-  const handleDrawComplete = useCallback(
-    async (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => {
-      if (result.type !== "polygon") return;
-      const { geojson } = result;
-      // existing body remains below
-    },
-    []
-  );
-
   // Drawing state
   type DrawMode = "field" | "greenhouse" | "block" | null;
   const [drawMode, setDrawMode] = useState<DrawMode>(null);
-  const [pendingBlock, setPendingBlock] = useState<{ parentType: "field" | "greenhouse"; parentId: string } | null>(null);
+  const [pendingBlock, setPendingBlock] = useState<{
+    parentType: "field" | "greenhouse";
+    parentId: string;
+  } | null>(null);
   const [pendingLocation, setPendingLocation] = useState<PendingLocation | null>(null);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [locationTab, setLocationTab] = useState<"greenhouse" | "field">("greenhouse");
   const [locationName, setLocationName] = useState("");
   const [locationArea, setLocationArea] = useState("");
-  const [locationBlocks, setLocationBlocks] = useState<{
-    id: string;
-    name: string;
-    rows: string;
-    rowLength: string;
-    rowWidth: string;
-    rowSpace: string;
-    crops: string;
-  }[]>([{ id: "subblock-1", name: "A1", rows: "", rowLength: "", rowWidth: "", rowSpace: "", crops: "" }]);
+  const [locationBlocks, setLocationBlocks] = useState<
+    {
+      id: string;
+      name: string;
+      rows: string;
+      rowLength: string;
+      rowWidth: string;
+      rowSpace: string;
+      crops: string;
+    }[]
+  >([
+    {
+      id: "subblock-1",
+      name: "A1",
+      rows: "",
+      rowLength: "",
+      rowWidth: "",
+      rowSpace: "",
+      crops: "",
+    },
+  ]);
   const [locationFormError, setLocationFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -856,8 +972,16 @@ export default function FullMapInner() {
   } | null>(null);
   const leafletDrawMode = drawMode ? "polygon" : null;
 
-  const startAddField = () => { setPendingBlock(null); setDrawMode("field"); toast.info("Draw the field boundary on the map."); };
-  const startAddGreenhouse = () => { setPendingBlock(null); setDrawMode("greenhouse"); toast.info("Draw the greenhouse boundary on the map."); };
+  const startAddField = () => {
+    setPendingBlock(null);
+    setDrawMode("field");
+    toast.info("Draw the field boundary on the map.");
+  };
+  const startAddGreenhouse = () => {
+    setPendingBlock(null);
+    setDrawMode("greenhouse");
+    toast.info("Draw the greenhouse boundary on the map.");
+  };
   const startAddBlock = (parentType: "field" | "greenhouse", parentId: string) => {
     setPendingBlock({ parentType, parentId });
     setDrawMode("block");
@@ -870,7 +994,17 @@ export default function FullMapInner() {
     setLocationTab("greenhouse");
     setLocationName("");
     setLocationArea("");
-    setLocationBlocks([{ id: `subblock-${Date.now()}`, name: "A1", rows: "", rowLength: "", rowWidth: "", rowSpace: "", crops: "" }]);
+    setLocationBlocks([
+      {
+        id: `subblock-${Date.now()}`,
+        name: "A1",
+        rows: "",
+        rowLength: "",
+        rowWidth: "",
+        rowSpace: "",
+        crops: "",
+      },
+    ]);
   };
 
   const submitLocationForm = async () => {
@@ -937,15 +1071,24 @@ export default function FullMapInner() {
       setLocationDialogOpen(false);
       setPendingBlock(null);
       setPendingLocationDraft(null);
-      toast.success(`${locationTab === "field" ? "Field" : "Greenhouse"} created with generated blocks.`);
+      toast.success(
+        `${locationTab === "field" ? "Field" : "Greenhouse"} created with generated blocks.`
+      );
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to create location.";
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to create location.";
       setLocationFormError(message);
       toast.error(message);
     }
   };
 
-  const handleDrawComplete = async (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => {
+  const handleDrawComplete = async (
+    result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }
+  ) => {
     if (result.type !== "polygon") return;
     const { geojson } = result;
 
@@ -959,9 +1102,10 @@ export default function FullMapInner() {
       };
 
       try {
-        const created = pendingLocationDraft.kind === "field"
-          ? await createField.mutateAsync(payload)
-          : await createGreenhouse.mutateAsync(payload);
+        const created =
+          pendingLocationDraft.kind === "field"
+            ? await createField.mutateAsync(payload)
+            : await createGreenhouse.mutateAsync(payload);
 
         if (pendingLocationDraft.blocks?.length) {
           await Promise.all(
@@ -975,15 +1119,18 @@ export default function FullMapInner() {
                   block.rowLengthM && block.rowWidthM
                     ? block.rowLengthM * block.rowWidthM
                     : undefined,
-                notes: [
-                  block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
-                  block.rowLengthM !== undefined ? `Row Length (m): ${block.rowLengthM}` : undefined,
-                  block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
-                  block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
-                  block.crops ? `Crops: ${block.crops}` : undefined,
-                ]
-                  .filter(Boolean)
-                  .join("\n") || undefined,
+                notes:
+                  [
+                    block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
+                    block.rowLengthM !== undefined
+                      ? `Row Length (m): ${block.rowLengthM}`
+                      : undefined,
+                    block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
+                    block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
+                    block.crops ? `Crops: ${block.crops}` : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join("\n") || undefined,
               })
             )
           );
@@ -995,7 +1142,12 @@ export default function FullMapInner() {
             : "Greenhouse created. Blocks saved."
         );
       } catch (err) {
-        const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to create location. Please try again.";
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : "Failed to create location. Please try again.";
         toast.error(message);
       }
 
@@ -1126,21 +1278,28 @@ export default function FullMapInner() {
 
           <div className="absolute top-20 right-3 z-1000">
             <div className="bg-card/95 border shadow-lg rounded-2xl p-3 w-[230px]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-2">Map view</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                Map view
+              </p>
               <div className="space-y-2">
-                {(Object.keys(MAP_TILE_LAYERS) as Array<keyof typeof MAP_TILE_LAYERS>).map((layerKey) => (
-                  <label key={layerKey} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="radio"
-                      name="map-view"
-                      value={layerKey}
-                      checked={mapTileLayer === layerKey}
-                      onChange={() => setMapTileLayer(layerKey)}
-                      className="h-4 w-4 accent-primary"
-                    />
-                    <span>{MAP_TILE_LAYERS[layerKey].label}</span>
-                  </label>
-                ))}
+                {(Object.keys(MAP_TILE_LAYERS) as Array<keyof typeof MAP_TILE_LAYERS>).map(
+                  (layerKey) => (
+                    <label
+                      key={layerKey}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="map-view"
+                        value={layerKey}
+                        checked={mapTileLayer === layerKey}
+                        onChange={() => setMapTileLayer(layerKey)}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      <span>{MAP_TILE_LAYERS[layerKey].label}</span>
+                    </label>
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -1173,7 +1332,9 @@ export default function FullMapInner() {
       {/* ── Status badge ──────────────────────────────────────────── */}
       {isLoading && selectedFarmId && (
         <div className="absolute bottom-3 right-3 z-1000">
-          <Badge variant="secondary" className="text-xs">Loading locations…</Badge>
+          <Badge variant="secondary" className="text-xs">
+            Loading locations…
+          </Badge>
         </div>
       )}
 
@@ -1182,7 +1343,9 @@ export default function FullMapInner() {
           <div className="bg-card rounded-xl border shadow-xl p-6 text-center space-y-2 max-w-xs">
             <Layers className="h-8 w-8 text-muted-foreground mx-auto" />
             <p className="font-medium">No farm selected</p>
-            <p className="text-sm text-muted-foreground">Select a farm from the sidebar to view its map.</p>
+            <p className="text-sm text-muted-foreground">
+              Select a farm from the sidebar to view its map.
+            </p>
           </div>
         </div>
       )}
@@ -1192,8 +1355,14 @@ export default function FullMapInner() {
         <CreationPanel
           pending={pendingLocation}
           farmId={selectedFarmId}
-          onDone={() => { setPendingLocation(null); setPendingBlock(null); }}
-          onCancel={() => { setPendingLocation(null); setPendingBlock(null); }}
+          onDone={() => {
+            setPendingLocation(null);
+            setPendingBlock(null);
+          }}
+          onCancel={() => {
+            setPendingLocation(null);
+            setPendingBlock(null);
+          }}
         />
       )}
 
@@ -1224,20 +1393,32 @@ export default function FullMapInner() {
             <DialogTitle>Create Location</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Tabs value={locationTab} onValueChange={(value) => setLocationTab(value as "greenhouse" | "field")}> 
+            <Tabs
+              value={locationTab}
+              onValueChange={(value) => setLocationTab(value as "greenhouse" | "field")}
+            >
               <TabsList className="w-full bg-muted p-1 rounded-full">
-                <TabsTrigger value="greenhouse" className="flex-1">Greenhouse</TabsTrigger>
-                <TabsTrigger value="field" className="flex-1">Field</TabsTrigger>
+                <TabsTrigger value="greenhouse" className="flex-1">
+                  Greenhouse
+                </TabsTrigger>
+                <TabsTrigger value="field" className="flex-1">
+                  Field
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
             <div className="space-y-4 rounded-2xl border border-slate-200 p-4">
               <div className="grid gap-4">
-                <label className="text-sm font-medium">{locationTab === "greenhouse" ? "Greenhouse Name" : "Field Name"} <span className="text-destructive">*</span></label>
+                <label className="text-sm font-medium">
+                  {locationTab === "greenhouse" ? "Greenhouse Name" : "Field Name"}{" "}
+                  <span className="text-destructive">*</span>
+                </label>
                 <Input
                   value={locationName}
                   onChange={(event) => setLocationName(event.target.value)}
-                  placeholder={locationTab === "greenhouse" ? "e.g. North Orchard" : "e.g. South Field"}
+                  placeholder={
+                    locationTab === "greenhouse" ? "e.g. North Orchard" : "e.g. South Field"
+                  }
                 />
               </div>
 
@@ -1262,25 +1443,29 @@ export default function FullMapInner() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold">Blocks Structure</p>
-                        <p className="text-xs text-muted-foreground">Add and manage sub-blocks for this location.</p>
+                        <p className="text-xs text-muted-foreground">
+                          Add and manage sub-blocks for this location.
+                        </p>
                       </div>
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
                       className="h-9"
-                      onClick={() => setLocationBlocks((prev) => [
-                        ...prev,
-                        {
-                          id: `subblock-${Date.now()}-${prev.length + 1}`,
-                          name: `A${prev.length + 1}`,
-                          rows: "",
-                          rowLength: "",
-                          rowWidth: "",
-                          rowSpace: "",
-                          crops: "",
-                        },
-                      ])}
+                      onClick={() =>
+                        setLocationBlocks((prev) => [
+                          ...prev,
+                          {
+                            id: `subblock-${Date.now()}-${prev.length + 1}`,
+                            name: `A${prev.length + 1}`,
+                            rows: "",
+                            rowLength: "",
+                            rowWidth: "",
+                            rowSpace: "",
+                            crops: "",
+                          },
+                        ])
+                      }
                     >
                       + Add SubBlock
                     </Button>
@@ -1297,7 +1482,10 @@ export default function FullMapInner() {
                       })();
 
                       return (
-                        <div key={block.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div
+                          key={block.id}
+                          className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
                               <div className="flex h-8 min-w-[32px] items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
@@ -1305,9 +1493,15 @@ export default function FullMapInner() {
                               </div>
                               <Input
                                 value={block.name}
-                                onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                  item.id === block.id ? { ...item, name: event.target.value } : item
-                                ))}
+                                onChange={(event) =>
+                                  setLocationBlocks((prev) =>
+                                    prev.map((item) =>
+                                      item.id === block.id
+                                        ? { ...item, name: event.target.value }
+                                        : item
+                                    )
+                                  )
+                                }
                                 placeholder={`A${blockIndex + 1}`}
                                 className="h-9 w-32"
                               />
@@ -1318,18 +1512,20 @@ export default function FullMapInner() {
                                 size="sm"
                                 variant="outline"
                                 className="h-9 gap-2"
-                                onClick={() => setLocationBlocks((prev) => [
-                                  ...prev,
-                                  {
-                                    id: `subblock-${Date.now()}-${prev.length + 1}`,
-                                    name: getCopyBlockName(prev, block.name),
-                                    rows: block.rows,
-                                    rowLength: block.rowLength,
-                                    rowWidth: block.rowWidth,
-                                    rowSpace: block.rowSpace,
-                                    crops: block.crops,
-                                  },
-                                ])}
+                                onClick={() =>
+                                  setLocationBlocks((prev) => [
+                                    ...prev,
+                                    {
+                                      id: `subblock-${Date.now()}-${prev.length + 1}`,
+                                      name: getCopyBlockName(prev, block.name),
+                                      rows: block.rows,
+                                      rowLength: block.rowLength,
+                                      rowWidth: block.rowWidth,
+                                      rowSpace: block.rowSpace,
+                                      crops: block.crops,
+                                    },
+                                  ])
+                                }
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>
@@ -1338,7 +1534,11 @@ export default function FullMapInner() {
                                   size="sm"
                                   variant="outline"
                                   className="h-9 gap-2"
-                                  onClick={() => setLocationBlocks((prev) => prev.filter((item) => item.id !== block.id))}
+                                  onClick={() =>
+                                    setLocationBlocks((prev) =>
+                                      prev.filter((item) => item.id !== block.id)
+                                    )
+                                  }
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -1353,9 +1553,15 @@ export default function FullMapInner() {
                                 type="number"
                                 min="1"
                                 value={block.rows}
-                                onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                  item.id === block.id ? { ...item, rows: event.target.value } : item
-                                ))}
+                                onChange={(event) =>
+                                  setLocationBlocks((prev) =>
+                                    prev.map((item) =>
+                                      item.id === block.id
+                                        ? { ...item, rows: event.target.value }
+                                        : item
+                                    )
+                                  )
+                                }
                                 placeholder="e.g. 10"
                               />
                             </div>
@@ -1366,9 +1572,15 @@ export default function FullMapInner() {
                                 min="0"
                                 step="any"
                                 value={block.rowLength}
-                                onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                  item.id === block.id ? { ...item, rowLength: event.target.value } : item
-                                ))}
+                                onChange={(event) =>
+                                  setLocationBlocks((prev) =>
+                                    prev.map((item) =>
+                                      item.id === block.id
+                                        ? { ...item, rowLength: event.target.value }
+                                        : item
+                                    )
+                                  )
+                                }
                                 placeholder="e.g. 50.0"
                               />
                             </div>
@@ -1382,9 +1594,15 @@ export default function FullMapInner() {
                                 min="0"
                                 step="any"
                                 value={block.rowWidth}
-                                onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                  item.id === block.id ? { ...item, rowWidth: event.target.value } : item
-                                ))}
+                                onChange={(event) =>
+                                  setLocationBlocks((prev) =>
+                                    prev.map((item) =>
+                                      item.id === block.id
+                                        ? { ...item, rowWidth: event.target.value }
+                                        : item
+                                    )
+                                  )
+                                }
                                 placeholder="e.g. 1.2"
                               />
                             </div>
@@ -1395,9 +1613,15 @@ export default function FullMapInner() {
                                 min="0"
                                 step="any"
                                 value={block.rowSpace}
-                                onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                  item.id === block.id ? { ...item, rowSpace: event.target.value } : item
-                                ))}
+                                onChange={(event) =>
+                                  setLocationBlocks((prev) =>
+                                    prev.map((item) =>
+                                      item.id === block.id
+                                        ? { ...item, rowSpace: event.target.value }
+                                        : item
+                                    )
+                                  )
+                                }
                                 placeholder="e.g. 0.8"
                               />
                             </div>
@@ -1407,9 +1631,15 @@ export default function FullMapInner() {
                             <label className="text-sm font-medium">Suitable Crops</label>
                             <Input
                               value={block.crops}
-                              onChange={(event) => setLocationBlocks((prev) => prev.map((item) =>
-                                item.id === block.id ? { ...item, crops: event.target.value } : item
-                              ))}
+                              onChange={(event) =>
+                                setLocationBlocks((prev) =>
+                                  prev.map((item) =>
+                                    item.id === block.id
+                                      ? { ...item, crops: event.target.value }
+                                      : item
+                                  )
+                                )
+                              }
                               placeholder="Select Crops..."
                             />
                           </div>
@@ -1427,30 +1657,34 @@ export default function FullMapInner() {
                 <button
                   type="button"
                   className="w-full rounded-2xl border border-dashed border-slate-300 bg-transparent px-4 py-5 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
-                  onClick={() => setLocationBlocks((prev) => [
-                    ...prev,
-                    {
-                      id: `subblock-${Date.now()}-${prev.length + 1}`,
-                      name: `${getNextBlockGroupName(prev)}1`,
-                      rows: "",
-                      rowLength: "",
-                      rowWidth: "",
-                      rowSpace: "",
-                      crops: "",
-                    },
-                  ])}
+                  onClick={() =>
+                    setLocationBlocks((prev) => [
+                      ...prev,
+                      {
+                        id: `subblock-${Date.now()}-${prev.length + 1}`,
+                        name: `${getNextBlockGroupName(prev)}1`,
+                        rows: "",
+                        rowLength: "",
+                        rowWidth: "",
+                        rowSpace: "",
+                        crops: "",
+                      },
+                    ])
+                  }
                 >
                   + Add Another Block
                 </button>
               </div>
 
-              {locationFormError && (
-                <p className="text-sm text-destructive">{locationFormError}</p>
-              )}
+              {locationFormError && <p className="text-sm text-destructive">{locationFormError}</p>}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <Button variant="outline" className="w-full sm:flex-1" onClick={() => setLocationDialogOpen(false)}>
+              <Button
+                variant="outline"
+                className="w-full sm:flex-1"
+                onClick={() => setLocationDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button className="w-full sm:flex-1" onClick={submitLocationForm}>
@@ -1466,7 +1700,15 @@ export default function FullMapInner() {
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-1000">
           <div className="bg-card rounded-full border shadow-lg px-4 py-2 flex items-center gap-3">
             <span className="text-sm font-medium">Drawing {drawMode} boundary…</span>
-            <Button size="sm" variant="outline" className="h-6 text-xs" onClick={() => { setDrawMode(null); setPendingBlock(null); }}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-xs"
+              onClick={() => {
+                setDrawMode(null);
+                setPendingBlock(null);
+              }}
+            >
               Cancel
             </Button>
           </div>

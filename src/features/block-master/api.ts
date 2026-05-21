@@ -8,10 +8,15 @@ import {
 } from "./schema";
 
 export function listBlockMaster(farmId: string): Promise<BlockMaster[]> {
-  return apiFetch(`/api/v1/block-master?farmId=${farmId}`, { responseSchema: BlockMasterResponseSchema });
+  return apiFetch(`/api/v1/block-master?farmId=${farmId}`, {
+    responseSchema: BlockMasterResponseSchema,
+  });
 }
 
-export function createBlockMaster(farmId: string, input: CreateBlockMasterInput): Promise<BlockMaster> {
+export function createBlockMaster(
+  farmId: string,
+  input: CreateBlockMasterInput
+): Promise<BlockMaster> {
   return apiFetch(`/api/v1/block-master?farmId=${farmId}`, {
     method: "POST",
     body: input,
@@ -19,7 +24,11 @@ export function createBlockMaster(farmId: string, input: CreateBlockMasterInput)
   });
 }
 
-export function updateBlockMaster(farmId: string, id: string, input: UpdateBlockMasterInput): Promise<BlockMaster> {
+export function updateBlockMaster(
+  farmId: string,
+  id: string,
+  input: UpdateBlockMasterInput
+): Promise<BlockMaster> {
   return apiFetch(`/api/v1/block-master/${id}?farmId=${farmId}`, {
     method: "PATCH",
     body: input,

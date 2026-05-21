@@ -7,11 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { MapPin, Check, Layers } from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
-import {
-  CreateFarmInputSchema,
-  type CreateFarmInput,
-  type Farm,
-} from "../schema";
+import { CreateFarmInputSchema, type CreateFarmInput, type Farm } from "../schema";
 import { useCreateFarm, useUpdateFarm } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,8 +53,7 @@ function polygonAreaSqm(geometry: unknown): number {
       const [lng1, lat1] = ring[i]!;
       const [lng2, lat2] = ring[i + 1]!;
       area +=
-        toRadians(lng2! - lng1!) *
-        (2 + Math.sin(toRadians(lat1!)) + Math.sin(toRadians(lat2!)));
+        toRadians(lng2! - lng1!) * (2 + Math.sin(toRadians(lat1!)) + Math.sin(toRadians(lat2!)));
     }
     return Math.abs((area * EARTH_RADIUS_M * EARTH_RADIUS_M) / 2);
   } catch {
@@ -88,7 +83,9 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
   const [locating, setLocating] = useState(false);
 
   const form = useForm<CreateFarmInput & { areaSqm?: number | null }>({
-    resolver: zodResolver(CreateFarmInputSchema) as Resolver<CreateFarmInput & { areaSqm?: number | null }>,
+    resolver: zodResolver(CreateFarmInputSchema) as Resolver<
+      CreateFarmInput & { areaSqm?: number | null }
+    >,
     defaultValues: {
       name: farm?.name ?? "",
       location: farm?.location ?? "",
@@ -208,10 +205,7 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
     >
       {/* ── Left: Form fields ──────────────────────────────────────── */}
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex h-full flex-col gap-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex h-full flex-col gap-6">
           {/* Header */}
           <div className="flex items-start gap-3">
             <div className="rounded-lg bg-primary/10 p-2.5">
@@ -330,7 +324,9 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) =>
-                          field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
+                          field.onChange(
+                            e.target.value === "" ? undefined : parseFloat(e.target.value)
+                          )
                         }
                         placeholder="-90 to 90"
                       />
@@ -352,7 +348,9 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) =>
-                          field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
+                          field.onChange(
+                            e.target.value === "" ? undefined : parseFloat(e.target.value)
+                          )
                         }
                         placeholder="-180 to 180"
                       />
@@ -381,7 +379,8 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
               </div>
             ) : (
               <p className="rounded-lg border border-dashed bg-muted/30 px-3.5 py-2.5 text-small text-muted-foreground">
-                Use the polygon tool on the map to outline the property. Total area will be calculated automatically.
+                Use the polygon tool on the map to outline the property. Total area will be
+                calculated automatically.
               </p>
             )}
           </div>
@@ -416,16 +415,15 @@ export function FarmForm({ farm, onSuccess, layout = "compact" }: Props) {
           height="600px"
           center={mapCenter}
           existingMarker={
-            farm?.latitude && farm?.longitude
-              ? [farm.latitude, farm.longitude]
-              : undefined
+            farm?.latitude && farm?.longitude ? [farm.latitude, farm.longitude] : undefined
           }
           existingBoundary={boundary ?? farm?.boundary}
           onMarkerPlaced={handleMarkerPlaced}
           onBoundaryDrawn={handleBoundaryDrawn}
         />
         <p className="text-caption text-muted-foreground">
-          Use the marker tool to pin the farm location. Use the polygon tool to outline the boundary.
+          Use the marker tool to pin the farm location. Use the polygon tool to outline the
+          boundary.
         </p>
       </div>
     </div>

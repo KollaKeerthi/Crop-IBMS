@@ -22,8 +22,10 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     if (!file) throw new ApiError(400, "no_file", "No file uploaded.");
-    if (!file.type.startsWith("image/")) throw new ApiError(400, "invalid_type", "Only image files are allowed.");
-    if (file.size > 5 * 1024 * 1024) throw new ApiError(400, "file_too_large", "Image must be under 5 MB.");
+    if (!file.type.startsWith("image/"))
+      throw new ApiError(400, "invalid_type", "Only image files are allowed.");
+    if (file.size > 5 * 1024 * 1024)
+      throw new ApiError(400, "file_too_large", "Image must be under 5 MB.");
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

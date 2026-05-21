@@ -3,10 +3,7 @@ import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
 import { CreateVariabilityInputSchema } from "@/features/variability/schema";
-import {
-  listVariabilityHandler,
-  createVariabilityHandler,
-} from "@/features/variability/handlers";
+import { listVariabilityHandler, createVariabilityHandler } from "@/features/variability/handlers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,7 +22,11 @@ export async function POST(req: NextRequest) {
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = CreateVariabilityInputSchema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     }
     return apiOk(await createVariabilityHandler(ctx, parsed.data), 201);
   } catch (err) {

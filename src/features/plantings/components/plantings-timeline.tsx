@@ -80,8 +80,7 @@ export function PlantingsTimeline({ plantings, onEdit }: Props) {
   const MONTH_WIDTH = 80;
 
   function getBarStyle(planting: Planting): { left: number; width: number } | null {
-    const start =
-      parseDate(planting.nurseryStartDate) ?? parseDate(planting.fieldPlantingDate);
+    const start = parseDate(planting.nurseryStartDate) ?? parseDate(planting.fieldPlantingDate);
     const end =
       parseDate(planting.harvestEndDate) ??
       parseDate(planting.firstHarvestDate) ??
@@ -149,10 +148,7 @@ export function PlantingsTimeline({ plantings, onEdit }: Props) {
               >
                 <span className="truncate">{label}</span>
               </div>
-              <div
-                className="relative"
-                style={{ width: months.length * MONTH_WIDTH, height: 40 }}
-              >
+              <div className="relative" style={{ width: months.length * MONTH_WIDTH, height: 40 }}>
                 {/* Month grid lines */}
                 {months.map((_, i) => (
                   <div

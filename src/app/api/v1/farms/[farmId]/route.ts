@@ -3,11 +3,7 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateFarmInputSchema } from "@/features/farms/schema";
-import {
-  getFarmHandler,
-  updateFarmHandler,
-  deleteFarmHandler,
-} from "@/features/farms/handlers";
+import { getFarmHandler, updateFarmHandler, deleteFarmHandler } from "@/features/farms/handlers";
 
 type Params = { params: Promise<{ farmId: string }> };
 

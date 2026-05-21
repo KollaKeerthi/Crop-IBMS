@@ -112,9 +112,7 @@ export const TaskTemplateSchema = z.object({
   description: z.string().nullable(),
   priority: TaskPriorityEnum,
   estimatedHours: z.number().nullable(),
-  checklistItems: z.array(
-    z.object({ id: z.string().uuid(), text: z.string(), order: z.number() })
-  ),
+  checklistItems: z.array(z.object({ id: z.string().uuid(), text: z.string(), order: z.number() })),
 });
 
 export const TaskTemplatesResponseSchema = z.array(TaskTemplateSchema);

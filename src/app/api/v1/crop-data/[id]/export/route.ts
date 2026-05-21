@@ -39,7 +39,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     const programInfoData = [
       ["Field", "Value"],
       ["Batch No", pi?.batchNo ?? ""],
-      ["Planting Date", pi?.plantingDate ? new Date(pi.plantingDate as string).toLocaleDateString() : ""],
+      [
+        "Planting Date",
+        pi?.plantingDate ? new Date(pi.plantingDate as string).toLocaleDateString() : "",
+      ],
       ["Male Plant Count", pi?.malePlantCount ?? ""],
       ["Female Plant Count", pi?.femalePlantCount ?? ""],
       ["Surface Area (sqm)", pi?.surfaceAreaSqm ?? ""],
@@ -54,7 +57,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     const nurs = record.nursery as Record<string, unknown> | null;
     const nurseryData = [
       ["Field", "Value"],
-      ["Start Date", nurs?.startDate ? new Date(nurs.startDate as string).toLocaleDateString() : ""],
+      [
+        "Start Date",
+        nurs?.startDate ? new Date(nurs.startDate as string).toLocaleDateString() : "",
+      ],
       ["End Date", nurs?.endDate ? new Date(nurs.endDate as string).toLocaleDateString() : ""],
       ["Seedlings Count", nurs?.seedlingsCount ?? ""],
       ["Germination Rate", nurs?.germinationRate ?? ""],
@@ -79,7 +85,10 @@ export async function GET(req: NextRequest, { params }: Params) {
 
       const moduleRows: (string | number | boolean | null)[][] = [["Key", "Value"]];
       for (const [k, v] of Object.entries(mod.data ?? {})) {
-        moduleRows.push([k, typeof v === "object" ? JSON.stringify(v) : (v as string | number | boolean | null)]);
+        moduleRows.push([
+          k,
+          typeof v === "object" ? JSON.stringify(v) : (v as string | number | boolean | null),
+        ]);
       }
       const wsMod = wb.addWorksheet(sheetLabel);
       wsMod.addRows(moduleRows);
@@ -90,8 +99,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return new NextResponse(buf, {
       status: 200,
       headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename="crop-data-${id}.xlsx"`,
       },
     });

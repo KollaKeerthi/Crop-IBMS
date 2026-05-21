@@ -4,13 +4,20 @@ import { log } from "@/lib/log";
 import { logAudit } from "@/lib/audit";
 import { listProductionSites, getProductionSiteById } from "./queries";
 import { insertProductionSite, updateProductionSite, deleteProductionSite } from "./mutations";
-import type { CreateProductionSiteInput, UpdateProductionSiteInput, ProductionSite } from "./schema";
+import type {
+  CreateProductionSiteInput,
+  UpdateProductionSiteInput,
+  ProductionSite,
+} from "./schema";
 
 export async function listProductionSitesHandler(ctx: ApiContext): Promise<ProductionSite[]> {
   return listProductionSites();
 }
 
-export async function getProductionSiteHandler(ctx: ApiContext, siteId: string): Promise<ProductionSite> {
+export async function getProductionSiteHandler(
+  ctx: ApiContext,
+  siteId: string
+): Promise<ProductionSite> {
   const site = await getProductionSiteById(siteId);
   if (!site) throw new ApiError(404, "not_found", "Production site not found.");
   return site;

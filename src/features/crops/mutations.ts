@@ -1,7 +1,15 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { crops, cropTypes, cropVarieties } from "@/db/schema";
-import type { CreateCropInput, UpdateCropInput, CreateCropTypeInput, CreateCropVarietyInput, Crop, CropType, CropVariety } from "./schema";
+import type {
+  CreateCropInput,
+  UpdateCropInput,
+  CreateCropTypeInput,
+  CreateCropVarietyInput,
+  Crop,
+  CropType,
+  CropVariety,
+} from "./schema";
 import { getCropById, listCropTypes, listCropVarieties } from "./queries";
 
 export async function insertCrop(input: CreateCropInput): Promise<Crop | null> {
@@ -48,10 +56,7 @@ export async function insertCropType(
   cropId: string,
   input: CreateCropTypeInput
 ): Promise<CropType | null> {
-  const [row] = await db
-    .insert(cropTypes)
-    .values({ cropId, name: input.name })
-    .returning();
+  const [row] = await db.insert(cropTypes).values({ cropId, name: input.name }).returning();
 
   if (!row) return null;
   return { id: row.id, cropId: row.cropId, name: row.name, createdAt: row.createdAt.toISOString() };

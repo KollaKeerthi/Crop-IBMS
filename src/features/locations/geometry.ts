@@ -30,13 +30,15 @@ function rectangleFromCenter(
 
   return {
     type: "Polygon",
-    coordinates: [[
-      [longitude - halfLng, latitude - halfLat],
-      [longitude + halfLng, latitude - halfLat],
-      [longitude + halfLng, latitude + halfLat],
-      [longitude - halfLng, latitude + halfLat],
-      [longitude - halfLng, latitude - halfLat],
-    ]],
+    coordinates: [
+      [
+        [longitude - halfLng, latitude - halfLat],
+        [longitude + halfLng, latitude - halfLat],
+        [longitude + halfLng, latitude + halfLat],
+        [longitude - halfLng, latitude + halfLat],
+        [longitude - halfLng, latitude - halfLat],
+      ],
+    ],
   };
 }
 
@@ -52,16 +54,23 @@ function boundsFromPolygon(polygon: PolygonGeometry) {
   };
 }
 
-function rectangleFromBounds(west: number, south: number, east: number, north: number): PolygonGeometry {
+function rectangleFromBounds(
+  west: number,
+  south: number,
+  east: number,
+  north: number
+): PolygonGeometry {
   return {
     type: "Polygon",
-    coordinates: [[
-      [west, south],
-      [east, south],
-      [east, north],
-      [west, north],
-      [west, south],
-    ]],
+    coordinates: [
+      [
+        [west, south],
+        [east, south],
+        [east, north],
+        [west, north],
+        [west, south],
+      ],
+    ],
   };
 }
 

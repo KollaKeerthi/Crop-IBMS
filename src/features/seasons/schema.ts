@@ -6,11 +6,7 @@ export const CreateSeasonInputSchema = z.object({
     .trim()
     .min(1, { message: "Name is required" })
     .max(200),
-  year: z
-    .number({ message: "Year is required" })
-    .int()
-    .min(1900)
-    .max(2100),
+  year: z.number({ message: "Year is required" }).int().min(1900).max(2100),
   startDate: z.string().date().optional(),
   endDate: z.string().date().optional(),
 });

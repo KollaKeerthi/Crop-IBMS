@@ -1,16 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Plus,
-  MapPin,
-  MoreHorizontal,
-  Trash2,
-  Pencil,
-  Sprout,
-  Tractor,
-  Globe,
-} from "lucide-react";
+import { Plus, MapPin, MoreHorizontal, Trash2, Pencil, Sprout, Tractor, Globe } from "lucide-react";
 import { RowLoading } from "@/components/ui/loading";
 import { toast } from "sonner";
 import { useFarms, useDeleteFarm } from "../hooks";
@@ -18,12 +9,7 @@ import type { Farm } from "../schema";
 import { FarmForm } from "./farm-form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -160,9 +146,7 @@ export function FarmsList() {
                     <TableCell className="text-right">
                       {acres != null ? (
                         <div className="flex flex-col items-end">
-                          <span className="font-semibold text-foreground">
-                            {acres.toFixed(2)}
-                          </span>
+                          <span className="font-semibold text-foreground">{acres.toFixed(2)}</span>
                           <span className="text-caption text-muted-foreground font-medium">
                             Acres
                           </span>
@@ -229,9 +213,8 @@ export function FarmsList() {
             <DialogTitle>Delete Farm</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to permanently delete{" "}
-            <strong>{deleteFarm?.name}</strong>? This will remove all associated fields,
-            greenhouses, and blocks.
+            Are you sure you want to permanently delete <strong>{deleteFarm?.name}</strong>? This
+            will remove all associated fields, greenhouses, and blocks.
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setDeleteFarm(null)}>

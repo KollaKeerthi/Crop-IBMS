@@ -29,7 +29,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        setError("root", { message: json?.error?.message ?? "Something went wrong. Please try again." });
+        setError("root", {
+          message: json?.error?.message ?? "Something went wrong. Please try again.",
+        });
         return;
       }
       router.push("/login?message=password_reset");
@@ -51,9 +53,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           autoComplete="new-password"
           {...register("password")}
         />
-        {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
-        )}
+        {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>
 
       <div className="space-y-1.5">

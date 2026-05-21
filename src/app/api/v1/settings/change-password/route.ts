@@ -10,9 +10,7 @@ import { updateUserPassword } from "@/features/auth/mutations";
 const ChangePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, { message: "Current password is required" }),
-    newPassword: z
-      .string()
-      .min(8, { message: "New password must be at least 8 characters" }),
+    newPassword: z.string().min(8, { message: "New password must be at least 8 characters" }),
     confirmPassword: z.string().min(1, { message: "Confirm password is required" }),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
@@ -34,7 +32,11 @@ export async function POST(req: NextRequest) {
     const user = await getUserById(ctx.userId);
     if (!user) throw new ApiError(404, "not_found", "User not found.");
     if (!user.passwordHash) {
-      throw new ApiError(400, "bad_request", "This account uses social sign-in and has no password.");
+      throw new ApiError(
+        400,
+        "bad_request",
+        "This account uses social sign-in and has no password."
+      );
     }
 
     const valid = await verifyPassword(currentPassword, user.passwordHash);

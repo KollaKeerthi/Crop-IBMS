@@ -12,7 +12,8 @@ const MAP_TILE_LAYERS = {
   esriSatellite: {
     label: "Esri Satellite",
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles &copy; Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    attribution:
+      "Tiles &copy; Esri, Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
     maxZoom: 19,
   },
   openStreetMap: {
@@ -27,14 +28,16 @@ const MAP_TILE_LAYERS = {
       return {
         label: "Thunderforest Landscape",
         url: `https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${key}`,
-        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; OpenStreetMap contributors',
+        attribution:
+          '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; OpenStreetMap contributors',
         maxZoom: 19,
       } as const;
     }
     return {
       label: "Thunderforest Landscape (Stamen fallback)",
       url: "https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg",
-      attribution: '&copy; <a href="https://stamen.com">Stamen Design</a>, &copy; OpenStreetMap contributors',
+      attribution:
+        '&copy; <a href="https://stamen.com">Stamen Design</a>, &copy; OpenStreetMap contributors',
       maxZoom: 18,
     } as const;
   })(),
@@ -147,7 +150,9 @@ function MapInteractionController() {
 
     const isMapDragTarget = (target: EventTarget | null) => {
       if (!(target instanceof Element)) return false;
-      return !target.closest(".leaflet-control, .leaflet-popup, button, input, textarea, select, a");
+      return !target.closest(
+        ".leaflet-control, .leaflet-popup, button, input, textarea, select, a"
+      );
     };
 
     const isLeafletDrawing = () =>
@@ -249,7 +254,12 @@ function DrawingControls({
           ? {
               allowIntersection: false,
               repeatMode: false,
-              shapeOptions: { color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.15, weight: 2 },
+              shapeOptions: {
+                color: "#16a34a",
+                fillColor: "#16a34a",
+                fillOpacity: 0.15,
+                weight: 2,
+              },
             }
           : false,
         rectangle: false,
@@ -326,8 +336,7 @@ export default function FarmMapInner({
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const defaultCenter: [number, number] =
-    center ?? existingMarker ?? [20, 0];
+  const defaultCenter: [number, number] = center ?? existingMarker ?? [20, 0];
   const defaultZoom = center || existingMarker ? 15 : 3;
   const boundaryLatLngs = existingBoundary ? geoJsonToLatLngs(existingBoundary) : null;
 
@@ -381,29 +390,30 @@ export default function FarmMapInner({
       )}
 
       {!readOnly && (
-        <DrawingControls
-          onMarkerPlaced={onMarkerPlaced}
-          onBoundaryDrawn={onBoundaryDrawn}
-        />
+        <DrawingControls onMarkerPlaced={onMarkerPlaced} onBoundaryDrawn={onBoundaryDrawn} />
       )}
 
       <div className="leaflet-top leaflet-right">
         <div className="leaflet-control bg-card/95 border shadow-lg rounded-2xl p-3 w-[230px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-2">Map view</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-2">
+            Map view
+          </p>
           <div className="space-y-2">
-            {(Object.keys(MAP_TILE_LAYERS) as Array<keyof typeof MAP_TILE_LAYERS>).map((layerKey) => (
-              <label key={layerKey} className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="radio"
-                  name={`farm-form-map-view-${mapKey}`}
-                  value={layerKey}
-                  checked={mapTileLayer === layerKey}
-                  onChange={() => setMapTileLayer(layerKey)}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>{MAP_TILE_LAYERS[layerKey].label}</span>
-              </label>
-            ))}
+            {(Object.keys(MAP_TILE_LAYERS) as Array<keyof typeof MAP_TILE_LAYERS>).map(
+              (layerKey) => (
+                <label key={layerKey} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`farm-form-map-view-${mapKey}`}
+                    value={layerKey}
+                    checked={mapTileLayer === layerKey}
+                    onChange={() => setMapTileLayer(layerKey)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>{MAP_TILE_LAYERS[layerKey].label}</span>
+                </label>
+              )
+            )}
           </div>
         </div>
       </div>

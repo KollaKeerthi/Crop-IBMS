@@ -21,12 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ClipboardList } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function ActivitiesTable() {
   const { selectedFarmId } = useFarm();
@@ -37,9 +32,7 @@ export function ActivitiesTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to manage activities.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to manage activities.</p>;
   }
 
   async function handleDelete(id: string) {

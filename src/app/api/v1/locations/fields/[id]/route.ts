@@ -5,10 +5,7 @@ import { ApiError } from "@/lib/api/errors";
 import { UpdateFieldInputSchema } from "@/features/locations/schema";
 import { updateFieldHandler, deleteFieldHandler } from "@/features/locations/handlers";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await requireAuth();
     const { id } = await params;
@@ -27,10 +24,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await requireAuth();
     const { id } = await params;

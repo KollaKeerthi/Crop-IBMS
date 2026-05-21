@@ -1,6 +1,16 @@
 import { z } from "zod";
 
-export const ASSET_TYPES = ["well", "sensor", "gate", "storage", "road", "fence", "water_valve", "barn", "other"] as const;
+export const ASSET_TYPES = [
+  "well",
+  "sensor",
+  "gate",
+  "storage",
+  "road",
+  "fence",
+  "water_valve",
+  "barn",
+  "other",
+] as const;
 export const GEOMETRY_TYPES = ["Point", "Polygon", "LineString"] as const;
 
 export const CreateFarmAssetInputSchema = z.object({
@@ -9,7 +19,7 @@ export const CreateFarmAssetInputSchema = z.object({
   name: z.string().trim().max(200).optional(),
   geometryType: z.enum(GEOMETRY_TYPES),
   coordinates: z.any(), // GeoJSON coordinates array
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const UpdateFarmAssetInputSchema = z.object({
@@ -17,7 +27,7 @@ export const UpdateFarmAssetInputSchema = z.object({
   name: z.string().trim().max(200).optional().nullable(),
   geometryType: z.enum(GEOMETRY_TYPES).optional(),
   coordinates: z.any().optional(),
-  properties: z.record(z.unknown()).optional().nullable(),
+  properties: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 export const FarmAssetSchema = z.object({
@@ -27,7 +37,7 @@ export const FarmAssetSchema = z.object({
   name: z.string().nullable(),
   geometryType: z.enum(GEOMETRY_TYPES),
   coordinates: z.any(),
-  properties: z.record(z.unknown()).nullable(),
+  properties: z.record(z.string(), z.unknown()).nullable(),
   createdAt: z.string(),
 });
 

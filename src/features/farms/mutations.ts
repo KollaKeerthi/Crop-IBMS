@@ -47,7 +47,9 @@ export async function updateFarm(farmId: string, input: UpdateFarmInput): Promis
       ...(input.country !== undefined && { country: input.country }),
       ...(input.latitude !== undefined && { latitude: input.latitude }),
       ...(input.longitude !== undefined && { longitude: input.longitude }),
-      ...((input.boundary !== undefined || input.boundaryPolygon !== undefined || input.boundary_polygon !== undefined) && {
+      ...((input.boundary !== undefined ||
+        input.boundaryPolygon !== undefined ||
+        input.boundary_polygon !== undefined) && {
         boundary: input.boundary ?? input.boundaryPolygon ?? input.boundary_polygon,
       }),
       ...(input.areaSqm !== undefined && { areaSqm: input.areaSqm }),

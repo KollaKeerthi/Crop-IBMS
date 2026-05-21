@@ -21,10 +21,7 @@ const Inner = dynamic(() => import("./farm-map-inner"), {
 
 export function FarmMap({ height = "400px", ...props }: FarmMapProps) {
   return (
-    <div
-      className="relative overflow-hidden rounded-lg border"
-      style={{ height }}
-    >
+    <div className="relative overflow-hidden rounded-lg border" style={{ height }}>
       <Inner height={height} {...props} />
     </div>
   );

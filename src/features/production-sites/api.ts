@@ -19,7 +19,10 @@ export function createProductionSite(input: CreateProductionSiteInput): Promise<
   });
 }
 
-export function updateProductionSite(id: string, input: UpdateProductionSiteInput): Promise<ProductionSite> {
+export function updateProductionSite(
+  id: string,
+  input: UpdateProductionSiteInput
+): Promise<ProductionSite> {
   return apiFetch(`/api/v1/production-sites/${id}`, {
     method: "PATCH",
     body: input,

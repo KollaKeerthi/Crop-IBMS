@@ -20,9 +20,6 @@ export async function listProductionSites(): Promise<ProductionSite[]> {
 }
 
 export async function getProductionSiteById(siteId: string): Promise<ProductionSite | null> {
-  const [row] = await db
-    .select()
-    .from(productionSites)
-    .where(eq(productionSites.id, siteId));
+  const [row] = await db.select().from(productionSites).where(eq(productionSites.id, siteId));
   return row ? toSite(row) : null;
 }

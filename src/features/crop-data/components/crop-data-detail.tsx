@@ -98,16 +98,18 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           <ProgramInfoForm
             cropDataId={record.id}
             farmId={farmId}
-            programInfo={record.programInfo as {
-              batchNo?: string | null;
-              plantingDate?: Date | string | null;
-              malePlantCount?: number | null;
-              femalePlantCount?: number | null;
-              surfaceAreaSqm?: number | null;
-              maleDensity?: number | null;
-              femaleDensity?: number | null;
-              notes?: string | null;
-            } | null}
+            programInfo={
+              record.programInfo as {
+                batchNo?: string | null;
+                plantingDate?: Date | string | null;
+                malePlantCount?: number | null;
+                femalePlantCount?: number | null;
+                surfaceAreaSqm?: number | null;
+                maleDensity?: number | null;
+                femaleDensity?: number | null;
+                notes?: string | null;
+              } | null
+            }
           />
         </div>
       </TabsContent>
@@ -119,13 +121,15 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           <NurseryForm
             cropDataId={record.id}
             farmId={farmId}
-            nursery={record.nursery as {
-              startDate?: Date | string | null;
-              endDate?: Date | string | null;
-              seedlingsCount?: number | null;
-              germinationRate?: number | null;
-              notes?: string | null;
-            } | null}
+            nursery={
+              record.nursery as {
+                startDate?: Date | string | null;
+                endDate?: Date | string | null;
+                seedlingsCount?: number | null;
+                germinationRate?: number | null;
+                notes?: string | null;
+              } | null
+            }
           />
         </div>
       </TabsContent>

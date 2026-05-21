@@ -35,12 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFarm } from "@/lib/farm-context";
 import { useEvents } from "@/features/events/hooks";
 import { EventForm } from "@/features/events/components/event-form";
@@ -88,13 +83,25 @@ function TaskCalendar({ tasks }: { tasks: Task[] }) {
     <div className="overflow-hidden border-t bg-background">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" className="h-9 px-4" onClick={() => setCurrentMonth(new Date())}>
+          <Button
+            variant="outline"
+            className="h-9 px-4"
+            onClick={() => setCurrentMonth(new Date())}
+          >
             Today
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -104,7 +111,10 @@ function TaskCalendar({ tasks }: { tasks: Task[] }) {
 
       <div className="grid grid-cols-7 border-y bg-muted/30">
         {DAY_HEADERS.map((day) => (
-          <div key={day} className="px-3 py-2 text-center text-sm font-medium text-muted-foreground">
+          <div
+            key={day}
+            className="px-3 py-2 text-center text-sm font-medium text-muted-foreground"
+          >
             {day}
           </div>
         ))}
@@ -211,7 +221,11 @@ export function TasksView() {
     refetch: refetchTasks,
     isFetching,
   } = useTasks(selectedFarmId);
-  const { data: events, isLoading: eventsLoading, refetch: refetchEvents } = useEvents(selectedFarmId ?? null);
+  const {
+    data: events,
+    isLoading: eventsLoading,
+    refetch: refetchEvents,
+  } = useEvents(selectedFarmId ?? null);
 
   async function handleExport() {
     if (!selectedFarmId || exporting) return;
@@ -242,7 +256,8 @@ export function TasksView() {
     if (statusFilter !== "all" && task.status !== statusFilter) return false;
     return true;
   });
-  const hasActiveFilters = search.trim().length > 0 || priorityFilter !== "all" || statusFilter !== "all";
+  const hasActiveFilters =
+    search.trim().length > 0 || priorityFilter !== "all" || statusFilter !== "all";
 
   function clearFilters() {
     setSearch("");
@@ -358,7 +373,10 @@ export function TasksView() {
 
         {filtersOpen && (
           <div className="mt-5 flex flex-wrap gap-3">
-            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Task["priority"] | "all")}>
+            <Select
+              value={priorityFilter}
+              onValueChange={(value) => setPriorityFilter(value as Task["priority"] | "all")}
+            >
               <SelectTrigger className="h-11 w-44">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
@@ -369,7 +387,10 @@ export function TasksView() {
                 <SelectItem value="High">High</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as Task["status"] | "all")}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as Task["status"] | "all")}
+            >
               <SelectTrigger className="h-11 w-44">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -430,7 +451,12 @@ export function TasksView() {
         <TaskTable tasks={filtered} farmId={selectedFarmId} />
       )}
 
-      <Dialog open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false); }}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          if (!open) setCreateOpen(false);
+        }}
+      >
         <DialogContent className="!max-w-[1100px] !w-[96vw] max-h-[90vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle className="px-5 pt-5">New task</DialogTitle>
@@ -441,7 +467,12 @@ export function TasksView() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={createEventOpen} onOpenChange={(open) => { if (!open) setCreateEventOpen(false); }}>
+      <Dialog
+        open={createEventOpen}
+        onOpenChange={(open) => {
+          if (!open) setCreateEventOpen(false);
+        }}
+      >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New event</DialogTitle>

@@ -67,13 +67,8 @@ export function useAddActivityToActiveTime(farmId: string) {
 export function useRemoveActivityFromActiveTime(farmId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      activeTimeId,
-      activityId,
-    }: {
-      activeTimeId: string;
-      activityId: string;
-    }) => removeActivityFromActiveTime(farmId, activeTimeId, activityId),
+    mutationFn: ({ activeTimeId, activityId }: { activeTimeId: string; activityId: string }) =>
+      removeActivityFromActiveTime(farmId, activeTimeId, activityId),
     onSuccess: () => qc.invalidateQueries({ queryKey: activeTimeKey(farmId) }),
   });
 }

@@ -1,10 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
-import { CreateActivityInputSchema, UpdateActivityInputSchema, type CreateActivityInput, type Activity } from "../schema";
+import {
+  CreateActivityInputSchema,
+  UpdateActivityInputSchema,
+  type CreateActivityInput,
+  type Activity,
+} from "../schema";
 import { useCreateActivity, useUpdateActivity } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +34,7 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
   const schema = isEdit ? UpdateActivityInputSchema : CreateActivityInputSchema;
 
   const form = useForm<CreateActivityInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateActivityInput>,
     defaultValues: {
       name: activity?.name ?? "",
       description: activity?.description ?? "",
@@ -173,7 +178,13 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
         )}
 
         <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? (isEdit ? "Saving..." : "Creating...") : isEdit ? "Save Changes" : "Create Activity"}
+          {isPending
+            ? isEdit
+              ? "Saving..."
+              : "Creating..."
+            : isEdit
+              ? "Save Changes"
+              : "Create Activity"}
         </Button>
       </form>
     </Form>

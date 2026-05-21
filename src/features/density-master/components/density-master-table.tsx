@@ -22,12 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Boxes } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function DensityMasterTable() {
   const { selectedFarmId } = useFarm();
@@ -94,7 +89,9 @@ export function DensityMasterTable() {
           <TableBody>
             {densities.map((d) => (
               <TableRow key={d.id}>
-                <TableCell className="font-semibold text-foreground">{cropName(d.cropId)}</TableCell>
+                <TableCell className="font-semibold text-foreground">
+                  {cropName(d.cropId)}
+                </TableCell>
                 <TableCell>{siteName(d.productionSiteId)}</TableCell>
                 <TableCell>{d.maleDensity ?? "—"}</TableCell>
                 <TableCell>{d.femaleDensity ?? "—"}</TableCell>

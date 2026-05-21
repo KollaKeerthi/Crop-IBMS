@@ -19,7 +19,11 @@ export function createSeason(farmId: string, input: CreateSeasonInput): Promise<
   });
 }
 
-export function updateSeason(farmId: string, id: string, input: UpdateSeasonInput): Promise<Season> {
+export function updateSeason(
+  farmId: string,
+  id: string,
+  input: UpdateSeasonInput
+): Promise<Season> {
   return apiFetch(`/api/v1/seasons/${id}?farmId=${farmId}`, {
     method: "PATCH",
     body: input,

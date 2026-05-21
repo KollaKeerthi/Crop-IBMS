@@ -37,7 +37,8 @@ export async function updateEvent(
   if (input.description !== undefined) updateData.description = input.description;
   if (input.location !== undefined) updateData.location = input.location;
   if (input.startDate !== undefined) updateData.startDate = new Date(input.startDate);
-  if (input.endDate !== undefined) updateData.endDate = input.endDate ? new Date(input.endDate) : null;
+  if (input.endDate !== undefined)
+    updateData.endDate = input.endDate ? new Date(input.endDate) : null;
   if (input.startTime !== undefined) updateData.startTime = input.startTime;
   if (input.endTime !== undefined) updateData.endTime = input.endTime;
   if (input.allDay !== undefined) updateData.allDay = input.allDay;

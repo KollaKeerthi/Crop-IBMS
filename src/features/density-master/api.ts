@@ -8,10 +8,15 @@ import {
 } from "./schema";
 
 export function listDensityMaster(farmId: string): Promise<DensityMaster[]> {
-  return apiFetch(`/api/v1/density-master?farmId=${farmId}`, { responseSchema: DensityMasterResponseSchema });
+  return apiFetch(`/api/v1/density-master?farmId=${farmId}`, {
+    responseSchema: DensityMasterResponseSchema,
+  });
 }
 
-export function createDensityMaster(farmId: string, input: CreateDensityMasterInput): Promise<DensityMaster> {
+export function createDensityMaster(
+  farmId: string,
+  input: CreateDensityMasterInput
+): Promise<DensityMaster> {
   return apiFetch(`/api/v1/density-master?farmId=${farmId}`, {
     method: "POST",
     body: input,
@@ -19,7 +24,11 @@ export function createDensityMaster(farmId: string, input: CreateDensityMasterIn
   });
 }
 
-export function updateDensityMaster(farmId: string, id: string, input: UpdateDensityMasterInput): Promise<DensityMaster> {
+export function updateDensityMaster(
+  farmId: string,
+  id: string,
+  input: UpdateDensityMasterInput
+): Promise<DensityMaster> {
   return apiFetch(`/api/v1/density-master/${id}?farmId=${farmId}`, {
     method: "PATCH",
     body: input,

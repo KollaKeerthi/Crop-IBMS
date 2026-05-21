@@ -14,28 +14,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="space-y-3">
-            <h1 className="text-3xl font-bold leading-tight">
-              Smart farming starts here.
-            </h1>
+            <h1 className="text-3xl font-bold leading-tight">Smart farming starts here.</h1>
             <p className="text-white/75 text-lg leading-relaxed">
               Manage crops, plan seasons, track tasks, and analyse performance — all in one place.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            {[
-              "Crop planning",
-              "Task management",
-              "Team collaboration",
-              "Real-time insights",
-            ].map((f) => (
-              <div
-                key={f}
-                className="rounded-lg bg-white/10 px-3 py-2 text-sm text-white/90 font-medium"
-              >
-                {f}
-              </div>
-            ))}
+            {["Crop planning", "Task management", "Team collaboration", "Real-time insights"].map(
+              (f) => (
+                <div
+                  key={f}
+                  className="rounded-lg bg-white/10 px-3 py-2 text-sm text-white/90 font-medium"
+                >
+                  {f}
+                </div>
+              )
+            )}
           </div>
         </div>
       </div>

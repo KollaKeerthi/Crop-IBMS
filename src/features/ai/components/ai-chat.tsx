@@ -27,7 +27,11 @@ export function AIChat() {
     if (!text || loading || !selectedFarmId) return;
 
     const userMsg: Message = { role: "user", content: text, id: Date.now().toString() };
-    const assistantMsg: Message = { role: "assistant", content: "", id: (Date.now() + 1).toString() };
+    const assistantMsg: Message = {
+      role: "assistant",
+      content: "",
+      id: (Date.now() + 1).toString(),
+    };
 
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setInput("");
@@ -74,12 +78,17 @@ export function AIChat() {
                     const updated = [...prev];
                     const last = updated[updated.length - 1];
                     if (last?.role === "assistant") {
-                      updated[updated.length - 1] = { ...last, content: last.content + parsed.text };
+                      updated[updated.length - 1] = {
+                        ...last,
+                        content: last.content + parsed.text,
+                      };
                     }
                     return updated;
                   });
                 }
-              } catch { /* skip */ }
+              } catch {
+                /* skip */
+              }
             }
           }
         }
@@ -135,26 +144,48 @@ export function AIChat() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
-              {["What tasks are due soon?", "Summarize my plantings", "What crops do I have?"].map((q) => (
-                <button
-                  key={q}
-                  onClick={() => { setInput(q); textareaRef.current?.focus(); }}
-                  className="text-xs rounded-full border px-3 py-1.5 hover:bg-muted transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
+              {["What tasks are due soon?", "Summarize my plantings", "What crops do I have?"].map(
+                (q) => (
+                  <button
+                    key={q}
+                    onClick={() => {
+                      setInput(q);
+                      textareaRef.current?.focus();
+                    }}
+                    className="text-xs rounded-full border px-3 py-1.5 hover:bg-muted transition-colors"
+                  >
+                    {q}
+                  </button>
+                )
+              )}
             </div>
           </div>
         )}
 
         {messages.map((msg) => (
           <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "flex-row-reverse")}>
-            <div className={cn("h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0", msg.role === "assistant" ? "bg-primary/10" : "bg-muted")}>
-              {msg.role === "assistant" ? <Bot className="h-4 w-4 text-primary" /> : <User className="h-4 w-4" />}
+            <div
+              className={cn(
+                "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0",
+                msg.role === "assistant" ? "bg-primary/10" : "bg-muted"
+              )}
+            >
+              {msg.role === "assistant" ? (
+                <Bot className="h-4 w-4 text-primary" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
             </div>
-            <div className={cn("max-w-[80%] rounded-2xl px-4 py-2.5 text-sm", msg.role === "assistant" ? "bg-muted" : "bg-primary text-primary-foreground")}>
-              {msg.content || (loading && msg.role === "assistant" && <Loader2 className="h-4 w-4 animate-spin" />)}
+            <div
+              className={cn(
+                "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
+                msg.role === "assistant" ? "bg-muted" : "bg-primary text-primary-foreground"
+              )}
+            >
+              {msg.content ||
+                (loading && msg.role === "assistant" && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ))}
             </div>
           </div>
         ))}
@@ -181,11 +212,17 @@ export function AIChat() {
             rows={1}
             className="resize-none min-h-[40px] max-h-32"
           />
-          <Button size="icon" onClick={sendMessage} disabled={!input.trim() || loading || !selectedFarmId}>
+          <Button
+            size="icon"
+            onClick={sendMessage}
+            disabled={!input.trim() || loading || !selectedFarmId}
+          >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-1.5">Enter to send · Shift+Enter for new line</p>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Enter to send · Shift+Enter for new line
+        </p>
       </div>
     </div>
   );

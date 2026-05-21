@@ -3,7 +3,11 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateActivityInputSchema } from "@/features/activities/schema";
-import { getActivityHandler, updateActivityHandler, deleteActivityHandler } from "@/features/activities/handlers";
+import {
+  getActivityHandler,
+  updateActivityHandler,
+  deleteActivityHandler,
+} from "@/features/activities/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 type Params = { params: Promise<{ activityId: string }> };

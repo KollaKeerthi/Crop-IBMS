@@ -2,7 +2,14 @@ import { eq, and, count } from "drizzle-orm";
 import { db } from "@/db";
 import { fields, greenhouses, blocks } from "@/db/schema";
 import { listSubBlocks } from "@/features/sub-blocks/queries";
-import type { Field, Greenhouse, Block, FieldWithBlocks, GreenhouseWithBlocks, LocationHierarchy } from "./schema";
+import type {
+  Field,
+  Greenhouse,
+  Block,
+  FieldWithBlocks,
+  GreenhouseWithBlocks,
+  LocationHierarchy,
+} from "./schema";
 
 // ── Row mappers ───────────────────────────────────────────────────────────────
 
@@ -58,11 +65,7 @@ function toBlock(row: BlockRow): Block {
 // ── Fields ────────────────────────────────────────────────────────────────────
 
 export async function listFields(farmId: string): Promise<Field[]> {
-  const rows = await db
-    .select()
-    .from(fields)
-    .where(eq(fields.farmId, farmId))
-    .orderBy(fields.name);
+  const rows = await db.select().from(fields).where(eq(fields.farmId, farmId)).orderBy(fields.name);
   return rows.map(toField);
 }
 
@@ -139,12 +142,8 @@ export async function listLocationHierarchy(farmId: string): Promise<LocationHie
   ]);
 
   // Fetch sub-blocks for all blocks in parallel
-  const subBlockResults = await Promise.all(
-    allBlocks.map((block) => listSubBlocks(block.id))
-  );
-  const subBlockMap = new Map(
-    allBlocks.map((block, i) => [block.id, subBlockResults[i]])
-  );
+  const subBlockResults = await Promise.all(allBlocks.map((block) => listSubBlocks(block.id)));
+  const subBlockMap = new Map(allBlocks.map((block, i) => [block.id, subBlockResults[i]]));
 
   const fieldBlockMap = new Map<string, Block[]>();
   const greenhouseBlockMap = new Map<string, Block[]>();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -56,8 +56,8 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
   const isEdit = !!planting;
   const schema = isEdit ? UpdatePlantingInputSchema : CreatePlantingInputSchema;
 
-  const form = useForm<any>({
-    resolver: zodResolver(schema as any),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
       farmId,
       cropId: planting?.cropId ?? undefined,
@@ -158,9 +158,7 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={
-                          !selectedCropId ? "Select crop first" : "Select variety"
-                        }
+                        placeholder={!selectedCropId ? "Select crop first" : "Select variety"}
                       />
                     </SelectTrigger>
                   </FormControl>
@@ -404,8 +402,8 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
               ? "Saving..."
               : "Creating..."
             : isEdit
-            ? "Save Changes"
-            : "Create Planting"}
+              ? "Save Changes"
+              : "Create Planting"}
         </Button>
       </form>
     </Form>

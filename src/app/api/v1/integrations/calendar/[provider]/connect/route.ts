@@ -2,10 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { apiError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
-import {
-  buildAuthorizeUrl,
-  isCalendarProvider,
-} from "@/lib/integrations/calendar-oauth";
+import { buildAuthorizeUrl, isCalendarProvider } from "@/lib/integrations/calendar-oauth";
 
 type Params = { params: Promise<{ provider: string }> };
 

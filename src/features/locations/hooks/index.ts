@@ -57,15 +57,8 @@ export function useCreateField() {
 export function useUpdateField() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      farmId,
-      input,
-    }: {
-      id: string;
-      farmId: string;
-      input: UpdateFieldInput;
-    }) => updateField(id, farmId, input),
+    mutationFn: ({ id, farmId, input }: { id: string; farmId: string; input: UpdateFieldInput }) =>
+      updateField(id, farmId, input),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: fieldsKey(variables.farmId) });
       qc.invalidateQueries({ queryKey: hierarchyKey(variables.farmId) });
@@ -127,8 +120,7 @@ export function useUpdateGreenhouse() {
 export function useDeleteGreenhouse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, farmId }: { id: string; farmId: string }) =>
-      deleteGreenhouse(id, farmId),
+    mutationFn: ({ id, farmId }: { id: string; farmId: string }) => deleteGreenhouse(id, farmId),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: greenhousesKey(variables.farmId) });
       qc.invalidateQueries({ queryKey: hierarchyKey(variables.farmId) });
@@ -161,15 +153,8 @@ export function useCreateBlock() {
 export function useUpdateBlock() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      farmId,
-      input,
-    }: {
-      id: string;
-      farmId: string;
-      input: UpdateBlockInput;
-    }) => updateBlock(id, farmId, input),
+    mutationFn: ({ id, farmId, input }: { id: string; farmId: string; input: UpdateBlockInput }) =>
+      updateBlock(id, farmId, input),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: blocksKey(variables.farmId) });
       qc.invalidateQueries({ queryKey: hierarchyKey(variables.farmId) });

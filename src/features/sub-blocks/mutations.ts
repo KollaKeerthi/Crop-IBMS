@@ -36,7 +36,9 @@ export async function updateSubBlock(
       ...(input.rowWidthM !== undefined && { rowWidthM: input.rowWidthM }),
       ...(input.areaSqm !== undefined && { areaSqm: input.areaSqm }),
       ...(input.suitableCrops !== undefined && { suitableCrops: input.suitableCrops }),
-      ...((input.boundary !== undefined || input.boundaryPolygon !== undefined || input.boundary_polygon !== undefined) && {
+      ...((input.boundary !== undefined ||
+        input.boundaryPolygon !== undefined ||
+        input.boundary_polygon !== undefined) && {
         boundary: input.boundary ?? input.boundaryPolygon ?? input.boundary_polygon,
       }),
     })

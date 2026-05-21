@@ -38,17 +38,10 @@ export function EmptyState({
           <Icon className={cn("text-muted-foreground", compact ? "h-5 w-5" : "h-6 w-6")} />
         </div>
       )}
-      <p
-        className={cn(
-          "font-semibold text-foreground",
-          compact ? "text-small" : "text-h4 mb-1"
-        )}
-      >
+      <p className={cn("font-semibold text-foreground", compact ? "text-small" : "text-h4 mb-1")}>
         {title}
       </p>
-      {description && (
-        <p className="text-small text-muted-foreground max-w-sm">{description}</p>
-      )}
+      {description && <p className="text-small text-muted-foreground max-w-sm">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

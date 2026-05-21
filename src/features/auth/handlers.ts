@@ -33,7 +33,11 @@ export async function signUpHandler(input: SignUpInput): Promise<{ email: string
   const passwordHash = await hashPassword(input.password);
   const user = await createUser({ name: input.name, email: input.email, passwordHash });
 
-  await sendVerificationEmail({ userId: user.id, name: user.name ?? input.name, email: user.email });
+  await sendVerificationEmail({
+    userId: user.id,
+    name: user.name ?? input.name,
+    email: user.email,
+  });
   await logAudit({ userId: user.id, action: "auth.signup", resource: user.id });
 
   return { email: user.email };
@@ -42,7 +46,11 @@ export async function signUpHandler(input: SignUpInput): Promise<{ email: string
 export async function verifyEmailHandler(token: string): Promise<{ email: string }> {
   const record = await getVerificationToken(token);
   if (!record) {
-    throw new ApiError(400, "invalid_token", "This verification link is invalid or has already been used.");
+    throw new ApiError(
+      400,
+      "invalid_token",
+      "This verification link is invalid or has already been used."
+    );
   }
   if (record.expiresAt < new Date()) {
     // Don't delete yet — the failure page looks up the email from this token
@@ -92,18 +100,35 @@ export async function forgotPasswordHandler(email: string): Promise<void> {
   const result = await sendEmail({
     to: user.email,
     subject: "Reset your password — Crop Management",
-    html: passwordResetEmailHtml({ name: user.name ?? user.email, resetUrl, expiryMinutes: RESET_EXPIRY_MINUTES }),
-    text: passwordResetEmailText({ name: user.name ?? user.email, resetUrl, expiryMinutes: RESET_EXPIRY_MINUTES }),
+    html: passwordResetEmailHtml({
+      name: user.name ?? user.email,
+      resetUrl,
+      expiryMinutes: RESET_EXPIRY_MINUTES,
+    }),
+    text: passwordResetEmailText({
+      name: user.name ?? user.email,
+      resetUrl,
+      expiryMinutes: RESET_EXPIRY_MINUTES,
+    }),
   });
   if (!result.ok) log.error({ userId: user.id }, "auth.password_reset_email_failed");
 }
 
 export async function resetPasswordHandler(token: string, password: string): Promise<void> {
   const record = await getPasswordResetToken(token);
-  if (!record) throw new ApiError(400, "invalid_token", "This reset link is invalid or has already been used.");
+  if (!record)
+    throw new ApiError(
+      400,
+      "invalid_token",
+      "This reset link is invalid or has already been used."
+    );
   if (record.expiresAt < new Date()) {
     await deletePasswordResetToken(token);
-    throw new ApiError(400, "token_expired", "This reset link has expired. Please request a new one.");
+    throw new ApiError(
+      400,
+      "token_expired",
+      "This reset link has expired. Please request a new one."
+    );
   }
   const passwordHash = await hashPassword(password);
   await updateUserPassword(record.userId, passwordHash);

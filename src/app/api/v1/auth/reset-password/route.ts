@@ -9,8 +9,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = ResetPasswordInputSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+    if (!parsed.success)
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     await resetPasswordHandler(parsed.data.token, parsed.data.password);
     return apiOk({ message: "Password updated successfully." });
-  } catch (err) { return apiError(err); }
+  } catch (err) {
+    return apiError(err);
+  }
 }

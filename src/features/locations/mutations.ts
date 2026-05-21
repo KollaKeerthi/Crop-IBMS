@@ -40,7 +40,11 @@ export async function updateField(
   if (input.name !== undefined) updates.name = input.name;
   if (input.areaSqm !== undefined) updates.areaSqm = input.areaSqm;
   if (input.notes !== undefined) updates.notes = input.notes;
-  if (input.boundary !== undefined || input.boundaryPolygon !== undefined || input.boundary_polygon !== undefined) {
+  if (
+    input.boundary !== undefined ||
+    input.boundaryPolygon !== undefined ||
+    input.boundary_polygon !== undefined
+  ) {
     updates.boundary = input.boundary ?? input.boundaryPolygon ?? input.boundary_polygon;
   }
 
@@ -81,7 +85,11 @@ export async function updateGreenhouse(
   if (input.name !== undefined) updates.name = input.name;
   if (input.areaSqm !== undefined) updates.areaSqm = input.areaSqm;
   if (input.notes !== undefined) updates.notes = input.notes;
-  if (input.boundary !== undefined || input.boundaryPolygon !== undefined || input.boundary_polygon !== undefined) {
+  if (
+    input.boundary !== undefined ||
+    input.boundaryPolygon !== undefined ||
+    input.boundary_polygon !== undefined
+  ) {
     updates.boundary = input.boundary ?? input.boundaryPolygon ?? input.boundary_polygon;
   }
 
@@ -135,7 +143,11 @@ export async function updateBlock(
   if (input.name !== undefined) updates.name = input.name;
   if (input.areaSqm !== undefined) updates.areaSqm = input.areaSqm;
   if (input.notes !== undefined) updates.notes = input.notes;
-  if (input.boundary !== undefined || input.boundaryPolygon !== undefined || input.boundary_polygon !== undefined) {
+  if (
+    input.boundary !== undefined ||
+    input.boundaryPolygon !== undefined ||
+    input.boundary_polygon !== undefined
+  ) {
     updates.boundary = input.boundary ?? input.boundaryPolygon ?? input.boundary_polygon;
   }
 

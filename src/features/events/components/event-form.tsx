@@ -150,7 +150,12 @@ export function EventForm({ farmId, event, defaultDate, onSuccess }: Props) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} value={field.value ?? ""} rows={2} placeholder="Optional description" />
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  rows={2}
+                  placeholder="Optional description"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -208,10 +213,7 @@ export function EventForm({ farmId, event, defaultDate, onSuccess }: Props) {
             <FormItem className="flex items-center justify-between rounded-lg border p-3">
               <FormLabel className="mb-0 cursor-pointer">All Day</FormLabel>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
@@ -322,8 +324,8 @@ export function EventForm({ farmId, event, defaultDate, onSuccess }: Props) {
               ? "Saving..."
               : "Creating..."
             : isEdit
-            ? "Save Changes"
-            : "Create Event"}
+              ? "Save Changes"
+              : "Create Event"}
         </Button>
       </form>
     </Form>

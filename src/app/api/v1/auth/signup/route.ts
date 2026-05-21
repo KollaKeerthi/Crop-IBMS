@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
 
     const parsed = SignUpInputSchema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(400, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+      throw new ApiError(
+        400,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     }
 
     const result = await signUpHandler(parsed.data);

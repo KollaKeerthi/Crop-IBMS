@@ -21,11 +21,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = CreateFarmInputSchema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(
-        422,
-        "validation_error",
-        firstError(parsed.error.issues, "Invalid input")
-      );
+      throw new ApiError(422, "validation_error", firstError(parsed.error.issues, "Invalid input"));
     }
     const farm = await createFarmHandler(ctx, parsed.data);
     return apiOk(farm, 201);

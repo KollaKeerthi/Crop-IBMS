@@ -4,7 +4,10 @@ import { seasons } from "@/db/schema";
 import type { CreateSeasonInput, UpdateSeasonInput, Season } from "./schema";
 import { getSeasonById } from "./queries";
 
-export async function insertSeason(farmId: string, input: CreateSeasonInput): Promise<Season | null> {
+export async function insertSeason(
+  farmId: string,
+  input: CreateSeasonInput
+): Promise<Season | null> {
   const [row] = await db
     .insert(seasons)
     .values({
@@ -43,7 +46,5 @@ export async function updateSeason(
 }
 
 export async function deleteSeason(seasonId: string, farmId: string): Promise<void> {
-  await db
-    .delete(seasons)
-    .where(and(eq(seasons.id, seasonId), eq(seasons.farmId, farmId)));
+  await db.delete(seasons).where(and(eq(seasons.id, seasonId), eq(seasons.farmId, farmId)));
 }

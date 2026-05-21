@@ -6,11 +6,18 @@ import { listDensityMaster, getDensityById } from "./queries";
 import { insertDensity, updateDensity, deleteDensity } from "./mutations";
 import type { CreateDensityMasterInput, UpdateDensityMasterInput, DensityMaster } from "./schema";
 
-export async function listDensityMasterHandler(ctx: ApiContext, farmId: string): Promise<DensityMaster[]> {
+export async function listDensityMasterHandler(
+  ctx: ApiContext,
+  farmId: string
+): Promise<DensityMaster[]> {
   return listDensityMaster(farmId);
 }
 
-export async function getDensityHandler(ctx: ApiContext, densityId: string, farmId: string): Promise<DensityMaster> {
+export async function getDensityHandler(
+  ctx: ApiContext,
+  densityId: string,
+  farmId: string
+): Promise<DensityMaster> {
   const density = await getDensityById(densityId, farmId);
   if (!density) throw new ApiError(404, "not_found", "Density record not found.");
   return density;
@@ -53,7 +60,11 @@ export async function updateDensityHandler(
   return updated;
 }
 
-export async function deleteDensityHandler(ctx: ApiContext, densityId: string, farmId: string): Promise<void> {
+export async function deleteDensityHandler(
+  ctx: ApiContext,
+  densityId: string,
+  farmId: string
+): Promise<void> {
   const existing = await getDensityById(densityId, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Density record not found.");
 

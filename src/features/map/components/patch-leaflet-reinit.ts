@@ -18,8 +18,7 @@ if (original && !proto.__patchedInitContainer) {
   proto.__patchedInitContainer = true;
   proto._initContainer = function (id: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const container: any =
-      typeof id === "string" ? document.getElementById(id) : id;
+    const container: any = typeof id === "string" ? document.getElementById(id) : id;
     if (container?._leaflet_id) {
       // Clear the stale marker so `new L.Map` can proceed
       delete container._leaflet_id;

@@ -9,13 +9,7 @@ import { CreateCropVarietyInputSchema, type CreateCropVarietyInput, type Crop } 
 import { useCreateCropVariety, useDeleteCropVariety } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
@@ -58,7 +52,10 @@ export function VarietyManager({ crop }: Props) {
         ) : (
           <ul className="space-y-1">
             {crop.varieties.map((v) => (
-              <li key={v.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+              <li
+                key={v.id}
+                className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
+              >
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{v.name}</span>
                   {v.code && (

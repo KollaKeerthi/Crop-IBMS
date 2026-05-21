@@ -42,10 +42,7 @@ export function ForgotPasswordForm() {
           Check your inbox for a reset link.
         </p>
         <p className="text-center text-sm text-muted-foreground">
-          <Link
-            href="/login"
-            className="font-medium text-foreground underline underline-offset-4"
-          >
+          <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
             Back to sign in
           </Link>
         </p>
@@ -82,10 +79,7 @@ export function ForgotPasswordForm() {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        <Link
-          href="/login"
-          className="font-medium text-foreground underline underline-offset-4"
-        >
+        <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
           Back to sign in
         </Link>
       </p>

@@ -3,11 +3,7 @@ import { requireAuth } from "@/lib/api/auth";
 import { apiOk, apiError, firstError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { UpdateTaskInputSchema } from "@/features/tasks/schema";
-import {
-  getTaskHandler,
-  updateTaskHandler,
-  deleteTaskHandler,
-} from "@/features/tasks/handlers";
+import { getTaskHandler, updateTaskHandler, deleteTaskHandler } from "@/features/tasks/handlers";
 import { checkFarmAccess } from "@/features/farms/queries";
 
 type Params = { params: Promise<{ id: string }> };

@@ -6,8 +6,6 @@ export default async function AccountSettingsPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   return (
-    <UpdateProfileForm
-      user={{ name: session.user.name ?? "", email: session.user.email ?? "" }}
-    />
+    <UpdateProfileForm user={{ name: session.user.name ?? "", email: session.user.email ?? "" }} />
   );
 }

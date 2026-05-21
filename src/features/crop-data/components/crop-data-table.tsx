@@ -21,12 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Database } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function CropDataTable() {
   const { selectedFarmId } = useFarm();
@@ -37,9 +32,7 @@ export function CropDataTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!selectedFarmId) {
-    return (
-      <p className="text-sm text-muted-foreground">Select a farm to view crop data.</p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a farm to view crop data.</p>;
   }
 
   async function handleDelete(id: string) {
@@ -91,17 +84,19 @@ export function CropDataTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(records as Array<{
-              id: string;
-              cropName: string | null;
-              varietyName: string | null;
-              seasonName: string | null;
-              block: string | null;
-              fieldName: string | null;
-              sexExpression: string | null;
-              contractNo: string | null;
-              status: string | null;
-            }>).map((row) => (
+            {(
+              records as Array<{
+                id: string;
+                cropName: string | null;
+                varietyName: string | null;
+                seasonName: string | null;
+                block: string | null;
+                fieldName: string | null;
+                sexExpression: string | null;
+                contractNo: string | null;
+                status: string | null;
+              }>
+            ).map((row) => (
               <TableRow key={row.id}>
                 <TableCell className="font-semibold text-foreground">
                   {row.cropName ?? "—"}

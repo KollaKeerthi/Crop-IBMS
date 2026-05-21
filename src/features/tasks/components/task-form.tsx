@@ -148,11 +148,12 @@ export function TaskForm({ farmId, task, defaultStatus, onSuccess }: Props) {
     const cropLine = block.notes
       ?.split("\n")
       .find((line) => line.trim().toLowerCase().startsWith("crops:"));
-    const cropNames = cropLine
-      ?.replace(/^crops:/i, "")
-      .split(",")
-      .map(normalizeCropName)
-      .filter(Boolean) ?? [];
+    const cropNames =
+      cropLine
+        ?.replace(/^crops:/i, "")
+        .split(",")
+        .map(normalizeCropName)
+        .filter(Boolean) ?? [];
     const matchedCrop = crops.find((crop) => {
       const names = [crop.name, crop.shortName ?? ""].map(normalizeCropName);
       return cropNames.some((name) => names.includes(name));
@@ -254,7 +255,9 @@ export function TaskForm({ farmId, task, defaultStatus, onSuccess }: Props) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
+              <FormLabel>
+                Title <span className="text-destructive">*</span>
+              </FormLabel>
               <FormControl>
                 <Input {...field} placeholder="Example: Monitor soil moisture" />
               </FormControl>
@@ -270,7 +273,12 @@ export function TaskForm({ farmId, task, defaultStatus, onSuccess }: Props) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} value={field.value ?? ""} rows={3} placeholder="What needs to be done?" />
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  rows={3}
+                  placeholder="What needs to be done?"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -577,7 +585,9 @@ export function TaskForm({ farmId, task, defaultStatus, onSuccess }: Props) {
                       onChange={field.onChange}
                       className="h-9 w-11 shrink-0 p-1"
                     />
-                    <span className="text-sm text-muted-foreground">{field.value ?? DEFAULT_TASK_COLOR}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {field.value ?? DEFAULT_TASK_COLOR}
+                    </span>
                   </div>
                 </FormControl>
                 <FormMessage />

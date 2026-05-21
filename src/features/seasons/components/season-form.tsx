@@ -1,10 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
-import { CreateSeasonInputSchema, UpdateSeasonInputSchema, type CreateSeasonInput, type Season } from "../schema";
+import {
+  CreateSeasonInputSchema,
+  UpdateSeasonInputSchema,
+  type CreateSeasonInput,
+  type Season,
+} from "../schema";
 import { useCreateSeason, useUpdateSeason } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +33,7 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
   const schema = isEdit ? UpdateSeasonInputSchema : CreateSeasonInputSchema;
 
   const form = useForm<CreateSeasonInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateSeasonInput>,
     defaultValues: {
       name: season?.name ?? "",
       year: season?.year ?? new Date().getFullYear(),
@@ -128,7 +133,13 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
         )}
 
         <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? (isEdit ? "Saving..." : "Creating...") : isEdit ? "Save Changes" : "Create Season"}
+          {isPending
+            ? isEdit
+              ? "Saving..."
+              : "Creating..."
+            : isEdit
+              ? "Save Changes"
+              : "Create Season"}
         </Button>
       </form>
     </Form>

@@ -28,7 +28,10 @@ export async function listActivities(farmId: string): Promise<Activity[]> {
   return rows.map(toActivity);
 }
 
-export async function getActivityById(activityId: string, farmId: string): Promise<Activity | null> {
+export async function getActivityById(
+  activityId: string,
+  farmId: string
+): Promise<Activity | null> {
   const [row] = await db
     .select()
     .from(activities)

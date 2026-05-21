@@ -4,12 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, X } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -74,7 +69,15 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
 
   if (isEditing) {
     return (
-      <Dialog open={open} onOpenChange={(v) => { if (!v) { setIsEditing(false); onClose(); } }}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) {
+            setIsEditing(false);
+            onClose();
+          }
+        }}
+      >
         <DialogContent className="!max-w-[1100px] !w-[96vw] max-h-[90vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle className="px-5 pt-5">Edit task</DialogTitle>
@@ -95,7 +98,12 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between gap-2">
@@ -109,7 +117,10 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={PRIORITY_COLORS[task.priority]}>{task.priority}</Badge>
-            <Select value={task.status} onValueChange={(value) => handleStatusChange(value as Task["status"])}>
+            <Select
+              value={task.status}
+              onValueChange={(value) => handleStatusChange(value as Task["status"])}
+            >
               <SelectTrigger className="h-7 w-36 text-xs">
                 <SelectValue />
               </SelectTrigger>
@@ -123,9 +134,7 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
             </Select>
           </div>
 
-          {task.description && (
-            <p className="text-sm text-muted-foreground">{task.description}</p>
-          )}
+          {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
 
           <Separator />
 

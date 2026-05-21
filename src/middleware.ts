@@ -25,7 +25,15 @@ export default auth(async (req) => {
   const isLoggedIn = !!req.auth;
   const isAuthRoute = pathname.startsWith("/api/auth");
   const isWebhook = pathname.startsWith("/api/webhooks");
-  const isPublicPage = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/terms", "/privacy"].includes(pathname);
+  const isPublicPage = [
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+    "/terms",
+    "/privacy",
+  ].includes(pathname);
 
   if (isAuthRoute || isWebhook || isPublicPage) return;
 

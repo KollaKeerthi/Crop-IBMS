@@ -1,10 +1,10 @@
 /**
  * WMO Weather interpretation codes (from Open-Meteo)
  * https://www.open-meteo.com/en/docs/
- * 
+ *
  * Use with weather-icons library:
  * npm install weather-icons
- * 
+ *
  * Icon class mapping: getWeatherIconClass(code) -> returns class name for HTML/JSX
  */
 
@@ -16,7 +16,7 @@ export interface WeatherInfo {
   wmoCode: number;
 }
 
-export const WEATHER_CODES: Record<number, Omit<WeatherInfo, 'code' | 'iconClass' | 'wmoCode'>> = {
+export const WEATHER_CODES: Record<number, Omit<WeatherInfo, "code" | "iconClass" | "wmoCode">> = {
   // 0-3: Clear/Cloudy
   0: { text: "Clear sky", description: "Clear sky conditions" },
   1: { text: "Mainly clear", description: "Mainly clear, few clouds" },
@@ -63,7 +63,7 @@ export const WEATHER_CODES: Record<number, Omit<WeatherInfo, 'code' | 'iconClass
 /**
  * WMO Code to weather-icons class mapping
  * Icon classes from: https://erikflowers.github.io/weather-icons/
- * 
+ *
  * Usage in JSX:
  * <i className={`wi ${getWeatherIconClass(weatherCode)}`}></i>
  */
@@ -126,7 +126,10 @@ export function getWeatherInfo(code: number | undefined): WeatherInfo {
     };
   }
 
-  const base = WEATHER_CODES[code] ?? { text: "Unknown", description: "Unknown weather conditions" };
+  const base = WEATHER_CODES[code] ?? {
+    text: "Unknown",
+    description: "Unknown weather conditions",
+  };
 
   return {
     code,
@@ -150,7 +153,10 @@ export function formatHumidity(humidity: number | null | undefined): string {
   return `${humidity}%`;
 }
 
-export function formatWindSpeed(speed: number | null | undefined, unit: "kmh" | "ms" = "kmh"): string {
+export function formatWindSpeed(
+  speed: number | null | undefined,
+  unit: "kmh" | "ms" = "kmh"
+): string {
   if (speed === null || speed === undefined) return "--";
   if (unit === "ms") return `${speed.toFixed(1)} m/s`;
   return `${speed.toFixed(1)} km/h`;

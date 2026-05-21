@@ -20,12 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { LayoutGrid } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function BlockMasterTable() {
   const { selectedFarmId } = useFarm();
@@ -135,7 +130,11 @@ export function BlockMasterTable() {
             <DialogTitle>Edit Block</DialogTitle>
           </DialogHeader>
           {editBlock && (
-            <BlockForm farmId={selectedFarmId} block={editBlock} onSuccess={() => setEditBlock(null)} />
+            <BlockForm
+              farmId={selectedFarmId}
+              block={editBlock}
+              onSuccess={() => setEditBlock(null)}
+            />
           )}
         </DialogContent>
       </Dialog>

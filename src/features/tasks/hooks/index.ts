@@ -70,15 +70,8 @@ export function useUpdateTask() {
 export function useUpdateTaskStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      farmId,
-      id,
-      status,
-    }: {
-      farmId: string;
-      id: string;
-      status: Task["status"];
-    }) => updateTaskStatus(farmId, id, status),
+    mutationFn: ({ farmId, id, status }: { farmId: string; id: string; status: Task["status"] }) =>
+      updateTaskStatus(farmId, id, status),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["tasks", variables.farmId] });
     },
@@ -154,8 +147,7 @@ export function useUpdateTaskTemplate() {
 export function useDeleteTaskTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ farmId, id }: { farmId: string; id: string }) =>
-      deleteTaskTemplate(farmId, id),
+    mutationFn: ({ farmId, id }: { farmId: string; id: string }) => deleteTaskTemplate(farmId, id),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: templateKey(variables.farmId) });
     },

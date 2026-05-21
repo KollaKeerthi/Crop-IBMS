@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -60,7 +60,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   );
 
   const form = useForm<CreateCropInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateCropInput>,
     defaultValues: {
       name: crop?.name ?? "",
       shortName: crop?.shortName ?? "",
@@ -181,8 +181,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       }
       onSuccess?.();
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Something went wrong.";
+      const message = err instanceof ApiError ? err.message : "Something went wrong.";
       form.setError("root", { message });
       toast.error(message);
       // Editing a row that no longer exists in DB — refresh and close so user isn't stuck
@@ -205,9 +204,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
             <h2 className="text-h3 font-bold text-foreground">
               {isEdit ? "Edit crop" : "Add crop"}
             </h2>
-            <p className="text-small text-muted-foreground">
-              Enter crop information and varieties
-            </p>
+            <p className="text-small text-muted-foreground">Enter crop information and varieties</p>
           </div>
         </div>
 
@@ -449,9 +446,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
           </div>
           {pendingVarieties.length === 0 ? (
             <div className="rounded-lg border border-dashed bg-muted/20 py-6 text-center">
-              <p className="text-small italic text-muted-foreground">
-                No varieties added yet.
-              </p>
+              <p className="text-small italic text-muted-foreground">No varieties added yet.</p>
             </div>
           ) : (
             <div className="space-y-2">

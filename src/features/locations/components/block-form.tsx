@@ -4,11 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
-import {
-  CreateBlockInputSchema,
-  type CreateBlockInput,
-  type BlockParentType,
-} from "../schema";
+import { CreateBlockInputSchema, type CreateBlockInput, type BlockParentType } from "../schema";
 import { useCreateBlock } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,7 +101,12 @@ export function BlockForm({ farmId, parentId, parentType, onSuccess }: Props) {
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea {...field} value={field.value ?? ""} placeholder="Optional notes" rows={3} />
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  placeholder="Optional notes"
+                  rows={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

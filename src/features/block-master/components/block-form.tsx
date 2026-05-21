@@ -1,10 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
-import { CreateBlockMasterInputSchema, UpdateBlockMasterInputSchema, type CreateBlockMasterInput, type BlockMaster } from "../schema";
+import {
+  CreateBlockMasterInputSchema,
+  UpdateBlockMasterInputSchema,
+  type CreateBlockMasterInput,
+  type BlockMaster,
+} from "../schema";
 import { useCreateBlockMaster, useUpdateBlockMaster } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +34,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
   const schema = isEdit ? UpdateBlockMasterInputSchema : CreateBlockMasterInputSchema;
 
   const form = useForm<CreateBlockMasterInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateBlockMasterInput>,
     defaultValues: {
       blockName: block?.blockName ?? "",
       subBlockName: block?.subBlockName ?? "",
@@ -65,7 +70,11 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
     }
   }
 
-  const numField = (fieldName: keyof CreateBlockMasterInput, label: string, placeholder?: string) => (
+  const numField = (
+    fieldName: keyof CreateBlockMasterInput,
+    label: string,
+    placeholder?: string
+  ) => (
     <FormField
       control={form.control}
       name={fieldName}
@@ -148,7 +157,13 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
         )}
 
         <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? (isEdit ? "Saving..." : "Creating...") : isEdit ? "Save Changes" : "Create Block"}
+          {isPending
+            ? isEdit
+              ? "Saving..."
+              : "Creating..."
+            : isEdit
+              ? "Save Changes"
+              : "Create Block"}
         </Button>
       </form>
     </Form>

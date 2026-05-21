@@ -28,15 +28,8 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      farmId,
-      id,
-      input,
-    }: {
-      farmId: string;
-      id: string;
-      input: UpdateEventInput;
-    }) => updateEvent(farmId, id, input),
+    mutationFn: ({ farmId, id, input }: { farmId: string; id: string; input: UpdateEventInput }) =>
+      updateEvent(farmId, id, input),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["events", variables.farmId] });
     },
@@ -46,8 +39,7 @@ export function useUpdateEvent() {
 export function useDeleteEvent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ farmId, id }: { farmId: string; id: string }) =>
-      deleteEvent(farmId, id),
+    mutationFn: ({ farmId, id }: { farmId: string; id: string }) => deleteEvent(farmId, id),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["events", variables.farmId] });
     },

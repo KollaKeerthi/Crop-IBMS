@@ -39,12 +39,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function SiteForm({
   defaultValues,
@@ -195,9 +190,7 @@ export function ProductionSitesList() {
             {sites.map((site) => (
               <TableRow key={site.id}>
                 <TableCell className="font-semibold text-foreground">{site.code}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {site.description ?? "—"}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{site.description ?? "—"}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => setEditSite(site)}>

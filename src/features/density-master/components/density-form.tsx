@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -46,7 +46,7 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
   const { data: productionSites } = useProductionSites();
 
   const form = useForm<CreateDensityMasterInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<CreateDensityMasterInput>,
     defaultValues: {
       cropId: density?.cropId ?? undefined,
       productionSiteId: density?.productionSiteId ?? undefined,

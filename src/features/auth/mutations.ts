@@ -2,11 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users, emailVerificationTokens, passwordResetTokens } from "@/db/schema";
 
-export async function createUser(data: {
-  name: string;
-  email: string;
-  passwordHash: string;
-}) {
+export async function createUser(data: { name: string; email: string; passwordHash: string }) {
   const rows = await db
     .insert(users)
     .values({
@@ -37,18 +33,18 @@ export async function createVerificationToken(data: {
 }
 
 export async function deleteVerificationToken(token: string) {
-  await db
-    .delete(emailVerificationTokens)
-    .where(eq(emailVerificationTokens.token, token));
+  await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.token, token));
 }
 
 export async function deleteVerificationTokensByUserId(userId: string) {
-  await db
-    .delete(emailVerificationTokens)
-    .where(eq(emailVerificationTokens.userId, userId));
+  await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
 }
 
-export async function createPasswordResetToken(data: { userId: string; token: string; expiresAt: Date }) {
+export async function createPasswordResetToken(data: {
+  userId: string;
+  token: string;
+  expiresAt: Date;
+}) {
   const rows = await db.insert(passwordResetTokens).values(data).returning();
   return rows[0]!;
 }
