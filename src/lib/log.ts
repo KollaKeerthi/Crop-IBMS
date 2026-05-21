@@ -13,7 +13,7 @@ const PINO_TO_SEVERITY: Record<string, string> = {
 };
 
 const baseOptions: LoggerOptions = {
-  level: process.env.LOG_LEVEL ?? (isProd ? "info" : "debug"),
+  level: process.env.LOG_LEVEL || (isProd ? "info" : "debug"),
   serializers: { err: pino.stdSerializers.err, error: pino.stdSerializers.err },
   formatters: {
     level(label) {
