@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { productionTypes, variability } from "@/db/schema";
 import type { Variability } from "./schema";

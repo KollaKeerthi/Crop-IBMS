@@ -52,8 +52,8 @@ function NameStep({
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold">What's your name?</h2>
-        <p className="text-sm text-muted-foreground">This is how you'll appear to your team.</p>
+        <h2 className="text-xl font-semibold">What&apos;s your name?</h2>
+        <p className="text-sm text-muted-foreground">This is how you&apos;ll appear to your team.</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

@@ -759,7 +759,8 @@ export default function FullMapInner() {
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
 
   useEffect(() => {
-    setIsMounted(true);
+    const raf = requestAnimationFrame(() => setIsMounted(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const { selectedFarmId, setSelectedFarmId } = useFarm();
@@ -780,6 +781,15 @@ export default function FullMapInner() {
       }
     },
     [mapInstance, setSelectedFarmId]
+  );
+
+  const handleDrawComplete = useCallback(
+    async (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => {
+      if (result.type !== "polygon") return;
+      const { geojson } = result;
+      // existing body remains below
+    },
+    []
   );
 
   // Drawing state
@@ -935,74 +945,71 @@ export default function FullMapInner() {
     }
   };
 
-  const handleDrawComplete = useCallback(
-    async (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => {
-      if (result.type !== "polygon") return;
-      const { geojson } = result;
+  const handleDrawComplete = async (result: { type: "marker"; lat: number; lng: number } | { type: "polygon"; geojson: unknown }) => {
+    if (result.type !== "polygon") return;
+    const { geojson } = result;
 
-      if (pendingLocationDraft && (drawMode === "field" || drawMode === "greenhouse")) {
-        const payload = {
-          farmId: selectedFarmId!,
-          name: pendingLocationDraft.name,
-          notes: pendingLocationDraft.notes ?? undefined,
-          areaSqm: pendingLocationDraft.areaSqm ?? undefined,
-          boundary: geojson,
-        };
+    if (pendingLocationDraft && (drawMode === "field" || drawMode === "greenhouse")) {
+      const payload = {
+        farmId: selectedFarmId!,
+        name: pendingLocationDraft.name,
+        notes: pendingLocationDraft.notes ?? undefined,
+        areaSqm: pendingLocationDraft.areaSqm ?? undefined,
+        boundary: geojson,
+      };
 
-        try {
-          const created = pendingLocationDraft.kind === "field"
-            ? await createField.mutateAsync(payload)
-            : await createGreenhouse.mutateAsync(payload);
+      try {
+        const created = pendingLocationDraft.kind === "field"
+          ? await createField.mutateAsync(payload)
+          : await createGreenhouse.mutateAsync(payload);
 
-          if (pendingLocationDraft.blocks?.length) {
-            await Promise.all(
-              pendingLocationDraft.blocks.map((block) =>
-                createBlock.mutateAsync({
-                  farmId: selectedFarmId!,
-                  parentType: pendingLocationDraft.kind,
-                  parentId: created.id,
-                  name: block.name,
-                  areaSqm:
-                    block.rowLengthM && block.rowWidthM
-                      ? block.rowLengthM * block.rowWidthM
-                      : undefined,
-                  notes: [
-                    block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
-                    block.rowLengthM !== undefined ? `Row Length (m): ${block.rowLengthM}` : undefined,
-                    block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
-                    block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
-                    block.crops ? `Crops: ${block.crops}` : undefined,
-                  ]
-                    .filter(Boolean)
-                    .join("\n") || undefined,
-                })
-              )
-            );
-          }
-
-          toast.success(
-            pendingLocationDraft.kind === "field"
-              ? "Field created. Blocks saved."
-              : "Greenhouse created. Blocks saved."
+        if (pendingLocationDraft.blocks?.length) {
+          await Promise.all(
+            pendingLocationDraft.blocks.map((block) =>
+              createBlock.mutateAsync({
+                farmId: selectedFarmId!,
+                parentType: pendingLocationDraft.kind,
+                parentId: created.id,
+                name: block.name,
+                areaSqm:
+                  block.rowLengthM && block.rowWidthM
+                    ? block.rowLengthM * block.rowWidthM
+                    : undefined,
+                notes: [
+                  block.rows !== undefined ? `Rows: ${block.rows}` : undefined,
+                  block.rowLengthM !== undefined ? `Row Length (m): ${block.rowLengthM}` : undefined,
+                  block.rowWidthM !== undefined ? `Row Width (m): ${block.rowWidthM}` : undefined,
+                  block.rowSpaceM !== undefined ? `Row Space (m): ${block.rowSpaceM}` : undefined,
+                  block.crops ? `Crops: ${block.crops}` : undefined,
+                ]
+                  .filter(Boolean)
+                  .join("\n") || undefined,
+              })
+            )
           );
-        } catch (err) {
-          const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to create location. Please try again.";
-          toast.error(message);
         }
 
-        setPendingLocationDraft(null);
-      } else if (drawMode === "field") {
-        setPendingLocation({ kind: "field", boundary: geojson });
-      } else if (drawMode === "greenhouse") {
-        setPendingLocation({ kind: "greenhouse", boundary: geojson });
-      } else if (drawMode === "block" && pendingBlock) {
-        setPendingLocation({ kind: "block", boundary: geojson, ...pendingBlock });
+        toast.success(
+          pendingLocationDraft.kind === "field"
+            ? "Field created. Blocks saved."
+            : "Greenhouse created. Blocks saved."
+        );
+      } catch (err) {
+        const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Failed to create location. Please try again.";
+        toast.error(message);
       }
 
-      setDrawMode(null);
-    },
-    [drawMode, pendingBlock, pendingLocationDraft, createField, createGreenhouse, createBlock, selectedFarmId]
-  );
+      setPendingLocationDraft(null);
+    } else if (drawMode === "field") {
+      setPendingLocation({ kind: "field", boundary: geojson });
+    } else if (drawMode === "greenhouse") {
+      setPendingLocation({ kind: "greenhouse", boundary: geojson });
+    } else if (drawMode === "block" && pendingBlock) {
+      setPendingLocation({ kind: "block", boundary: geojson, ...pendingBlock });
+    }
+
+    setDrawMode(null);
+  };
 
   if (!isMounted) {
     return (

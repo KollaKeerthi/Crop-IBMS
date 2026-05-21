@@ -322,7 +322,8 @@ export default function FarmMapInner({
   const [mapTileLayer, setMapTileLayer] = useState<keyof typeof MAP_TILE_LAYERS>("esriSatellite");
 
   useEffect(() => {
-    setIsMounted(true);
+    const raf = requestAnimationFrame(() => setIsMounted(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const defaultCenter: [number, number] =

@@ -29,11 +29,13 @@ export function CalendarIntegrations() {
   }
 
   useEffect(() => {
-    load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, []);
 
   function connect(provider: "google" | "outlook") {
-    window.location.href = `/api/v1/integrations/calendar/${provider}/connect`;
+    window.location.assign(`/api/v1/integrations/calendar/${provider}/connect`);
   }
 
   async function disconnect(provider: "google" | "outlook") {

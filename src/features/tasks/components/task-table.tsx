@@ -39,6 +39,17 @@ type SortKey = "title" | "priority" | "status" | "startDate" | "dueDate";
 
 const PRIORITY_ORDER: Task["priority"][] = ["Urgent", "High", "Medium", "Low"];
 
+type SortIconProps = {
+  col: SortKey;
+  sortKey: SortKey;
+  sortDir: "asc" | "desc";
+};
+
+function SortIcon({ col, sortKey, sortDir }: SortIconProps) {
+  if (sortKey !== col) return <span className="ml-1 text-muted-foreground/40">↕</span>;
+  return <span className="ml-1">{sortDir === "asc" ? "↑" : "↓"}</span>;
+}
+
 function sortTasks(tasks: Task[], key: SortKey, dir: "asc" | "desc"): Task[] {
   return [...tasks].sort((a, b) => {
     let cmp = 0;
@@ -89,11 +100,6 @@ export function TaskTable({ tasks, farmId }: Props) {
     );
   }
 
-  function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <span className="ml-1 text-muted-foreground/40">↕</span>;
-    return <span className="ml-1">{sortDir === "asc" ? "↑" : "↓"}</span>;
-  }
-
   return (
     <>
       <div className="overflow-hidden border-t">
@@ -101,20 +107,20 @@ export function TaskTable({ tasks, farmId }: Props) {
           <div className="min-w-240">
             <div className="grid grid-cols-[2fr_120px_120px_160px_140px_140px_100px] border-b px-9 py-4 text-sm font-semibold tracking-wide text-muted-foreground">
               <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("title")}>
-                Subject <SortIcon col="title" />
+                Subject <SortIcon col="title" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("priority")}>
-                Priority <SortIcon col="priority" />
+                Priority <SortIcon col="priority" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("status")}>
-                Status <SortIcon col="status" />
+                Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <div>Assignee</div>
               <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("startDate")}>
-                Start Date <SortIcon col="startDate" />
+                Start Date <SortIcon col="startDate" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <button className="text-left transition-colors hover:text-foreground" onClick={() => handleSort("dueDate")}>
-                Due Date <SortIcon col="dueDate" />
+                Due Date <SortIcon col="dueDate" sortKey={sortKey} sortDir={sortDir} />
               </button>
               <div>Actions</div>
             </div>

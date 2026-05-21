@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { apiError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const record = await getCropDataHandler(ctx, id, farmId);
 
-    const wb = XLSX.utils.book_new();
+    const wb = new ExcelJS.Workbook();
 
     // Sheet 1: Summary
     const summaryData = [
@@ -31,8 +31,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Notes", record.notes ?? ""],
       ["Created At", record.createdAt ? new Date(record.createdAt).toLocaleString() : ""],
     ];
-    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    const wsSummary = wb.addWorksheet("Summary");
+    wsSummary.addRows(summaryData);
 
     // Sheet 2: Program Info
     const pi = record.programInfo as Record<string, unknown> | null;
@@ -47,8 +47,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Female Density", pi?.femaleDensity ?? ""],
       ["Notes", pi?.notes ?? ""],
     ];
-    const wsProgramInfo = XLSX.utils.aoa_to_sheet(programInfoData);
-    XLSX.utils.book_append_sheet(wb, wsProgramInfo, "Program Info");
+    const wsProgramInfo = wb.addWorksheet("Program Info");
+    wsProgramInfo.addRows(programInfoData);
 
     // Sheet 3: Nursery
     const nurs = record.nursery as Record<string, unknown> | null;
@@ -66,8 +66,8 @@ export async function GET(req: NextRequest, { params }: Params) {
         nurseryData.push([k, String(v ?? "")]);
       }
     }
-    const wsNursery = XLSX.utils.aoa_to_sheet(nurseryData);
-    XLSX.utils.book_append_sheet(wb, wsNursery, "Nursery");
+    const wsNursery = wb.addWorksheet("Nursery");
+    wsNursery.addRows(nurseryData);
 
     // One sheet per module
     const modules = record.modules as Array<{ moduleType: string; data: Record<string, unknown> }>;
@@ -81,11 +81,11 @@ export async function GET(req: NextRequest, { params }: Params) {
       for (const [k, v] of Object.entries(mod.data ?? {})) {
         moduleRows.push([k, typeof v === "object" ? JSON.stringify(v) : (v as string | number | boolean | null)]);
       }
-      const wsMod = XLSX.utils.aoa_to_sheet(moduleRows);
-      XLSX.utils.book_append_sheet(wb, wsMod, sheetLabel);
+      const wsMod = wb.addWorksheet(sheetLabel);
+      wsMod.addRows(moduleRows);
     }
 
-    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const buf = Buffer.from(await wb.xlsx.writeBuffer());
 
     return new NextResponse(buf, {
       status: 200,

@@ -56,8 +56,8 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
   const isEdit = !!planting;
   const schema = isEdit ? UpdatePlantingInputSchema : CreatePlantingInputSchema;
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<any>({
+    resolver: zodResolver(schema as any),
     defaultValues: {
       farmId,
       cropId: planting?.cropId ?? undefined,

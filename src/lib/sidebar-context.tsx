@@ -13,17 +13,13 @@ type Ctx = {
 const SidebarCtx = createContext<Ctx | null>(null);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  // Hydrate from localStorage after mount to avoid SSR mismatch
-  useEffect(() => {
+  const [collapsed, setCollapsed] = useState(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === "true") setCollapsed(true);
+      return window.localStorage.getItem(STORAGE_KEY) === "true";
     } catch {
-      /* noop */
+      return false;
     }
-  }, []);
+  });
 
   useEffect(() => {
     try {

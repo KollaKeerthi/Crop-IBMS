@@ -15,7 +15,7 @@ export function PermissionGuard({
   fallback = null,
 }: PermissionGuardProps) {
   const { data: session } = useSession();
-  const role = (session?.user as any)?.role ?? "OWNER";
+  const role = session?.user?.role ?? "OWNER";
 
   // Owners always have access
   if (role === "OWNER") return <>{children}</>;
@@ -24,7 +24,7 @@ export function PermissionGuard({
   if (!requiredRoles || requiredRoles.length === 0) return <>{children}</>;
 
   // Check if user's role is in allowed roles
-  if (requiredRoles.includes(role as any)) return <>{children}</>;
+  if (requiredRoles.includes(role)) return <>{children}</>;
 
   return <>{fallback}</>;
 }

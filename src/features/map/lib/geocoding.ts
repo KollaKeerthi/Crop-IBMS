@@ -14,15 +14,24 @@ export type ReverseGeocodeResult = {
   city: string;
 };
 
-async function fetchPhoton(url: string): Promise<any> {
+type PhotonFeature = {
+  geometry?: { coordinates?: [number, number] };
+  properties?: Record<string, unknown>;
+};
+
+type PhotonResponse = {
+  features?: PhotonFeature[];
+};
+
+async function fetchPhoton(url: string): Promise<PhotonResponse | null> {
   const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
   if (!res.ok) return null;
-  return res.json();
+  return res.json() as Promise<PhotonResponse>;
 }
 
-function parseFeature(feature: any): GeocodeResult | null {
+function parseFeature(feature: PhotonFeature | null | undefined): GeocodeResult | null {
   if (!feature?.geometry?.coordinates) return null;
-  const [lon, lat] = feature.geometry.coordinates as [number, number];
+  const [lon, lat] = feature.geometry.coordinates;
   const p = feature.properties ?? {};
   const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
   return {

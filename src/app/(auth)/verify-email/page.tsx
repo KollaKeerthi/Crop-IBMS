@@ -7,6 +7,56 @@ import { Button } from "@/components/ui/button";
 import { VerifyEmailClient } from "@/features/auth/components/verify-email-client";
 import { ApiError } from "@/lib/api/errors";
 
+function renderVerifiedEmailState(verifiedEmail: string) {
+  return (
+    <Shell>
+      <div className="space-y-2 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
+          ✓
+        </div>
+        <h1 className="text-2xl font-semibold">Email verified!</h1>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{verifiedEmail}</span> is confirmed.
+          You can now sign in.
+        </p>
+      </div>
+      <Link href="/login">
+        <Button className="w-full">Sign in</Button>
+      </Link>
+    </Shell>
+  );
+}
+
+function renderVerificationErrorState({
+  isExpired,
+  recoveredEmail,
+}: {
+  isExpired: boolean;
+  recoveredEmail: string | null;
+}) {
+  return (
+    <Shell>
+      <div className="space-y-2 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-2xl">
+          ✕
+        </div>
+        <h1 className="text-2xl font-semibold">{isExpired ? "Link expired" : "Link invalid"}</h1>
+        <p className="text-sm text-muted-foreground">
+          {isExpired
+            ? "This verification link has expired. Request a new one below."
+            : "This verification link is invalid or has already been used."}
+        </p>
+      </div>
+      <div className="space-y-3 text-center">
+        <VerifyEmailClient email={recoveredEmail ?? undefined} />
+        <Link href="/login" className="block text-sm text-muted-foreground underline underline-offset-4">
+          Back to sign in
+        </Link>
+      </div>
+    </Shell>
+  );
+}
+
 export default async function VerifyEmailPage({
   searchParams,
 }: {
@@ -21,54 +71,13 @@ export default async function VerifyEmailPage({
   if (token) {
     try {
       const { email: verifiedEmail } = await verifyEmailHandler(token);
-      return (
-        <Shell>
-          <div className="space-y-2 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
-              ✓
-            </div>
-            <h1 className="text-2xl font-semibold">Email verified!</h1>
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{verifiedEmail}</span> is confirmed.
-              You can now sign in.
-            </p>
-          </div>
-          <Link href="/login">
-            <Button className="w-full">Sign in</Button>
-          </Link>
-        </Shell>
-      );
+      return renderVerifiedEmailState(verifiedEmail);
     } catch (err) {
       const isExpired = err instanceof ApiError && err.code === "token_expired";
       // Recover the email from the token (kept around for expired/invalid
       // cases) so the user can resend without re-typing it.
       const recoveredEmail = await getEmailForVerificationToken(token).catch(() => null);
-      return (
-        <Shell>
-          <div className="space-y-2 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-2xl">
-              ✕
-            </div>
-            <h1 className="text-2xl font-semibold">
-              {isExpired ? "Link expired" : "Link invalid"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {isExpired
-                ? "This verification link has expired. Request a new one below."
-                : "This verification link is invalid or has already been used."}
-            </p>
-          </div>
-          <div className="space-y-3 text-center">
-            <VerifyEmailClient email={recoveredEmail ?? undefined} />
-            <Link
-              href="/login"
-              className="block text-sm text-muted-foreground underline underline-offset-4"
-            >
-              Back to sign in
-            </Link>
-          </div>
-        </Shell>
-      );
+      return renderVerificationErrorState({ isExpired, recoveredEmail });
     }
   }
 

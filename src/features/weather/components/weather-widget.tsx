@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, SVGProps } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Loader2,
@@ -37,6 +37,24 @@ function getConditionIcon(code: number | undefined): LucideIcon {
   if ([95, 96, 99].includes(code)) return Zap;
   if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return CloudRain;
   return Cloud;
+}
+
+function WeatherConditionIcon({
+  code,
+  className,
+  ...props
+}: {
+  code: number | undefined;
+} & SVGProps<SVGSVGElement>) {
+  if (code === undefined) return <Cloud className={className} {...props} />;
+  if (code === 0) return <Sun className={className} {...props} />;
+  if (code <= 2) return <CloudSun className={className} {...props} />;
+  if (code === 3) return <Cloud className={className} {...props} />;
+  if ([45, 48].includes(code)) return <CloudFog className={className} {...props} />;
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return <Snowflake className={className} {...props} />;
+  if ([95, 96, 99].includes(code)) return <Zap className={className} {...props} />;
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return <CloudRain className={className} {...props} />;
+  return <Cloud className={className} {...props} />;
 }
 
 function MetricColumn({
@@ -155,9 +173,6 @@ export function WeatherWidget({
   const evapotranspirationTomorrow = daily?.et0_fao_evapotranspiration?.[1] ?? null;
 
   const conditionLabel = getWeatherShortLabel(current.weather_code);
-  const ConditionIcon = getConditionIcon(current.weather_code);
-  const BackgroundIcon = getConditionIcon(current.weather_code);
-
   return (
     <div
       className={cn(
@@ -167,7 +182,8 @@ export function WeatherWidget({
     >
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="relative flex min-w-0 items-center gap-4 sm:gap-6 lg:border-r lg:border-primary-foreground/20 lg:pr-8">
-          <BackgroundIcon
+          <WeatherConditionIcon
+            code={current.weather_code}
             className="pointer-events-none absolute -left-2 top-1/2 h-28 w-28 -translate-y-1/2 text-primary-foreground/10 sm:h-32 sm:w-32"
             aria-hidden
           />
@@ -239,7 +255,8 @@ export function WeatherWidget({
         </div>
       </div>
 
-      <ConditionIcon
+      <WeatherConditionIcon
+        code={current.weather_code}
         className="pointer-events-none absolute right-4 top-4 h-8 w-8 text-primary-foreground/20 sm:right-6 sm:top-5"
         aria-hidden
       />

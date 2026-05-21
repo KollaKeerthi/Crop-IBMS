@@ -191,7 +191,12 @@ export function FarmAssetsList() {
           {editing && (
             <AssetForm
               farmId={editing.farmId}
-              defaultValues={{ assetType: editing.assetType as any, name: editing.name ?? "", geometryType: editing.geometryType, coordinates: editing.coordinates }}
+              defaultValues={{
+                assetType: editing.assetType as CreateFarmAssetInput["assetType"],
+                name: editing.name ?? "",
+                geometryType: editing.geometryType,
+                coordinates: editing.coordinates,
+              }}
               onSubmit={handleUpdate}
               onCancel={() => setEditing(null)}
               submitting={updateMutation.isPending}

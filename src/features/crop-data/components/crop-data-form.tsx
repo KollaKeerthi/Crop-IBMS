@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -40,7 +41,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
     defaultValues: { farmId },
   });
 
-  const selectedCropId = form.watch("cropId");
+  const selectedCropId = useWatch({ control: form.control, name: "cropId" });
 
   const { data: crops = [] } = useQuery({
     queryKey: ["crops"],

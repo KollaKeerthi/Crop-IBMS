@@ -67,7 +67,7 @@ export function ModuleEditor({ cropDataId, farmId, moduleType, initialData }: Pr
     <div className="space-y-3">
       {pairs.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          No data yet. Click "Add Field" to start entering values.
+          No data yet. Click &apos;Add Field&apos; to start entering values.
         </p>
       )}
 
