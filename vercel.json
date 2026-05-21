@@ -4,6 +4,6 @@
       "main": false
     }
   },
-  "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npm run build"
+  "installCommand": "bun install",
+  "buildCommand": "bun run build"
 }
