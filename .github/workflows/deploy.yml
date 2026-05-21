@@ -14,38 +14,9 @@ permissions:
   deployments: write
 
 jobs:
-  # Migrations run BEFORE the deploy job so the new code never hits a stale schema.
-  # If migrations fail, the deploy job is skipped — the previous version stays live.
-  migrate:
-    name: Apply DB migrations
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
-          restore-keys: bun-${{ runner.os }}-
-      - run: bun install --frozen-lockfile
-
-      - name: Verify DATABASE_URL_DIRECT secret
-        run: |
-          test -n "${{ secrets.DATABASE_URL_DIRECT }}" || (echo "Missing DATABASE_URL_DIRECT secret — migrations must use the non-pooled connection string." && exit 1)
-
-      - name: Apply pending migrations
-        run: bunx drizzle-kit migrate
-        env:
-          # drizzle-kit migrate reads DATABASE_URL_DIRECT (preferred) or DATABASE_URL.
-          # Use the DIRECT (non-pooled) Neon connection string here — pooled connections
-          # don't reliably support DDL.
-          DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
-
   deploy-production:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: [migrate]
     steps:
       - uses: actions/checkout@v4
 
