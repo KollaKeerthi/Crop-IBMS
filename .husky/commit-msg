@@ -1,0 +1,8 @@
+#!/bin/sh
+commit_msg=$(cat "$1")
+if ! echo "$commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf): .+"; then
+  echo "Invalid commit message format!"
+  echo "Format: type: description"
+  echo "Types: feat, fix, docs, style, refactor, test, chore, perf"
+  exit 1
+fi
