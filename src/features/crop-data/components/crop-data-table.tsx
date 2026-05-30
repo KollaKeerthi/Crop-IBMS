@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useCropDataList, useDeleteCropData } from "../hooks";
@@ -51,7 +51,7 @@ export function CropDataTable() {
     <div className="space-y-6">
       <SectionHeader
         title="Crop Programs"
-        description="Track every program — from nursery to harvest — for your selected farm."
+        description="Track every program - from nursery to harvest - for your selected farm."
         count={recordCount}
         countUnit="programs"
         action={
@@ -99,27 +99,27 @@ export function CropDataTable() {
             ).map((row) => (
               <TableRow key={row.id}>
                 <TableCell className="font-semibold text-foreground">
-                  {row.cropName ?? "—"}
+                  {row.cropName ?? "-"}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{row.varietyName ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{row.seasonName ?? "—"}</TableCell>
-                <TableCell>{row.block ?? "—"}</TableCell>
-                <TableCell>{row.fieldName ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{row.varietyName ?? "-"}</TableCell>
+                <TableCell className="text-muted-foreground">{row.seasonName ?? "-"}</TableCell>
+                <TableCell>{row.block ?? "-"}</TableCell>
+                <TableCell>{row.fieldName ?? "-"}</TableCell>
                 <TableCell>
                   {row.sexExpression ? (
                     <Badge variant="outline">{row.sexExpression}</Badge>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{row.contractNo ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{row.contractNo ?? "-"}</TableCell>
                 <TableCell>
                   {row.status ? (
                     <Badge variant={row.status === "active" ? "default" : "secondary"}>
                       {row.status}
                     </Badge>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -130,7 +130,7 @@ export function CropDataTable() {
                       onClick={() => router.push(`/dashboard/crop-data/${row.id}`)}
                       aria-label="View record"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"

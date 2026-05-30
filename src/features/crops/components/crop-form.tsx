@@ -32,6 +32,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   crop?: Crop;
@@ -39,8 +46,8 @@ type Props = {
   onCancel?: () => void;
 };
 
-type PendingType = { id: string; name: string };
-type PendingVariety = { id: string; name: string; code: string };
+type PendingType = { id: string; name: string; colour: string; description: string };
+type PendingVariety = { id: string; name: string; gender: "Male" | "Female" | ""; colourDescription: string };
 
 const newId = () => Math.random().toString(36).slice(2);
 const DEFAULT_ACCENT = "#048FC2";
@@ -53,10 +60,10 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(crop?.imageUrl ?? null);
 
   const [pendingTypes, setPendingTypes] = useState<PendingType[]>(
-    crop?.types.map((t) => ({ id: t.id, name: t.name })) ?? []
+    crop?.types.map((t) => ({ id: t.id, name: t.name, colour: t.colour ?? "", description: t.description ?? "" })) ?? []
   );
   const [pendingVarieties, setPendingVarieties] = useState<PendingVariety[]>(
-    crop?.varieties.map((v) => ({ id: v.id, name: v.name, code: v.code ?? "" })) ?? []
+    crop?.varieties.map((v) => ({ id: v.id, name: v.name, gender: (v.gender ?? "") as "Male" | "Female" | "", colourDescription: v.colourDescription ?? "" })) ?? []
   );
 
   const form = useForm<CreateCropInput>({
@@ -116,17 +123,17 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   }
 
   function addType() {
-    setPendingTypes((prev) => [...prev, { id: newId(), name: "" }]);
+    setPendingTypes((prev) => [...prev, { id: newId(), name: "", colour: "", description: "" }]);
   }
-  function updateType(id: string, name: string) {
-    setPendingTypes((prev) => prev.map((t) => (t.id === id ? { ...t, name } : t)));
+  function updateType(id: string, patch: Partial<PendingType>) {
+    setPendingTypes((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }
   function removeType(id: string) {
     setPendingTypes((prev) => prev.filter((t) => t.id !== id));
   }
 
   function addVariety() {
-    setPendingVarieties((prev) => [...prev, { id: newId(), name: "", code: "" }]);
+    setPendingVarieties((prev) => [...prev, { id: newId(), name: "", gender: "", colourDescription: "" }]);
   }
   function updateVariety(id: string, patch: Partial<PendingVariety>) {
     setPendingVarieties((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
@@ -137,14 +144,12 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
 
   async function onSubmit(values: CreateCropInput) {
     // Validate pending lists before hitting the API
-    const validTypes = pendingTypes.map((t) => t.name.trim()).filter(Boolean);
+    const validTypes = pendingTypes.filter((t) => t.name.trim().length > 0);
     if (validTypes.length === 0) {
       toast.error("Define at least one production type to continue.");
       return;
     }
-    const validVarieties = pendingVarieties
-      .map((v) => ({ name: v.name.trim(), code: v.code.trim() }))
-      .filter((v) => v.name.length > 0);
+    const validVarieties = pendingVarieties.filter((v) => v.name.trim().length > 0);
 
     try {
       let cropId: string;
@@ -158,9 +163,10 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
 
       // Persist any new types that weren't already on the crop
       const existingTypeNames = new Set((crop?.types ?? []).map((t) => t.name.toLowerCase()));
-      for (const name of validTypes) {
-        if (existingTypeNames.has(name.toLowerCase())) continue;
-        await createCropType(cropId, { name });
+      for (const t of pendingTypes) {
+        const name = t.name.trim();
+        if (!name || existingTypeNames.has(name.toLowerCase())) continue;
+        await createCropType(cropId, { name, colour: t.colour || undefined, description: t.description || undefined });
       }
 
       // Persist any new varieties
@@ -169,7 +175,11 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       );
       for (const v of validVarieties) {
         if (existingVarietyNames.has(v.name.toLowerCase())) continue;
-        await createCropVariety(cropId, { name: v.name, code: v.code || undefined });
+        await createCropVariety(cropId, {
+          name: v.name,
+          gender: v.gender || undefined,
+          colourDescription: v.colourDescription || undefined,
+        });
       }
 
       toast.success(isEdit ? "Crop updated" : "Crop created");
@@ -184,7 +194,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       const message = err instanceof ApiError ? err.message : "Something went wrong.";
       form.setError("root", { message });
       toast.error(message);
-      // Editing a row that no longer exists in DB — refresh and close so user isn't stuck
+      // Editing a row that no longer exists in DB - refresh and close so user isn't stuck
       if (err instanceof ApiError && err.status === 404) {
         qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY });
         onCancel?.();
@@ -405,12 +415,31 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
           ) : (
             <div className="space-y-2">
               {pendingTypes.map((t) => (
-                <div key={t.id} className="flex items-center gap-2">
+                <div key={t.id} className="grid grid-cols-[1fr_140px_1fr_auto] gap-2">
                   <Input
                     value={t.name}
-                    onChange={(e) => updateType(t.id, e.target.value)}
+                    onChange={(e) => updateType(t.id, { name: e.target.value })}
                     placeholder="Type name"
-                    className="flex-1"
+                  />
+                  <div className="relative">
+                    <input
+                      type="color"
+                      value={t.colour || "#048FC2"}
+                      onChange={(e) => updateType(t.id, { colour: e.target.value })}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full border border-border cursor-pointer overflow-hidden p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-full"
+                      aria-label="Pick colour"
+                    />
+                    <Input
+                      value={t.colour}
+                      onChange={(e) => updateType(t.id, { colour: e.target.value })}
+                      placeholder="Colour"
+                      className="pl-10 font-mono uppercase"
+                    />
+                  </div>
+                  <Input
+                    value={t.description}
+                    onChange={(e) => updateType(t.id, { description: e.target.value })}
+                    placeholder="Description (optional)"
                   />
                   <Button
                     type="button"
@@ -451,16 +480,30 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
           ) : (
             <div className="space-y-2">
               {pendingVarieties.map((v) => (
-                <div key={v.id} className="grid grid-cols-[1fr_140px_auto] gap-2">
+                <div key={v.id} className="grid grid-cols-[1fr_110px_200px_auto] gap-2">
                   <Input
                     value={v.name}
                     onChange={(e) => updateVariety(v.id, { name: e.target.value })}
                     placeholder="Variety name"
                   />
+                  <Select
+                    value={v.gender}
+                    onValueChange={(val) =>
+                      updateVariety(v.id, { gender: val as "Male" | "Female" | "" })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Input
-                    value={v.code}
-                    onChange={(e) => updateVariety(v.id, { code: e.target.value })}
-                    placeholder="Code (optional)"
+                    value={v.colourDescription}
+                    onChange={(e) => updateVariety(v.id, { colourDescription: e.target.value })}
+                    placeholder="Colour description (optional)"
                   />
                   <Button
                     type="button"

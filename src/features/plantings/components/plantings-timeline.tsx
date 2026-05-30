@@ -165,7 +165,7 @@ export function PlantingsTimeline({ plantings, onEdit }: Props) {
                     className={`absolute top-[6px] h-7 cursor-pointer rounded px-2 text-xs font-medium transition-opacity hover:opacity-80 ${barColor} ${textColor}`}
                     style={{ left: barStyle.left, width: barStyle.width }}
                     onClick={() => onEdit(planting)}
-                    title={`${label} — ${planting.status}`}
+                    title={`${label} - ${planting.status}`}
                   >
                     <span className="truncate block">{planting.status}</span>
                   </button>

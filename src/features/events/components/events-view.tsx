@@ -17,7 +17,7 @@ import { EventDetailDialog } from "./event-detail-dialog";
 import type { Event } from "../schema";
 
 const RECURRENCE_LABELS: Record<Event["recurrenceType"], string> = {
-  none: "—",
+  none: "-",
   daily: "Daily",
   weekly: "Weekly",
   monthly: "Monthly",
@@ -148,13 +148,13 @@ export function EventsView() {
                       </Badge>
                     ) : (
                       <>
-                        {event.startTime ?? "—"}
+                        {event.startTime ?? "-"}
                         {event.endTime && <> – {event.endTime}</>}
                       </>
                     )}
                   </div>
                   <div className="px-4 py-3 text-sm text-muted-foreground truncate">
-                    {event.location ?? "—"}
+                    {event.location ?? "-"}
                   </div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">
                     {RECURRENCE_LABELS[event.recurrenceType]}

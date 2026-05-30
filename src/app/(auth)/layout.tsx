@@ -3,7 +3,7 @@ import { Leaf } from "lucide-react";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex">
-      {/* Left — blue gradient branding panel */}
+      {/* Left - blue gradient branding panel */}
       <div className="hidden lg:flex lg:w-[44%] bg-gradient-to-br from-[#023e5a] via-[#036d96] to-[#048FC2] flex-col items-center justify-center p-12">
         <div className="text-white space-y-8 max-w-sm w-full">
           <div className="flex items-center gap-3">
@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="space-y-3">
             <h1 className="text-3xl font-bold leading-tight">Smart farming starts here.</h1>
             <p className="text-white/75 text-lg leading-relaxed">
-              Manage crops, plan seasons, track tasks, and analyse performance — all in one place.
+              Manage crops, plan seasons, track tasks, and analyse performance - all in one place.
             </p>
           </div>
 
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      {/* Right — form panel */}
+      {/* Right - form panel */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-background">
         {/* Mobile logo */}
         <div className="flex items-center gap-2 mb-8 lg:hidden">

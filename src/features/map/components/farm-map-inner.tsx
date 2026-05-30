@@ -43,7 +43,7 @@ const MAP_TILE_LAYERS = {
   })(),
 } as const;
 
-// Fix Leaflet default icon paths — run once per load
+// Fix Leaflet default icon paths - run once per load
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "/leaflet/marker-icon.png",
@@ -53,7 +53,7 @@ L.Icon.Default.mergeOptions({
 
 export interface FarmMapInnerProps {
   height: string;
-  center?: [number, number]; // [lat, lng] — triggers flyTo when changed
+  center?: [number, number]; // [lat, lng] - triggers flyTo when changed
   existingMarker?: [number, number];
   existingBoundary?: unknown; // GeoJSON Polygon geometry
   onMarkerPlaced?: (lat: number, lng: number) => void;
@@ -63,7 +63,7 @@ export interface FarmMapInnerProps {
   className?: string;
 }
 
-// ── ResizeInvalidator — keeps Leaflet in sync with its container size ───────
+// ── ResizeInvalidator - keeps Leaflet in sync with its container size ───────
 // Leaflet caches the container dimensions at mount time and won't re-tile
 // when the parent grows (e.g. responsive grid changes). Observe the wrapper
 // and call invalidateSize() whenever it resizes.
@@ -88,7 +88,7 @@ function ResizeInvalidator() {
   return null;
 }
 
-// ── MapUpdater — flies to center when it changes ──────────────────────────────
+// ── MapUpdater - flies to center when it changes ──────────────────────────────
 
 function MapUpdater({ center }: { center?: [number, number] }) {
   const map = useMap();
@@ -228,7 +228,7 @@ function MapInteractionController() {
   return null;
 }
 
-// ── DrawingControls — attaches L.Control.Draw to the map ─────────────────────
+// ── DrawingControls - attaches L.Control.Draw to the map ─────────────────────
 
 function DrawingControls({
   onMarkerPlaced,

@@ -187,7 +187,7 @@ export function ProductionTypesList() {
             {types.map((t) => (
               <TableRow key={t.id}>
                 <TableCell className="font-semibold text-foreground">{t.code}</TableCell>
-                <TableCell className="text-muted-foreground">{t.description ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{t.description ?? "-"}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => setEditing(t)}>

@@ -16,7 +16,7 @@ const MAX_W = {
   full: "max-w-full",
 };
 
-// Canonical page container — wraps every dashboard page.
+// Canonical page container - wraps every dashboard page.
 // Standardizes horizontal padding, vertical rhythm, max width,
 // and vertical spacing between child blocks.
 export function PageShell({ children, maxWidth = "6xl", className }: Props) {

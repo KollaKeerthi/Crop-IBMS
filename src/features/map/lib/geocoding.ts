@@ -58,7 +58,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
       const result = parseFeature(data?.features?.[0]);
       if (result) return result;
     } catch {
-      // network error on this attempt — try next
+      // network error on this attempt - try next
     }
   }
   return null;

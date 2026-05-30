@@ -6,7 +6,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
  * TODO (do this before launch, not before):
  *
  *   1. Replace the placeholder static routes below with your real public route map.
- *      Only include URLs that should appear in search engines — skip auth-gated routes.
+ *      Only include URLs that should appear in search engines - skip auth-gated routes.
  *   2. For dynamic routes (e.g. `/farms/[id]`, `/crops/[slug]`), fetch the IDs/slugs from
  *      the DB inside this function and map them into the array. Example:
  *
@@ -20,7 +20,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
  *        }));
  *
  *   3. Tune `changeFrequency` and `priority` to reflect how often each page actually changes.
- *      Don't over-promise — search engines treat these as hints, not guarantees.
+ *      Don't over-promise - search engines treat these as hints, not guarantees.
  *   4. After updating, submit `https://your-domain.com/sitemap.xml` to Google Search Console.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -8,15 +8,19 @@ import {
   updateCrop,
   deleteCrop,
   insertCropType,
+  updateCropType,
   deleteCropType,
   insertCropVariety,
+  updateCropVariety,
   deleteCropVariety,
 } from "./mutations";
 import type {
   CreateCropInput,
   UpdateCropInput,
   CreateCropTypeInput,
+  UpdateCropTypeInput,
   CreateCropVarietyInput,
+  UpdateCropVarietyInput,
   Crop,
   CropType,
   CropVariety,
@@ -89,6 +93,23 @@ export async function createCropTypeHandler(
   return type;
 }
 
+export async function updateCropTypeHandler(
+  ctx: ApiContext,
+  cropId: string,
+  typeId: string,
+  input: UpdateCropTypeInput
+): Promise<CropType> {
+  const crop = await getCropById(cropId);
+  if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+
+  const type = await updateCropType(typeId, input);
+  if (!type) throw new ApiError(404, "not_found", "Crop type not found.");
+
+  log.info({ userId: ctx.userId, cropId, typeId }, "crop_types.updated");
+  await logAudit({ userId: ctx.userId, action: "crop.updated", resource: typeId });
+  return type;
+}
+
 export async function deleteCropTypeHandler(
   ctx: ApiContext,
   cropId: string,
@@ -113,6 +134,23 @@ export async function createCropVarietyHandler(
   if (!variety) throw new ApiError(500, "internal_error", "Could not create crop variety.");
 
   log.info({ userId: ctx.userId, cropId, varietyId: variety.id }, "crop_varieties.created");
+  return variety;
+}
+
+export async function updateCropVarietyHandler(
+  ctx: ApiContext,
+  cropId: string,
+  varietyId: string,
+  input: UpdateCropVarietyInput
+): Promise<CropVariety> {
+  const crop = await getCropById(cropId);
+  if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+
+  const variety = await updateCropVariety(varietyId, input);
+  if (!variety) throw new ApiError(404, "not_found", "Crop variety not found.");
+
+  log.info({ userId: ctx.userId, cropId, varietyId }, "crop_varieties.updated");
+  await logAudit({ userId: ctx.userId, action: "crop.updated", resource: varietyId });
   return variety;
 }
 

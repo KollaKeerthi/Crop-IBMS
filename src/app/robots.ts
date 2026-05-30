@@ -7,7 +7,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
  *
  *   1. Decide which paths should NOT be crawled (auth-gated routes, admin, search-result pages).
  *      Add them to the `disallow` array below. Defaults assume `/api/`, `/dashboard`, `/settings`
- *      are private — adjust to match your real route map.
+ *      are private - adjust to match your real route map.
  *   2. If you have user-generated content (profiles, posts) and want them indexed,
  *      make sure their routes are NOT in `disallow`.
  *   3. If you ever host on multiple domains (staging + prod), gate this with NODE_ENV

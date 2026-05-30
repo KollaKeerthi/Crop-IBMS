@@ -15,7 +15,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CropTable } from "@/features/crops";
+import { CropTable, CropTypesTable, CropVarietiesTable } from "@/features/crops";
 import { SeasonsTable } from "@/features/seasons";
 import { ActivitiesTable } from "@/features/activities";
 import { ProductionSitesList } from "@/features/production-sites";
@@ -23,9 +23,10 @@ import { ProductionTypesList } from "@/features/production-types";
 import { DensityMasterTable } from "@/features/density-master";
 import { ActiveTimeTable } from "@/features/active-time";
 import { BlockMasterTable } from "@/features/block-master";
+import { VariabilityTable } from "@/features/variability";
 
 const TAB_TRIGGER_CLASS =
-  "shrink-0 flex-none uppercase tracking-wide text-[11px] font-semibold gap-2 px-3 py-2 data-active:text-primary";
+  "shrink-0 flex-none text-sm font-medium gap-2 px-3 py-2 data-active:text-primary";
 
 function ComingSoon({ title }: { title: string }) {
   return (
@@ -58,7 +59,7 @@ export function CropInformationTabs() {
         <TabsList
           ref={listRef}
           variant="line"
-          className="flex h-auto w-full gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex h-auto w-full justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
           <TabsTrigger value="production-site" className={TAB_TRIGGER_CLASS}>
             <MapPin className="h-4 w-4" /> Production Site
@@ -111,11 +112,11 @@ export function CropInformationTabs() {
       </TabsContent>
 
       <TabsContent value="crop-type" className="mt-6">
-        <ComingSoon title="Crop Type" />
+        <CropTypesTable />
       </TabsContent>
 
       <TabsContent value="variety-code" className="mt-6">
-        <ComingSoon title="Variety Code" />
+        <CropVarietiesTable />
       </TabsContent>
 
       <TabsContent value="seasons" className="mt-6">
@@ -139,7 +140,7 @@ export function CropInformationTabs() {
       </TabsContent>
 
       <TabsContent value="variability" className="mt-6">
-        <ComingSoon title="Variability" />
+        <VariabilityTable />
       </TabsContent>
     </Tabs>
   );

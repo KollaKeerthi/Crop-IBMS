@@ -25,7 +25,7 @@ export async function signInWithCredentials(
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
-    // redirect() throws — re-throw so Next.js can handle it
+    // redirect() throws - re-throw so Next.js can handle it
     throw error;
   }
   return { error: null };

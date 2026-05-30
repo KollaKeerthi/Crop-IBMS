@@ -9,14 +9,18 @@ import {
   deleteCrop,
   createCropType,
   deleteCropType,
+  updateCropType,
   createCropVariety,
   deleteCropVariety,
+  updateCropVariety,
 } from "../api";
 import type {
   CreateCropInput,
   UpdateCropInput,
   CreateCropTypeInput,
+  UpdateCropTypeInput,
   CreateCropVarietyInput,
+  UpdateCropVarietyInput,
 } from "../schema";
 
 export const CROPS_QUERY_KEY = ["crops"];
@@ -101,5 +105,60 @@ export function useDeleteCropVariety(cropId: string) {
       qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY });
       qc.invalidateQueries({ queryKey: cropKey(cropId) });
     },
+  });
+}
+
+// Standalone variants - cropId is provided per mutation call, not per hook.
+export function useCreateStandaloneCropType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, input }: { cropId: string; input: CreateCropTypeInput }) =>
+      createCropType(cropId, input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
+  });
+}
+
+export function useUpdateStandaloneCropType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, typeId, input }: { cropId: string; typeId: string; input: UpdateCropTypeInput }) =>
+      updateCropType(cropId, typeId, input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
+  });
+}
+
+export function useDeleteStandaloneCropType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, typeId }: { cropId: string; typeId: string }) =>
+      deleteCropType(cropId, typeId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
+  });
+}
+
+export function useCreateStandaloneCropVariety() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, input }: { cropId: string; input: CreateCropVarietyInput }) =>
+      createCropVariety(cropId, input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
+  });
+}
+
+export function useUpdateStandaloneCropVariety() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, varietyId, input }: { cropId: string; varietyId: string; input: UpdateCropVarietyInput }) =>
+      updateCropVariety(cropId, varietyId, input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
+  });
+}
+
+export function useDeleteStandaloneCropVariety() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cropId, varietyId }: { cropId: string; varietyId: string }) =>
+      deleteCropVariety(cropId, varietyId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
   });
 }

@@ -178,7 +178,7 @@ export function MemberList({ currentUserId }: MemberListProps) {
                           </Avatar>
                           <div>
                             <p className="font-medium leading-none">
-                              {member.name ?? "—"}
+                              {member.name ?? "-"}
                               {isCurrentUser && (
                                 <span className="ml-2 text-xs text-muted-foreground">(you)</span>
                               )}
@@ -220,7 +220,7 @@ export function MemberList({ currentUserId }: MemberListProps) {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </td>
                     </tr>

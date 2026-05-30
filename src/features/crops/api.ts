@@ -7,7 +7,9 @@ import {
   type CreateCropInput,
   type UpdateCropInput,
   type CreateCropTypeInput,
+  type UpdateCropTypeInput,
   type CreateCropVarietyInput,
+  type UpdateCropVarietyInput,
   type Crop,
   type CropType,
   type CropVariety,
@@ -54,6 +56,18 @@ export function deleteCropType(cropId: string, typeId: string): Promise<void> {
   return apiFetch(`/api/v1/crops/${cropId}/types/${typeId}`, { method: "DELETE" });
 }
 
+export function updateCropType(
+  cropId: string,
+  typeId: string,
+  input: UpdateCropTypeInput
+): Promise<CropType> {
+  return apiFetch(`/api/v1/crops/${cropId}/types/${typeId}`, {
+    method: "PATCH",
+    body: input,
+    responseSchema: CropTypeSchema,
+  });
+}
+
 export function createCropVariety(
   cropId: string,
   input: CreateCropVarietyInput
@@ -67,4 +81,16 @@ export function createCropVariety(
 
 export function deleteCropVariety(cropId: string, varietyId: string): Promise<void> {
   return apiFetch(`/api/v1/crops/${cropId}/varieties/${varietyId}`, { method: "DELETE" });
+}
+
+export function updateCropVariety(
+  cropId: string,
+  varietyId: string,
+  input: UpdateCropVarietyInput
+): Promise<CropVariety> {
+  return apiFetch(`/api/v1/crops/${cropId}/varieties/${varietyId}`, {
+    method: "PATCH",
+    body: input,
+    responseSchema: CropVarietySchema,
+  });
 }

@@ -122,7 +122,7 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
               <span>
                 {format(new Date(event.startDate), "MMM d, yyyy")}
                 {event.endDate && event.endDate !== event.startDate && (
-                  <> — {format(new Date(event.endDate), "MMM d, yyyy")}</>
+                  <> - {format(new Date(event.endDate), "MMM d, yyyy")}</>
                 )}
               </span>
             </div>
@@ -131,8 +131,8 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-20">Time</span>
                 <span>
-                  {event.startTime ?? "—"}
-                  {event.endTime && <> — {event.endTime}</>}
+                  {event.startTime ?? "-"}
+                  {event.endTime && <> - {event.endTime}</>}
                 </span>
               </div>
             )}

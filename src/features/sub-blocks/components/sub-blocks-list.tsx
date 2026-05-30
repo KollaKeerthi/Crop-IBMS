@@ -77,15 +77,15 @@ export function SubBlocksList({ blockId, farmId, blockName }: Props) {
               subBlocks.map((sb) => (
                 <tr key={sb.id} className="border-b last:border-0 hover:bg-muted/30">
                   <td className="px-3 py-2 font-medium">{sb.name}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{sb.rows ?? "—"}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{sb.rows ?? "-"}</td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {sb.rowLengthM != null ? sb.rowLengthM.toLocaleString() : "—"}
+                    {sb.rowLengthM != null ? sb.rowLengthM.toLocaleString() : "-"}
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {sb.rowWidthM != null ? sb.rowWidthM.toLocaleString() : "—"}
+                    {sb.rowWidthM != null ? sb.rowWidthM.toLocaleString() : "-"}
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {sb.areaSqm != null ? sb.areaSqm.toLocaleString() : "—"}
+                    {sb.areaSqm != null ? sb.areaSqm.toLocaleString() : "-"}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">

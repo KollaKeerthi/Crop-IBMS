@@ -7,5 +7,7 @@ export const cropTypes = pgTable("crop_types", {
     .notNull()
     .references(() => crops.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  colour: text("colour"),
+  description: text("description"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

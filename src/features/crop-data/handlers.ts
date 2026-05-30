@@ -9,6 +9,11 @@ import {
   getCropDataById,
   getProgramInfo,
   getNursery,
+  getRevenue,
+  getSectionRow,
+  listCollectionRows,
+  listMedia,
+  getMediaById,
   getAllModules,
 } from "./queries";
 import {
@@ -17,13 +22,23 @@ import {
   deleteCropDataRecord,
   upsertProgramInfo,
   upsertNursery,
+  upsertRevenue,
+  upsertSectionRow,
+  insertCollectionRow,
+  updateCollectionRow,
+  deleteCollectionRow,
+  insertMedia,
+  deleteMedia,
   upsertModule,
 } from "./mutations";
+import { getSectionConfig, SECTION_REGISTRY } from "./sections";
+import { getCollectionConfig, COLLECTION_REGISTRY } from "./collections";
 import type {
   CreateCropDataInput,
   UpdateCropDataInput,
   UpdateProgramInfoInput,
   UpdateNurseryInput,
+  UpdateRevenueInput,
   UpdateModuleInput,
 } from "./schema";
 
@@ -45,12 +60,37 @@ export async function getCropDataHandler(ctx: ApiContext, id: string, farmId: st
   await verifyFarmAccess(ctx.userId, farmId);
   const record = await getCropDataById(id, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  const [pi, nurs, modules] = await Promise.all([
+  const sectionKeys = Object.keys(SECTION_REGISTRY);
+  const collectionKeys = Object.keys(COLLECTION_REGISTRY);
+  const [pi, nurs, rev, modules, media, ...rest] = await Promise.all([
     getProgramInfo(id),
     getNursery(id),
+    getRevenue(id),
     getAllModules(id),
+    listMedia(id),
+    ...sectionKeys.map((key) => getSectionRow(SECTION_REGISTRY[key]!.table, id)),
+    ...collectionKeys.map((key) => listCollectionRows(COLLECTION_REGISTRY[key]!.table, id)),
   ]);
-  return { ...record, programInfo: pi, nursery: nurs, modules };
+  const sectionRows = rest.slice(0, sectionKeys.length);
+  const collectionRows = rest.slice(sectionKeys.length);
+  const sections: Record<string, unknown> = {};
+  sectionKeys.forEach((key, i) => {
+    sections[key] = sectionRows[i];
+  });
+  const collections: Record<string, unknown> = {};
+  collectionKeys.forEach((key, i) => {
+    collections[key] = collectionRows[i];
+  });
+  return {
+    ...record,
+    programInfo: pi,
+    nursery: nurs,
+    revenue: rev,
+    sections,
+    collections,
+    media,
+    modules,
+  };
 }
 
 export async function createCropDataHandler(ctx: ApiContext, input: CreateCropDataInput) {
@@ -104,6 +144,114 @@ export async function updateNurseryHandler(
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
   return upsertNursery(cropDataId, input);
+}
+
+export async function updateRevenueHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  input: UpdateRevenueInput
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  return upsertRevenue(cropDataId, input);
+}
+
+export async function updateSectionHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  section: string,
+  input: Record<string, unknown>
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const config = getSectionConfig(section);
+  if (!config) throw new ApiError(404, "not_found", "Unknown section.");
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  return upsertSectionRow(config.table, cropDataId, input, config.dateFields);
+}
+
+export async function createCollectionRowHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  collection: string,
+  input: Record<string, unknown>
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const config = getCollectionConfig(collection);
+  if (!config) throw new ApiError(404, "not_found", "Unknown collection.");
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  return insertCollectionRow(config.table, cropDataId, input, config.dateFields);
+}
+
+export async function updateCollectionRowHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  collection: string,
+  rowId: string,
+  input: Record<string, unknown>
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const config = getCollectionConfig(collection);
+  if (!config) throw new ApiError(404, "not_found", "Unknown collection.");
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  const updated = await updateCollectionRow(config.table, cropDataId, rowId, input, config.dateFields);
+  if (!updated) throw new ApiError(404, "not_found", "Row not found.");
+  return updated;
+}
+
+export async function deleteCollectionRowHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  collection: string,
+  rowId: string
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const config = getCollectionConfig(collection);
+  if (!config) throw new ApiError(404, "not_found", "Unknown collection.");
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  await deleteCollectionRow(config.table, cropDataId, rowId);
+}
+
+export async function addMediaHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  input: {
+    url: string;
+    cloudinaryId?: string | null;
+    name?: string | null;
+    mimeType?: string | null;
+    sizeBytes?: number | null;
+  }
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  return insertMedia({ entityId: cropDataId, uploadedBy: ctx.userId, ...input });
+}
+
+export async function deleteMediaHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  mediaId: string
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  const media = await getMediaById(mediaId, cropDataId);
+  if (!media) throw new ApiError(404, "not_found", "Attachment not found.");
+  await deleteMedia(mediaId, cropDataId);
+  return media;
 }
 
 export async function updateModuleHandler(

@@ -62,7 +62,7 @@ export function CropTable() {
       const isNotFound = err instanceof ApiError && err.status === 404;
       const message = err instanceof ApiError ? err.message : "Failed to delete crop.";
       toast.error(isNotFound ? `${message} The list will refresh.` : message);
-      // Stale UI: row exists in cache but not in DB — force a refetch so it disappears
+      // Stale UI: row exists in cache but not in DB - force a refetch so it disappears
       if (isNotFound) {
         qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY });
         setDeletingId(null);
@@ -102,9 +102,9 @@ export function CropTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Short Name</TableHead>
-              <TableHead>Scientific Name</TableHead>
+              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead>Crop name</TableHead>
+              <TableHead>Scientific name</TableHead>
               <TableHead>Family</TableHead>
               <TableHead>Types</TableHead>
               <TableHead>Varieties</TableHead>
@@ -114,34 +114,102 @@ export function CropTable() {
           <TableBody>
             {crops.map((crop) => (
               <TableRow key={crop.id}>
-                <TableCell className="font-semibold text-foreground">
-                  <div className="flex items-center gap-2">
-                    {crop.color && (
-                      <span
-                        className="h-3 w-3 rounded-full border"
-                        style={{ background: crop.color }}
-                      />
-                    )}
-                    {crop.name}
+                <TableCell>
+                  {crop.imageUrl ? (
+                    <img
+                      src={crop.imageUrl}
+                      alt={crop.name}
+                      className="h-10 w-10 object-cover rounded-xl border shadow-xs"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-xl border bg-muted flex items-center justify-center text-muted-foreground shadow-xs">
+                      <Leaf className="h-5 w-5 text-emerald-500" />
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="align-middle">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-foreground text-[14px]">
+                      {crop.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {crop.shortName || crop.name}
+                    </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{crop.shortName ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground italic">
-                  {crop.scientificName ?? "—"}
+                <TableCell className="align-middle">
+                  <span className="text-muted-foreground text-sm italic font-medium">
+                    {crop.scientificName ?? "-"}
+                  </span>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{crop.family ?? "—"}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{crop.types.length}</Badge>
+                <TableCell className="align-middle">
+                  {crop.family ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/10 dark:ring-emerald-500/20">
+                      {crop.family}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
                 </TableCell>
-                <TableCell>
-                  <button
-                    className="text-xs underline text-primary hover:opacity-80"
+                <TableCell className="align-middle">
+                  <div className="flex flex-wrap gap-1.5">
+                    {crop.types.length > 0 ? (
+                      crop.types.map((t) => (
+                        <div
+                          key={t.id}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 dark:bg-sky-500/10 pl-1 pr-3 py-0.5 text-xs font-semibold text-sky-700 dark:text-sky-400 ring-1 ring-inset ring-sky-600/10 dark:ring-sky-500/20"
+                        >
+                          {crop.imageUrl ? (
+                            <img
+                              src={crop.imageUrl}
+                              alt={crop.name}
+                              className="h-4.5 w-4.5 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-4.5 w-4.5 rounded-full bg-sky-200 dark:bg-sky-800 flex items-center justify-center">
+                              <Leaf className="h-2.5 w-2.5 text-sky-600 dark:text-sky-400" />
+                            </div>
+                          )}
+                          <span>{t.name}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="align-middle">
+                  <div
                     onClick={() => setVarietyCrop(crop)}
+                    className="flex flex-wrap gap-1.5 cursor-pointer hover:opacity-80"
+                    title="Click to manage varieties"
                   >
-                    {crop.varieties.length} varieties
-                  </button>
+                    {crop.varieties.length > 0 ? (
+                      crop.varieties.map((v) => (
+                        <div
+                          key={v.id}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 pl-1 pr-3 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/10 dark:ring-emerald-500/20"
+                        >
+                          {crop.imageUrl ? (
+                            <img
+                              src={crop.imageUrl}
+                              alt={crop.name}
+                              className="h-4.5 w-4.5 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-4.5 w-4.5 rounded-full bg-emerald-200 dark:bg-emerald-800 flex items-center justify-center">
+                              <Leaf className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                          )}
+                          <span>{v.name}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"
@@ -149,7 +217,7 @@ export function CropTable() {
                       onClick={() => setEditCrop(crop)}
                       aria-label="Edit crop"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -157,7 +225,7 @@ export function CropTable() {
                       onClick={() => setDeletingId(crop.id)}
                       aria-label="Delete crop"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                     </Button>
                   </div>
                 </TableCell>
@@ -218,7 +286,7 @@ export function CropTable() {
       <Dialog open={!!varietyCrop} onOpenChange={(o) => !o && setVarietyCrop(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Varieties — {varietyCrop?.name}</DialogTitle>
+            <DialogTitle>Varieties - {varietyCrop?.name}</DialogTitle>
           </DialogHeader>
           {varietyCrop && <VarietyManager crop={varietyCrop} />}
         </DialogContent>

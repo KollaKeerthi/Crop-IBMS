@@ -83,11 +83,11 @@ export function ActiveTimeTable() {
             {activeTimes.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="font-semibold text-foreground">
-                  {item.cropName ?? <span className="text-muted-foreground">—</span>}
+                  {item.cropName ?? <span className="text-muted-foreground">-</span>}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{item.varietyName ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{item.seasonName ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{item.leadTimeType ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{item.varietyName ?? "-"}</TableCell>
+                <TableCell className="text-muted-foreground">{item.seasonName ?? "-"}</TableCell>
+                <TableCell className="text-muted-foreground">{item.leadTimeType ?? "-"}</TableCell>
                 <TableCell>
                   <Badge variant={item.isActive ? "default" : "secondary"}>
                     {item.isActive ? "Active" : "Inactive"}

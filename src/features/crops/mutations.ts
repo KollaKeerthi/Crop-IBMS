@@ -5,7 +5,9 @@ import type {
   CreateCropInput,
   UpdateCropInput,
   CreateCropTypeInput,
+  UpdateCropTypeInput,
   CreateCropVarietyInput,
+  UpdateCropVarietyInput,
   Crop,
   CropType,
   CropVariety,
@@ -56,10 +58,45 @@ export async function insertCropType(
   cropId: string,
   input: CreateCropTypeInput
 ): Promise<CropType | null> {
-  const [row] = await db.insert(cropTypes).values({ cropId, name: input.name }).returning();
+  const [row] = await db
+    .insert(cropTypes)
+    .values({ cropId, name: input.name, colour: input.colour ?? null, description: input.description ?? null })
+    .returning();
 
   if (!row) return null;
-  return { id: row.id, cropId: row.cropId, name: row.name, createdAt: row.createdAt.toISOString() };
+  return {
+    id: row.id,
+    cropId: row.cropId,
+    name: row.name,
+    colour: row.colour ?? null,
+    description: row.description ?? null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export async function updateCropType(
+  typeId: string,
+  input: UpdateCropTypeInput
+): Promise<CropType | null> {
+  const [row] = await db
+    .update(cropTypes)
+    .set({
+      ...(input.name !== undefined && { name: input.name }),
+      ...(input.colour !== undefined && { colour: input.colour }),
+      ...(input.description !== undefined && { description: input.description }),
+    })
+    .where(eq(cropTypes.id, typeId))
+    .returning();
+
+  if (!row) return null;
+  return {
+    id: row.id,
+    cropId: row.cropId,
+    name: row.name,
+    colour: row.colour ?? null,
+    description: row.description ?? null,
+    createdAt: row.createdAt.toISOString(),
+  };
 }
 
 export async function deleteCropType(typeId: string): Promise<void> {
@@ -72,7 +109,12 @@ export async function insertCropVariety(
 ): Promise<CropVariety | null> {
   const [row] = await db
     .insert(cropVarieties)
-    .values({ cropId, name: input.name, code: input.code ?? null })
+    .values({
+      cropId,
+      name: input.name,
+      gender: input.gender ?? null,
+      colourDescription: input.colourDescription ?? null,
+    })
     .returning();
 
   if (!row) return null;
@@ -80,7 +122,33 @@ export async function insertCropVariety(
     id: row.id,
     cropId: row.cropId,
     name: row.name,
-    code: row.code ?? null,
+    gender: (row.gender as "Male" | "Female") ?? null,
+    colourDescription: row.colourDescription ?? null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export async function updateCropVariety(
+  varietyId: string,
+  input: UpdateCropVarietyInput
+): Promise<CropVariety | null> {
+  const [row] = await db
+    .update(cropVarieties)
+    .set({
+      ...(input.name !== undefined && { name: input.name }),
+      ...(input.gender !== undefined && { gender: input.gender }),
+      ...(input.colourDescription !== undefined && { colourDescription: input.colourDescription }),
+    })
+    .where(eq(cropVarieties.id, varietyId))
+    .returning();
+
+  if (!row) return null;
+  return {
+    id: row.id,
+    cropId: row.cropId,
+    name: row.name,
+    gender: (row.gender as "Male" | "Female") ?? null,
+    colourDescription: row.colourDescription ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

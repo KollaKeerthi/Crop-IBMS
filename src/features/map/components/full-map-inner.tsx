@@ -180,7 +180,7 @@ function MapReady({ onReady }: { onReady: (m: L.Map) => void }) {
   return null;
 }
 
-// ── DrawingControl — activate drawing mode ────────────────────────────────────
+// ── DrawingControl - activate drawing mode ────────────────────────────────────
 
 function MapInteractionController({ drawing }: { drawing: boolean }) {
   const map = useMap();
@@ -299,7 +299,7 @@ function DrawingControl({
     map.addLayer(drawnItems);
     drawnRef.current = drawnItems;
 
-    // Programmatically start the draw handler — no toolbar needed
+    // Programmatically start the draw handler - no toolbar needed
     const handler =
       mode === "polygon"
         ? new Draw.Polygon(map, { allowIntersection: false, shapeOptions: STYLES.drawing })

@@ -111,7 +111,7 @@ function mkStore(id: string, label: string): FBlock {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BLOCK DATA — Sun rise Farm schematic
+   BLOCK DATA - Sun rise Farm schematic
    ═══════════════════════════════════════════════════════════════ */
 const ROW1: FBlock[] = [
   mkField("HG09", "", "", "", "", true, true),

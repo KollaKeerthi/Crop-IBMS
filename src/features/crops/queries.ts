@@ -12,6 +12,8 @@ function toCropType(row: CropTypeRow): CropType {
     id: row.id,
     cropId: row.cropId,
     name: row.name,
+    colour: row.colour ?? null,
+    description: row.description ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -21,7 +23,8 @@ function toCropVariety(row: CropVarietyRow): CropVariety {
     id: row.id,
     cropId: row.cropId,
     name: row.name,
-    code: row.code ?? null,
+    gender: (row.gender as "Male" | "Female") ?? null,
+    colourDescription: row.colourDescription ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { CropDataDetailPage } from "../crop-data-detail-page";
-import { isCropDataTab } from "@/features/crop-data/components/crop-data-detail";
+import { isCropDataTab } from "@/features/crop-data/constants";
 
 type Params = { params: Promise<{ id: string; tab: string }> };
 

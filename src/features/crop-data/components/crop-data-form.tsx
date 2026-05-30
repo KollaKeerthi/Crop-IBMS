@@ -11,6 +11,7 @@ import { CreateCropDataInputSchema, type CreateCropDataInput } from "../schema";
 import { useCreateCropData } from "../hooks";
 import { listCrops, getCrop } from "@/features/crops/api";
 import { listSeasons } from "@/features/seasons/api";
+import { useLocationHierarchy } from "@/features/locations/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +43,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   });
 
   const selectedCropId = useWatch({ control: form.control, name: "cropId" });
+  const selectedVarietyId = useWatch({ control: form.control, name: "varietyId" });
 
   const { data: crops = [] } = useQuery({
     queryKey: ["crops"],
@@ -60,11 +62,23 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
     enabled: !!selectedCropId,
   });
 
+  const { data: hierarchy } = useLocationHierarchy(farmId);
+  const fieldsInDb = hierarchy?.fields ?? [];
+
   const varieties = selectedCrop?.varieties ?? [];
 
   useEffect(() => {
     form.setValue("varietyId", undefined);
   }, [selectedCropId, form]);
+
+  useEffect(() => {
+    if (selectedVarietyId && varieties.length > 0) {
+      const variety = varieties.find((v) => v.id === selectedVarietyId);
+      if (variety?.gender) {
+        form.setValue("sexExpression", variety.gender);
+      }
+    }
+  }, [selectedVarietyId, varieties, form]);
 
   const createMutation = useCreateCropData();
 
@@ -210,13 +224,39 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
 
           <FormField
             control={form.control}
-            name="block"
+            name="fieldName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Block</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. Block A" />
-                </FormControl>
+                <FormLabel>Field Name</FormLabel>
+                {fieldsInDb.length > 0 ? (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      // Clear block when field changes
+                      form.setValue("block", "");
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select field from DB">
+                          {(value) => value || "Select field from DB"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {fieldsInDb.map((f) => (
+                        <SelectItem key={f.id} value={f.name}>
+                          {f.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ""} placeholder="e.g. North Field" />
+                  </FormControl>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -224,16 +264,41 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
 
           <FormField
             control={form.control}
-            name="fieldName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Field Name</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. North Field" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="block"
+            render={({ field }) => {
+              const selectedFieldName = form.watch("fieldName");
+              const selectedField = fieldsInDb.find((f) => f.name === selectedFieldName);
+              const blocksInDb = selectedField?.blocks ?? [];
+
+              return (
+                <FormItem>
+                  <FormLabel>Block</FormLabel>
+                  {blocksInDb.length > 0 ? (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select block from DB">
+                            {(value) => value || "Select block from DB"}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {blocksInDb.map((b) => (
+                          <SelectItem key={b.id} value={b.name}>
+                            {b.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} placeholder="e.g. Block A" />
+                    </FormControl>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
 
           <FormField

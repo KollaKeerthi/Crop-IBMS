@@ -34,7 +34,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
  *      generate from realfavicongenerator.net or use Next's file-based metadata
  *      (e.g. `src/app/opengraph-image.tsx`).
  *   3. Drop a `favicon.ico` / `icon.png` (32x32 or 512x512) and
- *      `apple-icon.png` (180x180) into `src/app/` — Next auto-wires them.
+ *      `apple-icon.png` (180x180) into `src/app/` - Next auto-wires them.
  *   4. Once you have a verified domain, add Google Search Console verification:
  *        verification: { google: "..." }
  */

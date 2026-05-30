@@ -88,19 +88,19 @@ export function ActivitiesTable() {
                       {activity.code}
                     </Badge>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell>
                   {activity.category ? (
                     <Badge variant="outline">{activity.category}</Badge>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{activity.displayOrder}</TableCell>
                 <TableCell className="text-muted-foreground max-w-xs truncate">
-                  {activity.description ?? "—"}
+                  {activity.description ?? "-"}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">

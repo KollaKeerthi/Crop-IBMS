@@ -23,13 +23,13 @@ export function registerNode(): void {
   });
 
   process.on("SIGTERM", () => {
-    log.info("process.sigterm — shutting down");
+    log.info("process.sigterm - shutting down");
     process.exit(0);
   });
 
   for (const key of REQUIRED) {
     if (!process.env[key]) {
-      log.error({ key }, `instrumentation.missing_env — ${key} is not set`);
+      log.error({ key }, `instrumentation.missing_env - ${key} is not set`);
     }
   }
 }

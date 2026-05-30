@@ -30,7 +30,7 @@ export function VerifyEmailClient({ email }: { email?: string }) {
   if (sent) {
     return (
       <p className="text-sm text-muted-foreground">
-        New verification email sent — check your inbox (and spam folder).
+        New verification email sent - check your inbox (and spam folder).
       </p>
     );
   }

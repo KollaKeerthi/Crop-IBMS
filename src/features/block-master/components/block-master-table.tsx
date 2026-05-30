@@ -82,11 +82,11 @@ export function BlockMasterTable() {
             {blocks.map((block) => (
               <TableRow key={block.id}>
                 <TableCell className="font-semibold text-foreground">{block.blockName}</TableCell>
-                <TableCell className="text-muted-foreground">{block.subBlockName ?? "—"}</TableCell>
-                <TableCell>{block.areaSqm ?? "—"}</TableCell>
-                <TableCell>{block.rows ?? "—"}</TableCell>
-                <TableCell>{block.rowLengthM ?? "—"}</TableCell>
-                <TableCell>{block.rowWidthM ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{block.subBlockName ?? "-"}</TableCell>
+                <TableCell>{block.areaSqm ?? "-"}</TableCell>
+                <TableCell>{block.rows ?? "-"}</TableCell>
+                <TableCell>{block.rowLengthM ?? "-"}</TableCell>
+                <TableCell>{block.rowWidthM ?? "-"}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => setEditBlock(block)}>

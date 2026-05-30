@@ -38,8 +38,8 @@ export function DensityMasterTable() {
     return <p className="text-sm text-muted-foreground">Select a farm to manage density master.</p>;
   }
 
-  const cropName = (id: string | null) => crops?.find((c) => c.id === id)?.name ?? id ?? "—";
-  const siteName = (id: string | null) => sites?.find((s) => s.id === id)?.code ?? id ?? "—";
+  const cropName = (id: string | null) => crops?.find((c) => c.id === id)?.name ?? id ?? "-";
+  const siteName = (id: string | null) => sites?.find((s) => s.id === id)?.code ?? id ?? "-";
 
   async function handleDelete(id: string) {
     try {
@@ -93,10 +93,10 @@ export function DensityMasterTable() {
                   {cropName(d.cropId)}
                 </TableCell>
                 <TableCell>{siteName(d.productionSiteId)}</TableCell>
-                <TableCell>{d.maleDensity ?? "—"}</TableCell>
-                <TableCell>{d.femaleDensity ?? "—"}</TableCell>
-                <TableCell>{d.spacingM ?? "—"}</TableCell>
-                <TableCell>{d.rowSpacingM ?? "—"}</TableCell>
+                <TableCell>{d.maleDensity ?? "-"}</TableCell>
+                <TableCell>{d.femaleDensity ?? "-"}</TableCell>
+                <TableCell>{d.spacingM ?? "-"}</TableCell>
+                <TableCell>{d.rowSpacingM ?? "-"}</TableCell>
                 <TableCell className="font-mono text-xs text-primary">
                   W{String(d.validFrom).padStart(2, "0")} – W{String(d.validTo).padStart(2, "0")}
                 </TableCell>

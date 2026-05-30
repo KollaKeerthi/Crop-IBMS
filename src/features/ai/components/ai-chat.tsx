@@ -140,7 +140,7 @@ export function AIChat() {
             <div>
               <p className="font-medium">Farm Assistant</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Ask me anything about your farm — tasks, plantings, crop planning, and more.
+                Ask me anything about your farm - tasks, plantings, crop planning, and more.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">

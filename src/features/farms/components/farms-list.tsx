@@ -152,7 +152,7 @@ export function FarmsList() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-small text-muted-foreground">—</span>
+                        <span className="text-small text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

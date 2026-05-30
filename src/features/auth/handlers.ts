@@ -53,7 +53,7 @@ export async function verifyEmailHandler(token: string): Promise<{ email: string
     );
   }
   if (record.expiresAt < new Date()) {
-    // Don't delete yet — the failure page looks up the email from this token
+    // Don't delete yet - the failure page looks up the email from this token
     // so the user can resend without re-typing. Expired tokens are cleaned up
     // when a new verification email is sent (deleteVerificationTokensByUserId).
     throw new ApiError(
@@ -76,7 +76,7 @@ export async function verifyEmailHandler(token: string): Promise<{ email: string
 
 export async function resendVerificationHandler(email: string): Promise<void> {
   const user = await getUserByEmail(email);
-  // Silently succeed when user not found — prevents email enumeration
+  // Silently succeed when user not found - prevents email enumeration
   if (!user) return;
 
   if (user.emailVerified) {
@@ -91,7 +91,7 @@ const RESET_EXPIRY_MINUTES = 30;
 
 export async function forgotPasswordHandler(email: string): Promise<void> {
   const user = await getUserByEmail(email);
-  if (!user || !user.passwordHash) return; // silent — no enumeration
+  if (!user || !user.passwordHash) return; // silent - no enumeration
   await deletePasswordResetTokensByUserId(user.id);
   const token = generateToken();
   const expiresAt = new Date(Date.now() + RESET_EXPIRY_MINUTES * 60 * 1000);
@@ -99,7 +99,7 @@ export async function forgotPasswordHandler(email: string): Promise<void> {
   const resetUrl = `${appUrl()}/reset-password?token=${token}`;
   const result = await sendEmail({
     to: user.email,
-    subject: "Reset your password — Crop Management",
+    subject: "Reset your password - Crop Management",
     html: passwordResetEmailHtml({
       name: user.name ?? user.email,
       resetUrl,
@@ -149,7 +149,7 @@ async function sendVerificationEmail(opts: {
   const verifyUrl = `${appUrl()}/verify-email?token=${token}`;
   const result = await sendEmail({
     to: opts.email,
-    subject: "Verify your email — Crop Management",
+    subject: "Verify your email - Crop Management",
     html: verificationEmailHtml({ name: opts.name, verifyUrl, expiryHours: TOKEN_EXPIRY_HOURS }),
     text: verificationEmailText({ name: opts.name, verifyUrl, expiryHours: TOKEN_EXPIRY_HOURS }),
   });

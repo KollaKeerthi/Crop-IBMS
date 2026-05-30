@@ -103,7 +103,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                   <Input
                     type="number"
                     min={1}
-                    placeholder="—"
+                    placeholder="-"
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
@@ -127,7 +127,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     type="number"
                     min={0}
                     step="0.01"
-                    placeholder="—"
+                    placeholder="-"
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
@@ -152,7 +152,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     type="number"
                     min={0}
                     step="0.01"
-                    placeholder="—"
+                    placeholder="-"
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
@@ -174,7 +174,7 @@ export function SubBlockForm({ blockId, farmId, subBlock, onSuccess }: Props) {
                     type="number"
                     min={0}
                     step="0.01"
-                    placeholder="—"
+                    placeholder="-"
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
