@@ -60,7 +60,12 @@ export async function insertCropType(
 ): Promise<CropType | null> {
   const [row] = await db
     .insert(cropTypes)
-    .values({ cropId, name: input.name, colour: input.colour ?? null, description: input.description ?? null })
+    .values({
+      cropId,
+      name: input.name,
+      colour: input.colour ?? null,
+      description: input.description ?? null,
+    })
     .returning();
 
   if (!row) return null;

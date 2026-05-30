@@ -54,12 +54,7 @@ type Props = {
   activeTab: string;
 };
 
-import {
-  CROP_DATA_TAB_KEYS,
-  type CropDataTabKey,
-  isCropDataTab,
-} from "../constants";
-
+import { CROP_DATA_TAB_KEYS, type CropDataTabKey, isCropDataTab } from "../constants";
 
 const MODULE_TABS: { key: string; label: string }[] = [
   { key: "planting_records", label: "Planting Records" },
@@ -85,24 +80,50 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={handleChange} className="w-full">
       <TabsPrimitive.List className="flex flex-wrap gap-2.5 mb-6 bg-transparent p-0 w-full">
-        <TabsPrimitive.Tab value="program-info" className={triggerClassName}>Program Info</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="revenue" className={triggerClassName}>Revenue</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="nursery" className={triggerClassName}>Nursery</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="production" className={triggerClassName}>Production</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="pollination" className={triggerClassName}>Pollination</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="post_harvest" className={triggerClassName}>Post Harvest</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>Post Harvest Summary</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>Seeds Quality</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>SQ Breakdown</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>Germination Test</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="harvest" className={triggerClassName}>Harvest Details</TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="program-info" className={triggerClassName}>
+          Program Info
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="revenue" className={triggerClassName}>
+          Revenue
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="nursery" className={triggerClassName}>
+          Nursery
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="production" className={triggerClassName}>
+          Production
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="pollination" className={triggerClassName}>
+          Pollination
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="post_harvest" className={triggerClassName}>
+          Post Harvest
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>
+          Post Harvest Summary
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
+          Seeds Quality
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
+          SQ Breakdown
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
+          Germination Test
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
+          Harvest Details
+        </TabsPrimitive.Tab>
         {MODULE_TABS.map((tab) => (
           <TabsPrimitive.Tab key={tab.key} value={tab.key} className={triggerClassName}>
             {tab.label}
           </TabsPrimitive.Tab>
         ))}
-        <TabsPrimitive.Tab value="performance" className={triggerClassName}>Performance</TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="media" className={triggerClassName}>Media Attachment</TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
+          Performance
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="media" className={triggerClassName}>
+          Media Attachment
+        </TabsPrimitive.Tab>
       </TabsPrimitive.List>
 
       {/* Program Info */}

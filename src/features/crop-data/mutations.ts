@@ -1,6 +1,15 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { cropData, programInfo, nursery, revenue, cropDataModules, mediaAttachments, production, postHarvest } from "@/db/schema";
+import {
+  cropData,
+  programInfo,
+  nursery,
+  revenue,
+  cropDataModules,
+  mediaAttachments,
+  production,
+  postHarvest,
+} from "@/db/schema";
 import {
   PROGRAM_INFO_DATE_FIELDS,
   NURSERY_DATE_FIELDS,
@@ -147,11 +156,7 @@ export async function upsertSectionRow(
       .from(programInfo)
       .where(eq(programInfo.cropDataId, cropDataId))
       .limit(1);
-    const nurs = await db
-      .select()
-      .from(nursery)
-      .where(eq(nursery.cropDataId, cropDataId))
-      .limit(1);
+    const nurs = await db.select().from(nursery).where(eq(nursery.cropDataId, cropDataId)).limit(1);
     finalInput = computeProductionDerivedFields(input, nurs[0] ?? null, prog[0] ?? null);
   } else if (table === postHarvest) {
     const prog = await db
@@ -164,11 +169,7 @@ export async function upsertSectionRow(
       .from(production)
       .where(eq(production.cropDataId, cropDataId))
       .limit(1);
-    const nurs = await db
-      .select()
-      .from(nursery)
-      .where(eq(nursery.cropDataId, cropDataId))
-      .limit(1);
+    const nurs = await db.select().from(nursery).where(eq(nursery.cropDataId, cropDataId)).limit(1);
 
     const ctx = {
       ...(prog[0] ?? {}),
@@ -182,11 +183,7 @@ export async function upsertSectionRow(
     };
   }
   const values = coerceDates(finalInput, dateFields);
-  const existing = await db
-    .select()
-    .from(table)
-    .where(eq(table.cropDataId, cropDataId))
-    .limit(1);
+  const existing = await db.select().from(table).where(eq(table.cropDataId, cropDataId)).limit(1);
 
   if (existing[0]) {
     const rows = await db

@@ -59,10 +59,15 @@ export function Topbar({ user }: { user: User }) {
           </Avatar>
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/75 transition-transform duration-200" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 mt-1 rounded-xl p-1 shadow-md border bg-popover/95 backdrop-blur-md transition-all">
+        <DropdownMenuContent
+          align="end"
+          className="w-56 mt-1 rounded-xl p-1 shadow-md border bg-popover/95 backdrop-blur-md transition-all"
+        >
           <div className="px-3 py-2">
             {user.name && <p className="text-xs font-semibold text-foreground/90">{user.name}</p>}
-            <p className="text-[10px] text-muted-foreground/70 font-medium truncate mt-0.5">{user.email}</p>
+            <p className="text-[10px] text-muted-foreground/70 font-medium truncate mt-0.5">
+              {user.email}
+            </p>
           </div>
           <DropdownMenuSeparator />
           <Link href="/dashboard/settings" className="w-full">

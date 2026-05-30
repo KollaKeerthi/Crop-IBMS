@@ -129,9 +129,7 @@ export function CropTable() {
                 </TableCell>
                 <TableCell className="align-middle">
                   <div className="flex flex-col">
-                    <span className="font-bold text-foreground text-[14px]">
-                      {crop.name}
-                    </span>
+                    <span className="font-bold text-foreground text-[14px]">{crop.name}</span>
                     <span className="text-xs text-muted-foreground font-medium">
                       {crop.shortName || crop.name}
                     </span>

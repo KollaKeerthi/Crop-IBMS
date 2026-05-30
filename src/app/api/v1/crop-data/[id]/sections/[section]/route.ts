@@ -19,7 +19,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!body) throw new ApiError(400, "invalid_json", "Request body must be valid JSON.");
     const parsed = config.schema.safeParse(body);
     if (!parsed.success)
-      throw new ApiError(422, "validation_error", firstError(parsed.error.issues, "Invalid input."));
+      throw new ApiError(
+        422,
+        "validation_error",
+        firstError(parsed.error.issues, "Invalid input.")
+      );
     return apiOk(
       await updateSectionHandler(ctx, id, farmId, section, parsed.data as Record<string, unknown>)
     );

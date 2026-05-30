@@ -129,9 +129,8 @@ export const UpdateProductionInputSchema = z.object({
   avgTemperature: oNum,
   avgRadiation: oNum,
   avgHumidity: oNum,
-  remarks:oText,
-  recommendations:oText
-    
+  remarks: oText,
+  recommendations: oText,
 });
 export type UpdateProductionInput = z.infer<typeof UpdateProductionInputSchema>;
 

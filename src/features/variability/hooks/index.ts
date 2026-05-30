@@ -1,12 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchVariability,
-  createVariability,
-  updateVariability,
-  deleteVariability,
-} from "../api";
+import { fetchVariability, createVariability, updateVariability, deleteVariability } from "../api";
 import type { CreateVariabilityInput, UpdateVariabilityInput } from "../schema";
 
 export const variabilityKey = (farmId: string | null) => ["variability", farmId];

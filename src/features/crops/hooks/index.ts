@@ -121,8 +121,15 @@ export function useCreateStandaloneCropType() {
 export function useUpdateStandaloneCropType() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ cropId, typeId, input }: { cropId: string; typeId: string; input: UpdateCropTypeInput }) =>
-      updateCropType(cropId, typeId, input),
+    mutationFn: ({
+      cropId,
+      typeId,
+      input,
+    }: {
+      cropId: string;
+      typeId: string;
+      input: UpdateCropTypeInput;
+    }) => updateCropType(cropId, typeId, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
   });
 }
@@ -148,8 +155,15 @@ export function useCreateStandaloneCropVariety() {
 export function useUpdateStandaloneCropVariety() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ cropId, varietyId, input }: { cropId: string; varietyId: string; input: UpdateCropVarietyInput }) =>
-      updateCropVariety(cropId, varietyId, input),
+    mutationFn: ({
+      cropId,
+      varietyId,
+      input,
+    }: {
+      cropId: string;
+      varietyId: string;
+      input: UpdateCropVarietyInput;
+    }) => updateCropVariety(cropId, varietyId, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY }),
   });
 }

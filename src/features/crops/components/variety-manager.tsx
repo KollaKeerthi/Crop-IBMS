@@ -73,10 +73,7 @@ export function VarietyManager({ crop }: Props) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">{v.name}</span>
                     {v.gender && genderCfg && (
-                      <Badge
-                        variant="outline"
-                        className={`gap-1 text-xs ${genderCfg.className}`}
-                      >
+                      <Badge variant="outline" className={`gap-1 text-xs ${genderCfg.className}`}>
                         {GenderIcon && <GenderIcon className="h-3 w-3" />}
                         {v.gender}
                       </Badge>
@@ -123,7 +120,10 @@ export function VarietyManager({ crop }: Props) {
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <Select value={field.value ?? ""} onValueChange={(v) => field.onChange(v || undefined)}>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(v) => field.onChange(v || undefined)}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Gender (optional)" />
@@ -152,7 +152,11 @@ export function VarietyManager({ crop }: Props) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="Colour description (optional)" />
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="Colour description (optional)"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

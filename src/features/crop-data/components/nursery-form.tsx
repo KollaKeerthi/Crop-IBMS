@@ -64,12 +64,20 @@ const ROWS: MetricRow[] = [
     computeMale: (v, ctx) => {
       const plants = toNum(v.maleActualPlantsPlanted);
       const plannedPlantsPerM2 = toNum(ctx?.malePlannedPlantsPerSqm);
-      return fmtNum(plants === null || plannedPlantsPerM2 === null || plannedPlantsPerM2 === 0 ? null : plants / plannedPlantsPerM2);
+      return fmtNum(
+        plants === null || plannedPlantsPerM2 === null || plannedPlantsPerM2 === 0
+          ? null
+          : plants / plannedPlantsPerM2
+      );
     },
     computeFemale: (v, ctx) => {
       const plants = toNum(v.femaleActualPlantsPlanted);
       const plannedPlantsPerM2 = toNum(ctx?.femalePlannedPlantsPerSqm);
-      return fmtNum(plants === null || plannedPlantsPerM2 === null || plannedPlantsPerM2 === 0 ? null : plants / plannedPlantsPerM2);
+      return fmtNum(
+        plants === null || plannedPlantsPerM2 === null || plannedPlantsPerM2 === 0
+          ? null
+          : plants / plannedPlantsPerM2
+      );
     },
   },
   {

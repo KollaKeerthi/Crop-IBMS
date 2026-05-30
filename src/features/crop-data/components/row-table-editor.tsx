@@ -192,7 +192,9 @@ export function RowTableEditor({
                   {c.label}
                 </label>
                 {renderInput(c)}
-                {errors[c.name] && <p className="mt-1 text-xs text-destructive">{errors[c.name]}</p>}
+                {errors[c.name] && (
+                  <p className="mt-1 text-xs text-destructive">{errors[c.name]}</p>
+                )}
               </div>
             ))}
           </div>

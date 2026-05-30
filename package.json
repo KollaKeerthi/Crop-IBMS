@@ -79,7 +79,8 @@
     "*.{ts,tsx,js,jsx,mjs,cjs,json,yml,yaml,md,css}": "prettier --write"
   },
   "overrides": {
-    "esbuild": ">=0.25.0"
+    "esbuild": ">=0.25.0",
+    "tmp": "^0.2.3"
   },
   "engines": {
     "node": ">=18"

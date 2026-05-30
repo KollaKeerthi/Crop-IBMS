@@ -31,7 +31,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     if (!file) throw new ApiError(400, "no_file", "No file uploaded.");
-    if (file.size > MAX_BYTES) throw new ApiError(400, "file_too_large", "File must be under 10 MB.");
+    if (file.size > MAX_BYTES)
+      throw new ApiError(400, "file_too_large", "File must be under 10 MB.");
 
     const buffer = Buffer.from(await file.arrayBuffer());
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -122,11 +122,7 @@ import type { SectionTable } from "./sections";
 import type { CollectionTable } from "./collections";
 
 export async function getSectionRow(table: SectionTable, cropDataId: string) {
-  const rows = await db
-    .select()
-    .from(table)
-    .where(eq(table.cropDataId, cropDataId))
-    .limit(1);
+  const rows = await db.select().from(table).where(eq(table.cropDataId, cropDataId)).limit(1);
   return rows[0] ?? null;
 }
 
@@ -143,10 +139,7 @@ export async function listMedia(cropDataId: string) {
     .select()
     .from(mediaAttachments)
     .where(
-      and(
-        eq(mediaAttachments.entityType, MEDIA_ENTITY),
-        eq(mediaAttachments.entityId, cropDataId)
-      )
+      and(eq(mediaAttachments.entityType, MEDIA_ENTITY), eq(mediaAttachments.entityId, cropDataId))
     )
     .orderBy(desc(mediaAttachments.createdAt));
 }

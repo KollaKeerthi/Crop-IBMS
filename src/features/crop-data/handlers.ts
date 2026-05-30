@@ -201,7 +201,13 @@ export async function updateCollectionRowHandler(
   if (!config) throw new ApiError(404, "not_found", "Unknown collection.");
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  const updated = await updateCollectionRow(config.table, cropDataId, rowId, input, config.dateFields);
+  const updated = await updateCollectionRow(
+    config.table,
+    cropDataId,
+    rowId,
+    input,
+    config.dateFields
+  );
   if (!updated) throw new ApiError(404, "not_found", "Row not found.");
   return updated;
 }

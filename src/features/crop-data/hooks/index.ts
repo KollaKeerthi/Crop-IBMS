@@ -99,8 +99,7 @@ export function useCollectionMutations(cropDataId: string, farmId: string, colle
     onSuccess: invalidate,
   });
   const remove = useMutation({
-    mutationFn: (rowId: string) =>
-      api.deleteCollectionRow(cropDataId, farmId, collection, rowId),
+    mutationFn: (rowId: string) => api.deleteCollectionRow(cropDataId, farmId, collection, rowId),
     onSuccess: invalidate,
   });
   return { create, update, remove };

@@ -43,14 +43,14 @@ type Vals = Record<string, unknown>;
 export function revenueSide(rev: Vals, programInfo: Vals | null, side: "male" | "female") {
   const unitPrice = toNum(rev[`${side}AgreedUnitPrice`]);
   const weeks = toNum(rev[`${side}TotalWeeks`]);
-  
+
   // Hidden fetches from Program Info
   const orderKg =
     toNum(programInfo?.femaleRequestedQuantity) ||
     toNum(programInfo?.maleRequestedQuantity) ||
     toNum(programInfo?.agreedOrderFromCustomerKg);
   const surfaceArea = toNum(programInfo?.plannedSurfaceArea);
-  
+
   // Additional revenue is present on the Actual (female) column only
   const additional = side === "female" ? toNum(rev.additionalRevenue) : null;
 
@@ -84,10 +84,10 @@ export function pollinationEstimatedYield(poll: Vals, ctx: Vals | null): number 
  */
 export function postHarvestComputations(ph: Vals, ctx: Vals | null) {
   const totalKgs = toNum(ph.totalKgs);
-  
+
   // Directly retrieve the harvesting end week number
   const harvestingEndWeekNo = toNum(ph.harvestEndDate);
-  
+
   // Hidden fetches
   const agreedOrderFromCustomer = toNum(ctx?.agreedOrderFromCustomerKg);
   const realizedSurfaceArea = toNum(ctx?.realizedSurfaceArea);
@@ -98,9 +98,10 @@ export function postHarvestComputations(ph: Vals, ctx: Vals | null) {
   const actualYieldPct = mul(div(totalKgs, agreedOrderFromCustomer), 100);
   const gramsPerSqm = mul(div(totalKgs, realizedSurfaceArea), 1000);
   const gramsPerPlant = mul(div(totalKgs, realizedNoOfPlants), 1000);
-  const netWeeks = harvestingEndWeekNo !== null && actualPlantingWeek !== null 
-    ? harvestingEndWeekNo - actualPlantingWeek 
-    : null;
+  const netWeeks =
+    harvestingEndWeekNo !== null && actualPlantingWeek !== null
+      ? harvestingEndWeekNo - actualPlantingWeek
+      : null;
   const actualGrPerSqmWk = div(gramsPerSqm, netWeeks);
 
   return { gramsPerSqm, gramsPerPlant, actualYieldPct, netWeeks, actualGrPerSqmWk };
@@ -122,10 +123,12 @@ export function germinationTestTotal(gt: Vals): number | null {
   const parts = [gt.good, gt.small, gt.tooSmall, gt.abnormal, gt.rotting, gt.noGer].map(toNum);
   if (parts.every((p) => p === null)) return null;
   return parts.reduce<number>((sum, p) => sum + (p ?? 0), 0);
-}     
+}
 
 /** Compute Program Info derived fields dynamically from raw inputs. */
-export function computeProgramInfoDerivedFields(vals: Record<string, unknown>): Record<string, unknown> {
+export function computeProgramInfoDerivedFields(
+  vals: Record<string, unknown>
+): Record<string, unknown> {
   const malePlants = toNum(vals.malePlannedPlants);
   const femalePlants = toNum(vals.femalePlannedPlants);
   const totalPlants = add(malePlants, femalePlants);
@@ -159,7 +162,10 @@ export function computeProgramInfoDerivedFields(vals: Record<string, unknown>): 
     plannedSurfaceArea: plannedSurfaceArea !== null ? plannedSurfaceArea : vals.plannedSurfaceArea,
     plannedNoOfRows: plannedNoOfRows !== null ? plannedNoOfRows : vals.plannedNoOfRows,
     gramsPerSqm: gramsPerSqm !== null ? gramsPerSqm : vals.gramsPerSqm,
-    agreedOrderFromCustomerKg: agreedOrderFromCustomerKg !== null ? agreedOrderFromCustomerKg : vals.agreedOrderFromCustomerKg,
+    agreedOrderFromCustomerKg:
+      agreedOrderFromCustomerKg !== null
+        ? agreedOrderFromCustomerKg
+        : vals.agreedOrderFromCustomerKg,
   };
 }
 
@@ -213,5 +219,3 @@ export function computeProductionDerivedFields(
     realizedPlantsPerSqm: density !== null ? density : vals.realizedPlantsPerSqm,
   };
 }
-
-

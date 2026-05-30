@@ -24,11 +24,7 @@ export {
   PostHarvestForm,
   PostHarvestSummaryForm,
 } from "./components/section-forms";
-export {
-  SeedsQualityForm,
-  SqBreakdownForm,
-  GerminationTestForm,
-} from "./components/seeds-forms";
+export { SeedsQualityForm, SqBreakdownForm, GerminationTestForm } from "./components/seeds-forms";
 export { HarvestDetailsTable, PerformanceTable } from "./components/collection-tables";
 export { MediaAttachments } from "./components/media-attachments";
 export { ModuleEditor } from "./components/module-editor";

@@ -53,7 +53,13 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
 
 // ---- SQ Breakdown (KG's vs Germination %) ----
 const SQ_BREAKDOWN_ROWS: MetricRow[] = [
-  { kind: "mf", label: "Germination Good", type: "number", male: "germGoodKg", female: "germGoodPct" },
+  {
+    kind: "mf",
+    label: "Germination Good",
+    type: "number",
+    male: "germGoodKg",
+    female: "germGoodPct",
+  },
   { kind: "mf", label: "Germination Low", type: "number", male: "germLowKg", female: "germLowPct" },
   {
     kind: "mf",
@@ -114,7 +120,11 @@ const GERMINATION_TEST_ROWS: MetricRow[] = [
   { kind: "single", label: "Abnormal", type: "int", name: "abnormal" },
   { kind: "single", label: "Rotting", type: "int", name: "rotting" },
   { kind: "single", label: "No Ger", type: "int", name: "noGer" },
-  { kind: "computed", label: "Total Seeds Sown", compute: (v) => fmtNum(germinationTestTotal(v), 0) },
+  {
+    kind: "computed",
+    label: "Total Seeds Sown",
+    compute: (v) => fmtNum(germinationTestTotal(v), 0),
+  },
   { kind: "single", label: "Remarks", type: "textarea", name: "remarks" },
   { kind: "single", label: "Emp Name", type: "text", name: "empName" },
 ];

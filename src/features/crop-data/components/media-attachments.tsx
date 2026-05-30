@@ -91,7 +91,11 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
               <div key={item.id} className="group relative overflow-hidden rounded-lg border">
                 {isImage(item) ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.url} alt={item.name ?? "Attachment"} className="h-32 w-full object-cover" />
+                  <img
+                    src={item.url}
+                    alt={item.name ?? "Attachment"}
+                    className="h-32 w-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-32 w-full flex-col items-center justify-center gap-2 bg-muted/40 text-muted-foreground">
                     <FileText className="h-8 w-8" />

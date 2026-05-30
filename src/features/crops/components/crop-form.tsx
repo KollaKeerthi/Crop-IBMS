@@ -47,7 +47,12 @@ type Props = {
 };
 
 type PendingType = { id: string; name: string; colour: string; description: string };
-type PendingVariety = { id: string; name: string; gender: "Male" | "Female" | ""; colourDescription: string };
+type PendingVariety = {
+  id: string;
+  name: string;
+  gender: "Male" | "Female" | "";
+  colourDescription: string;
+};
 
 const newId = () => Math.random().toString(36).slice(2);
 const DEFAULT_ACCENT = "#048FC2";
@@ -60,10 +65,20 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(crop?.imageUrl ?? null);
 
   const [pendingTypes, setPendingTypes] = useState<PendingType[]>(
-    crop?.types.map((t) => ({ id: t.id, name: t.name, colour: t.colour ?? "", description: t.description ?? "" })) ?? []
+    crop?.types.map((t) => ({
+      id: t.id,
+      name: t.name,
+      colour: t.colour ?? "",
+      description: t.description ?? "",
+    })) ?? []
   );
   const [pendingVarieties, setPendingVarieties] = useState<PendingVariety[]>(
-    crop?.varieties.map((v) => ({ id: v.id, name: v.name, gender: (v.gender ?? "") as "Male" | "Female" | "", colourDescription: v.colourDescription ?? "" })) ?? []
+    crop?.varieties.map((v) => ({
+      id: v.id,
+      name: v.name,
+      gender: (v.gender ?? "") as "Male" | "Female" | "",
+      colourDescription: v.colourDescription ?? "",
+    })) ?? []
   );
 
   const form = useForm<CreateCropInput>({
@@ -133,7 +148,10 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   }
 
   function addVariety() {
-    setPendingVarieties((prev) => [...prev, { id: newId(), name: "", gender: "", colourDescription: "" }]);
+    setPendingVarieties((prev) => [
+      ...prev,
+      { id: newId(), name: "", gender: "", colourDescription: "" },
+    ]);
   }
   function updateVariety(id: string, patch: Partial<PendingVariety>) {
     setPendingVarieties((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
@@ -166,7 +184,11 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       for (const t of pendingTypes) {
         const name = t.name.trim();
         if (!name || existingTypeNames.has(name.toLowerCase())) continue;
-        await createCropType(cropId, { name, colour: t.colour || undefined, description: t.description || undefined });
+        await createCropType(cropId, {
+          name,
+          colour: t.colour || undefined,
+          description: t.description || undefined,
+        });
       }
 
       // Persist any new varieties

@@ -4,7 +4,12 @@ import { apiError } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
 import { getCropDataHandler } from "@/features/crop-data/handlers";
-import { fmtNum, revenueSide, pollinationEstimatedYield, postHarvestComputations } from "@/features/crop-data/compute";
+import {
+  fmtNum,
+  revenueSide,
+  pollinationEstimatedYield,
+  postHarvestComputations,
+} from "@/features/crop-data/compute";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -93,7 +98,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     // Sheet 3: Revenue (Metric / Planned / Actual)
     const rev = record.revenue as Record<string, unknown> | null;
-    
+
     const revSidePlanned = revenueSide(rev ?? {}, pi, "male");
     const revSideActual = revenueSide(rev ?? {}, pi, "female");
 
@@ -102,11 +107,27 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Metric", "Planned", "Actual"],
       ["Total number of Weeks", val(rev, "maleTotalWeeks"), val(rev, "femaleTotalWeeks")],
       ["Agreed Unit Price", val(rev, "maleAgreedUnitPrice"), val(rev, "femaleAgreedUnitPrice")],
-      ["Contract Revenue", fmtNum(revSidePlanned.contractRevenue, 3), fmtNum(revSideActual.contractRevenue, 3)],
+      [
+        "Contract Revenue",
+        fmtNum(revSidePlanned.contractRevenue, 3),
+        fmtNum(revSideActual.contractRevenue, 3),
+      ],
       ["Additional Revenue", "", val(rev, "additionalRevenue")],
-      ["Total Revenue", fmtNum(revSidePlanned.totalRevenue, 3), fmtNum(revSideActual.totalRevenue, 3)],
-      ["Total Revenue m²", fmtNum(revSidePlanned.totalRevenuePerSqm, 9), fmtNum(revSideActual.totalRevenuePerSqm, 9)],
-      ["Total Revenue m²/wk", fmtNum(revSidePlanned.totalRevenuePerSqmWk, 9), fmtNum(revSideActual.totalRevenuePerSqmWk, 9)],
+      [
+        "Total Revenue",
+        fmtNum(revSidePlanned.totalRevenue, 3),
+        fmtNum(revSideActual.totalRevenue, 3),
+      ],
+      [
+        "Total Revenue m²",
+        fmtNum(revSidePlanned.totalRevenuePerSqm, 9),
+        fmtNum(revSideActual.totalRevenuePerSqm, 9),
+      ],
+      [
+        "Total Revenue m²/wk",
+        fmtNum(revSidePlanned.totalRevenuePerSqmWk, 9),
+        fmtNum(revSideActual.totalRevenuePerSqmWk, 9),
+      ],
       ["Planned Remarks", val(rev, "plannedRemarks"), ""],
       ["Actual Remarks", "", val(rev, "actualRemarks")],
     ]);
@@ -191,7 +212,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     ]);
 
     const ph = sections.post_harvest ?? null;
-    
+
     const phCtx = {
       ...(pi ?? {}),
       ...(prod ?? {}),
@@ -300,7 +321,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       ...harvestRows.map((r) => {
         const kg = Number(r.kg);
         const rowM2 = Number(r.rowM2);
-        const grm2 = Number.isFinite(kg) && Number.isFinite(rowM2) && rowM2 !== 0 ? (kg * 1000) / rowM2 : "";
+        const grm2 =
+          Number.isFinite(kg) && Number.isFinite(rowM2) && rowM2 !== 0 ? (kg * 1000) / rowM2 : "";
         return [
           dateVal(r, "harvestDate"),
           val(r, "block"),

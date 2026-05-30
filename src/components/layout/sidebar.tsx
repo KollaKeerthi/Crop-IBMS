@@ -136,7 +136,12 @@ export function Sidebar({
       )}
     >
       {/* Brand + collapse toggle */}
-      <div className={cn("flex h-16 items-center px-4 border-b border-border/40 gap-2", collapsed && "justify-center px-2")}>
+      <div
+        className={cn(
+          "flex h-16 items-center px-4 border-b border-border/40 gap-2",
+          collapsed && "justify-center px-2"
+        )}
+      >
         {!collapsed && (
           <div className="flex items-center gap-2.5 overflow-hidden flex-1">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm transition-transform hover:scale-105 duration-200">
@@ -172,8 +177,8 @@ export function Sidebar({
           onClick={() => setFarmDropdownOpen((o) => !o)}
           className={cn(
             "group flex w-full items-center gap-3 rounded-xl border border-border/40 text-sm font-medium transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer",
-            collapsed 
-              ? "h-10 w-10 justify-center bg-muted/20 hover:bg-primary/10 hover:border-primary/20" 
+            collapsed
+              ? "h-10 w-10 justify-center bg-muted/20 hover:bg-primary/10 hover:border-primary/20"
               : "px-3 py-2.5 bg-card hover:bg-muted/40"
           )}
           title={collapsed ? (selectedFarm?.name ?? "Select a farm") : undefined}
@@ -210,8 +215,8 @@ export function Sidebar({
                 }}
                 className={cn(
                   "flex w-full items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors cursor-pointer",
-                  farm.id === selectedFarmId 
-                    ? "bg-primary/10 text-primary font-semibold" 
+                  farm.id === selectedFarmId
+                    ? "bg-primary/10 text-primary font-semibold"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -257,10 +262,17 @@ export function Sidebar({
                       {isGroupActive && (
                         <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary" />
                       )}
-                      <item.icon className={cn("size-4 shrink-0 transition-transform duration-200", !collapsed && "group-hover:scale-105")} />
+                      <item.icon
+                        className={cn(
+                          "size-4 shrink-0 transition-transform duration-200",
+                          !collapsed && "group-hover:scale-105"
+                        )}
+                      />
                       {!collapsed && (
                         <>
-                          <span className="flex-1 text-left transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>
+                          <span className="flex-1 text-left transition-transform duration-200 group-hover:translate-x-0.5">
+                            {item.label}
+                          </span>
                           {isOpen ? (
                             <ChevronDown className="size-3.5 shrink-0" />
                           ) : (
@@ -287,7 +299,12 @@ export function Sidebar({
                               {isActive && (
                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full bg-primary" />
                               )}
-                              <span className={cn("transition-transform duration-200 block", isActive ? "pl-2" : "hover:translate-x-0.5")}>
+                              <span
+                                className={cn(
+                                  "transition-transform duration-200 block",
+                                  isActive ? "pl-2" : "hover:translate-x-0.5"
+                                )}
+                              >
                                 {child.label}
                               </span>
                             </Link>
@@ -322,9 +339,23 @@ export function Sidebar({
                   {isActive && (
                     <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary animate-in fade-in zoom-in duration-200" />
                   )}
-                  <item.icon className={cn("size-4 shrink-0 transition-transform duration-200", isActive ? "text-primary scale-105" : "group-hover:scale-110 group-hover:text-primary")} />
+                  <item.icon
+                    className={cn(
+                      "size-4 shrink-0 transition-transform duration-200",
+                      isActive
+                        ? "text-primary scale-105"
+                        : "group-hover:scale-110 group-hover:text-primary"
+                    )}
+                  />
                   {!collapsed && (
-                    <span className={cn("transition-transform duration-200", isActive ? "text-foreground font-semibold" : "group-hover:translate-x-0.5 group-hover:text-foreground")}>
+                    <span
+                      className={cn(
+                        "transition-transform duration-200",
+                        isActive
+                          ? "text-foreground font-semibold"
+                          : "group-hover:translate-x-0.5 group-hover:text-foreground"
+                      )}
+                    >
                       {item.label}
                     </span>
                   )}
@@ -337,11 +368,11 @@ export function Sidebar({
 
       {/* User section */}
       <div className={cn("border-t border-border/40 p-3", collapsed && "px-2 py-4")}>
-        <div 
+        <div
           className={cn(
             "flex items-center gap-3 rounded-2xl transition-all duration-200",
-            collapsed 
-              ? "flex-col gap-2 justify-center" 
+            collapsed
+              ? "flex-col gap-2 justify-center"
               : "p-2.5 bg-muted/40 hover:bg-muted/70 border border-border/20 shadow-2xs hover:shadow-xs"
           )}
         >
@@ -356,8 +387,12 @@ export function Sidebar({
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-foreground/90 leading-tight">{user.name ?? "User"}</p>
-              <p className="truncate text-[10px] text-muted-foreground/80 font-medium leading-tight mt-0.5">{user.email}</p>
+              <p className="truncate text-xs font-semibold text-foreground/90 leading-tight">
+                {user.name ?? "User"}
+              </p>
+              <p className="truncate text-[10px] text-muted-foreground/80 font-medium leading-tight mt-0.5">
+                {user.email}
+              </p>
             </div>
           )}
         </div>
