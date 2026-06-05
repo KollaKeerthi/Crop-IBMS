@@ -73,7 +73,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const cropVarieties = selectedCrop?.varieties ?? [];
   const cropOptions: SelectOption[] =
     activeTime?.cropId && activeTime.cropName && !crops.some((c) => c.id === activeTime.cropId)
-      ? [...crops, { id: activeTime.cropId, name: activeTime.cropName, varieties: [] }]
+      ? [...crops, { id: activeTime.cropId, name: activeTime.cropName }]
       : crops;
   const varieties: SelectOption[] =
     selectedCropId === activeTime?.cropId &&
