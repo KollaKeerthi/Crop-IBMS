@@ -1,0 +1,9 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  },
+  "installCommand": "bun install",
+  "buildCommand": "bun run build"
+}

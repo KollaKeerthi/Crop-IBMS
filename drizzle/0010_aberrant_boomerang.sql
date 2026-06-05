@@ -1,0 +1,1 @@
+ALTER TABLE "post_harvest" ALTER COLUMN "harvest_end_date" SET DATA TYPE integer USING NULL;

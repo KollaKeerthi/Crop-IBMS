@@ -1,0 +1,14 @@
+#!/bin/sh
+export PATH="$HOME/.bun/bin:$PATH"
+set -e
+echo "Linting..."
+bunx eslint .
+echo "Checking formatting..."
+bunx prettier --check "**/*.{ts,tsx,js,jsx,json,md,css}"
+echo "Type checking..."
+bunx tsc --noEmit
+echo "Running tests..."
+bunx vitest run --passWithNoTests
+echo "Auditing dependencies..."
+bun audit --audit-level=high
+echo "All checks passed — safe to push"

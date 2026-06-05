@@ -1,0 +1,8 @@
+#!/bin/sh
+export PATH="$HOME/.bun/bin:$PATH"
+set -e
+echo "Formatting staged files..."
+bunx lint-staged
+echo "Linting..."
+bunx eslint .
+echo "pre-commit passed"
