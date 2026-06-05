@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
+import { formatDateDisplay } from "@/lib/format";
 import { TaskDetailDialog } from "./task-detail-dialog";
 import type { Task } from "../schema";
 
@@ -43,7 +43,7 @@ function BoardTaskCard({ task, farmId }: { task: Task; farmId: string }) {
         {task.dueDate && (
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
             <CalendarDays className="h-4 w-4 text-primary" />
-            <span>Due: {format(new Date(task.dueDate), "dd-MM-yyyy")}</span>
+            <span>Due: {formatDateDisplay(task.dueDate)}</span>
           </div>
         )}
         <div className="border-t pt-3 text-sm italic text-muted-foreground">

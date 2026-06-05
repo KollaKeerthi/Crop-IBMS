@@ -41,7 +41,7 @@ const ROWS: MetricRow[] = [
   },
   {
     kind: "mf",
-    label: "Planned Plants / m²",
+    label: "Planned Plants / m2",
     type: "number",
     male: "malePlannedPlantsPerSqm",
     female: "femalePlannedPlantsPerSqm",
@@ -56,7 +56,7 @@ const ROWS: MetricRow[] = [
   },
   { kind: "single", label: "Agreed gram / Plant", type: "number", name: "agreedGramPerPlant" },
   { kind: "single", label: "Base Yield (kg)", type: "number", name: "baseYieldKg" },
-  { kind: "single", label: "grams / m²", type: "number", name: "gramsPerSqm" },
+  { kind: "single", label: "grams / m2", type: "number", name: "gramsPerSqm" },
   { kind: "subheader", label: "Schedule (Actual)" },
   {
     kind: "single",

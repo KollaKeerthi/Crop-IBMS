@@ -30,7 +30,7 @@ const PRODUCTION_ROWS: MetricRow[] = [
   { kind: "single", label: "Realized No. of Plants", type: "int", name: "realizedPlants" },
   { kind: "single", label: "Realized No. of Rows", type: "int", name: "realizedRows" },
   { kind: "single", label: "Realized Surface Area", type: "number", name: "realizedSurfaceArea" },
-  { kind: "single", label: "Realized Plants / m²", type: "number", name: "realizedPlantsPerSqm" },
+  { kind: "single", label: "Realized Plants / m2", type: "number", name: "realizedPlantsPerSqm" },
   { kind: "single", label: "Avg Temperature", type: "number", name: "avgTemperature" },
   { kind: "single", label: "Avg Radiation", type: "number", name: "avgRadiation" },
   { kind: "single", label: "Avg Humidity", type: "number", name: "avgHumidity" },
@@ -139,7 +139,7 @@ const POST_HARVEST_ROWS: MetricRow[] = [
   },
   {
     kind: "computed",
-    label: "Grams per m²",
+    label: "Grams per m2",
     compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).gramsPerSqm, 8),
   },
   {
@@ -154,7 +154,7 @@ const POST_HARVEST_ROWS: MetricRow[] = [
   },
   {
     kind: "computed",
-    label: "Actual Gr/m²/wk",
+    label: "Actual Gr/m2/wk",
     compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).actualGrPerSqmWk, 9),
   },
   { kind: "single", label: "% Germination", type: "number", name: "germinationPct", suffix: "%" },

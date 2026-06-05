@@ -35,13 +35,13 @@ const ROWS: MetricRow[] = [
   },
   {
     kind: "computed-mf",
-    label: "Total Revenue m²",
+    label: "Total Revenue m2",
     computeMale: (v, ctx) => fmtNum(revenueSide(v, ctx, "male").totalRevenuePerSqm, 9),
     computeFemale: (v, ctx) => fmtNum(revenueSide(v, ctx, "female").totalRevenuePerSqm, 9),
   },
   {
     kind: "computed-mf",
-    label: "Total Revenue m²/wk",
+    label: "Total Revenue m2/wk",
     computeMale: (v, ctx) => fmtNum(revenueSide(v, ctx, "male").totalRevenuePerSqmWk, 9),
     computeFemale: (v, ctx) => fmtNum(revenueSide(v, ctx, "female").totalRevenuePerSqmWk, 9),
   },

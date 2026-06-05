@@ -93,7 +93,7 @@ export function GreenhouseForm({ farmId, greenhouse, onSuccess }: Props) {
           name="areaSqm"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Area (m²)</FormLabel>
+              <FormLabel>Area (m2)</FormLabel>
               <FormControl>
                 <Input
                   type="number"

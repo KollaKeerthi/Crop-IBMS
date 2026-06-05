@@ -260,7 +260,7 @@ export const cropDataModules = pgTable("crop_data_modules", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Harvest Details - one row per harvest event (gr/m² computed in-app)
+// Harvest Details - one row per harvest event (gr/m2 computed in-app)
 export const harvestRecords = pgTable("harvest_records", {
   id: uuid("id").primaryKey().defaultRandom(),
   cropDataId: uuid("crop_data_id")

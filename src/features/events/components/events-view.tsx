@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { Plus, CalendarDays, List, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { CalendarView } from "./calendar-view";
 import { EventForm } from "./event-form";
 import { EventDetailDialog } from "./event-detail-dialog";
 import type { Event } from "../schema";
+import { formatDateDisplay } from "@/lib/format";
 
 const RECURRENCE_LABELS: Record<Event["recurrenceType"], string> = {
   none: "-",
@@ -139,7 +139,7 @@ export function EventsView() {
                     </button>
                   </div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">
-                    {format(new Date(event.startDate), "MMM d, yyyy")}
+                    {formatDateDisplay(event.startDate)}
                   </div>
                   <div className="px-4 py-3 text-sm text-muted-foreground">
                     {event.allDay ? (

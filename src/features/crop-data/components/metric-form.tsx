@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateDisplay } from "@/lib/format";
 
 export type FieldType = "text" | "number" | "int" | "date" | "textarea";
 export type Placement = "male" | "female" | "span";
@@ -69,8 +70,7 @@ function formatDateForInput(v: unknown): string {
 function displayValue(v: unknown, type: FieldType): string {
   if (v === null || v === undefined || v === "") return "-";
   if (type === "date") {
-    const d = new Date(v as string);
-    return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString("en-GB");
+    return formatDateDisplay(v as string);
   }
   return String(v);
 }

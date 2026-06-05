@@ -90,7 +90,7 @@ function BlockRow({ block, farmId }: { block: Block; farmId: string }) {
             <span>{block.name}</span>
             {block.areaSqm && (
               <Badge variant="outline" className="text-xs">
-                {block.areaSqm.toLocaleString()} m²
+                {block.areaSqm.toLocaleString()} m2
               </Badge>
             )}
             <Badge variant="outline" className="text-xs ml-1">
@@ -160,7 +160,7 @@ function FieldSection({ item, farmId }: { item: FieldWithBlocks; farmId: string 
           <span>{item.name}</span>
           {item.areaSqm && (
             <Badge variant="secondary" className="text-xs">
-              {item.areaSqm.toLocaleString()} m²
+              {item.areaSqm.toLocaleString()} m2
             </Badge>
           )}
           <Badge variant="outline" className="text-xs ml-1">
@@ -275,7 +275,7 @@ function GreenhouseSection({ item, farmId }: { item: GreenhouseWithBlocks; farmI
           <span>{item.name}</span>
           {item.areaSqm && (
             <Badge variant="secondary" className="text-xs">
-              {item.areaSqm.toLocaleString()} m²
+              {item.areaSqm.toLocaleString()} m2
             </Badge>
           )}
           <Badge variant="outline" className="text-xs ml-1">

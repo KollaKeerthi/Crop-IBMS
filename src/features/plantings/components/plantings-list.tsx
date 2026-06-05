@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiFetch } from "@/lib/api/client";
+import { formatDateDisplay } from "@/lib/format";
 import Link from "next/link";
 
 const STATUS_VARIANT: Record<PlantingStatus, "default" | "secondary" | "outline" | "destructive"> =
@@ -43,10 +44,7 @@ const STATUS_VARIANT: Record<PlantingStatus, "default" | "secondary" | "outline"
   };
 
 function formatDate(s: string | null | undefined): string {
-  if (!s) return "-";
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return "-";
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  return formatDateDisplay(s);
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -570,7 +568,7 @@ export function PlantingsList() {
                         setSelectedDate(day.date);
                       } else {
                         toast.info(
-                          `No planting events scheduled for ${day.date.toLocaleDateString()}`
+                          `No planting events scheduled for ${formatDateDisplay(day.date)}`
                         );
                       }
                     }}
@@ -717,12 +715,7 @@ export function PlantingsList() {
             <DialogTitle className="flex items-center gap-2 text-base font-bold">
               <Calendar className="h-5 w-5 text-primary" />
               Events:{" "}
-              {selectedDate?.toLocaleDateString(undefined, {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {formatDateDisplay(selectedDate)}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">

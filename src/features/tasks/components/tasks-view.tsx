@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFarm } from "@/lib/farm-context";
+import { formatDateDisplay } from "@/lib/format";
 import { useEvents } from "@/features/events/hooks";
 import { EventForm } from "@/features/events/components/event-form";
 import { useTasks } from "../hooks";
@@ -189,8 +190,8 @@ function EventsList({ events }: { events: Event[] }) {
               className={`grid grid-cols-[2fr_140px_140px_1.5fr_120px] items-center px-9 py-4 text-sm ${index < events.length - 1 ? "border-b" : ""}`}
             >
               <div className="font-medium">{event.title}</div>
-              <div>{event.startDate}</div>
-              <div>{event.endDate ?? "-"}</div>
+              <div>{formatDateDisplay(event.startDate)}</div>
+              <div>{formatDateDisplay(event.endDate)}</div>
               <div className="text-muted-foreground">{event.location ?? "-"}</div>
               <div className="capitalize text-muted-foreground">{event.recurrenceType}</div>
             </div>
@@ -240,7 +241,7 @@ export function TasksView() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `tasks-${new Date().toISOString().split("T")[0]}.xlsx`;
+      a.download = `tasks-${formatDateDisplay(new Date())}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {

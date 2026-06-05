@@ -26,7 +26,7 @@ const HARVEST_COLUMNS: RowColumn[] = [
   { name: "block", label: "Block", type: "text" },
   { name: "variety", label: "Variety", type: "text" },
   { name: "code", label: "Code", type: "text" },
-  { name: "rowM2", label: "Row m²", type: "number" },
+  { name: "rowM2", label: "Row m2", type: "number" },
   { name: "rowNo", label: "Row No", type: "int" },
   { name: "empName", label: "Emp Name", type: "text" },
   { name: "harvestCode", label: "Harvest Code", type: "text" },
@@ -56,7 +56,7 @@ export function HarvestDetailsTable({ cropDataId, farmId, rows, seedsQuality }: 
     <RowTableEditor
       title="Harvest Details"
       columns={HARVEST_COLUMNS}
-      computed={[{ label: "Gr/m²", compute: (r) => fmtNum(harvestGrPerM2(r)) }]}
+      computed={[{ label: "Gr/m2", compute: (r) => fmtNum(harvestGrPerM2(r)) }]}
       dateFields={HARVEST_RECORD_DATE_FIELDS}
       schema={HarvestRecordInputSchema}
       rows={mappedRows}

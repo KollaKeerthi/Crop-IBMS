@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { CalendarDays, User, CheckSquare, GripVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDateDisplay } from "@/lib/format";
 import type { Task } from "../schema";
 import { TaskDetailDialog } from "./task-detail-dialog";
 
@@ -50,7 +50,7 @@ export function TaskCard({ task, farmId }: Props) {
             {task.dueDate && (
               <span className="flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" />
-                {format(new Date(task.dueDate), "MMM d")}
+                {formatDateDisplay(task.dueDate)}
               </span>
             )}
             {task.assignedTo && (

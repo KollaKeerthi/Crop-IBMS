@@ -51,13 +51,6 @@ const MANAGEMENT_ITEMS: NavItem[] = [
     label: "Crop Planning",
     href: "/dashboard/crop-plan",
     icon: Layers,
-    children: [
-      { label: "Seasons", href: "/dashboard/crop-plan/seasons" },
-      { label: "Density Master", href: "/dashboard/crop-plan/density-master" },
-      { label: "Block Master", href: "/dashboard/crop-plan/block-master" },
-      { label: "Activities", href: "/dashboard/crop-plan/activities" },
-      { label: "Active Time", href: "/dashboard/crop-plan/active-time" },
-    ],
   },
   { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Crop Data", href: "/dashboard/crop-data", icon: Database },

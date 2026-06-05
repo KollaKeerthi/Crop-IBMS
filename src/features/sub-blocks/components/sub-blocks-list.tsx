@@ -68,7 +68,7 @@ export function SubBlocksList({ blockId, farmId, blockName }: Props) {
               <th className="px-3 py-2 text-left font-medium">Rows</th>
               <th className="px-3 py-2 text-left font-medium">Length (m)</th>
               <th className="px-3 py-2 text-left font-medium">Width (m)</th>
-              <th className="px-3 py-2 text-left font-medium">Area (m²)</th>
+              <th className="px-3 py-2 text-left font-medium">Area (m2)</th>
               <th className="px-3 py-2 text-right font-medium">Actions</th>
             </tr>
           </thead>

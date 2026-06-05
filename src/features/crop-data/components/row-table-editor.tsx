@@ -7,6 +7,7 @@ import { Plus, Trash2, Pencil, X } from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatDateDisplay } from "@/lib/format";
 import type { Vals } from "./metric-form";
 
 export type RowFieldType = "text" | "number" | "int" | "date";
@@ -56,8 +57,7 @@ function fromRow(row: Vals, columns: RowColumn[]): Vals {
 function displayCell(value: unknown, type: RowFieldType): string {
   if (value === null || value === undefined || value === "") return "-";
   if (type === "date") {
-    const d = new Date(value as string);
-    return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString("en-GB");
+    return formatDateDisplay(value as string);
   }
   return String(value);
 }

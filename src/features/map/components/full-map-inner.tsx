@@ -1036,7 +1036,7 @@ export default function FullMapInner() {
       const rowLen = parseFloat(block.rowLength);
       const rowWid = parseFloat(block.rowWidth);
       if (Number.isFinite(rowLen) && Number.isFinite(rowWid)) {
-        structureNotes.push(`  m² per Row: ${(rowLen * rowWid).toFixed(2)} m²`);
+        structureNotes.push(`  m2 per Row: ${(rowLen * rowWid).toFixed(2)} m2`);
       }
     });
 
@@ -1427,7 +1427,7 @@ export default function FullMapInner() {
                 <Input
                   value={locationArea}
                   onChange={(event) => setLocationArea(event.target.value)}
-                  placeholder="sq meter"
+                  placeholder="m2"
                   type="number"
                   min="0"
                   step="any"
@@ -1477,8 +1477,8 @@ export default function FullMapInner() {
                         const rowLen = parseFloat(block.rowLength);
                         const rowWid = parseFloat(block.rowWidth);
                         return Number.isFinite(rowLen) && Number.isFinite(rowWid)
-                          ? `${(rowLen * rowWid).toFixed(2)} m²`
-                          : "0.00 m²";
+                          ? `${(rowLen * rowWid).toFixed(2)} m2`
+                          : "0.00 m2";
                       })();
 
                       return (
@@ -1645,7 +1645,7 @@ export default function FullMapInner() {
                           </div>
 
                           <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-muted-foreground">
-                            <p className="font-medium">m² per Row</p>
+                            <p className="font-medium">m2 per Row</p>
                             <p>{rowArea}</p>
                           </div>
                         </div>

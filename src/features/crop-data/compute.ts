@@ -37,8 +37,8 @@ type Vals = Record<string, unknown>;
  * Revenue derived figures for one side (male/female).
  * Contract Revenue = Agreed Unit Price × Agreed Order From Customer (kg).
  * Total Revenue    = Contract Revenue + Additional Revenue.
- * Total Revenue m² = Total Revenue / Surface Area.
- * Total Rev m²/wk  = Total Revenue m² / Total Weeks.
+ * Total Revenue m2 = Total Revenue / Surface Area.
+ * Total Rev m2/wk  = Total Revenue m2 / Total Weeks.
  */
 export function revenueSide(rev: Vals, programInfo: Vals | null, side: "male" | "female") {
   const unitPrice = toNum(rev[`${side}AgreedUnitPrice`]);
@@ -113,7 +113,7 @@ export function seedsQualityGerminationPct(sq: Vals): number | null {
   return mul(div(good, toNum(sq.totalSeedsSown)), 100);
 }
 
-/** Harvest record gr/m² = kg × 1000 ÷ row m². */
+/** Harvest record gr/m2 = kg × 1000 ÷ row m2. */
 export function harvestGrPerM2(row: Vals): number | null {
   return div(mul(toNum(row.kg), 1000), toNum(row.rowM2));
 }
@@ -151,7 +151,7 @@ export function computeProgramInfoDerivedFields(
   const plannedNoOfRowsRaw = div(totalPlants, plantsPerRow);
   const plannedNoOfRows = plannedNoOfRowsRaw !== null ? Math.round(plannedNoOfRowsRaw) : null;
 
-  // 3. grams / m² = (agreed Gram per plant / base yield) * 100
+  // 3. grams / m2 = (agreed Gram per plant / base yield) * 100
   const gramsPerSqm = mul(div(agreedGramPerPlant, baseYieldKg), 100);
 
   // 4. Agreed Order From Customer (kg) = (Planned No of Plants / 1000) * Agreed Gram per plant

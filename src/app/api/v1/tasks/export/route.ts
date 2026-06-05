@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { tasks, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import ExcelJS from "exceljs";
+import { formatDateDisplay } from "@/lib/format";
 
 export async function GET(req: NextRequest) {
   try {
@@ -53,14 +54,14 @@ export async function GET(req: NextRequest) {
       "Sub Block": t.blockMasterId ?? "",
       Crop: t.cropId ?? "",
       "Associated To": t.associatedTo ?? "",
-      "Due Date": t.dueDate ? t.dueDate.toISOString().split("T")[0] : "",
-      "Start Date": t.startDate ? t.startDate.toISOString().split("T")[0] : "",
+      "Due Date": formatDateDisplay(t.dueDate, ""),
+      "Start Date": formatDateDisplay(t.startDate, ""),
       Repeats: t.repeatRule ?? "none",
       "Estimated Hours": t.estimatedHours ?? "",
       Color: t.color ?? "",
       Assignee: t.assigneeName ?? t.assigneeEmail ?? "",
       Notes: t.notes ?? "",
-      Created: t.createdAt.toISOString().split("T")[0],
+      Created: formatDateDisplay(t.createdAt, ""),
     }));
 
     // Split into active vs completed
@@ -86,7 +87,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer, {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="tasks-${new Date().toISOString().split("T")[0]}.xlsx"`,
+        "Content-Disposition": `attachment; filename="tasks-${formatDateDisplay(new Date())}.xlsx"`,
       },
     });
   } catch (err) {

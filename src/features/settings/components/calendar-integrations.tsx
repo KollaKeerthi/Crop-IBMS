@@ -5,6 +5,7 @@ import { Calendar, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api/client";
+import { formatDateDisplay } from "@/lib/format";
 
 type Status = { provider: "google" | "outlook"; connectedAt: string };
 
@@ -75,7 +76,7 @@ export function CalendarIntegrations() {
                     <p className="text-base font-semibold">{label}</p>
                     <p className="text-sm text-muted-foreground">
                       {connected
-                        ? `Connected ${new Date(connected.connectedAt).toLocaleDateString()}`
+                        ? `Connected ${formatDateDisplay(connected.connectedAt)}`
                         : "Connect to auto-sync tasks to your calendar."}
                     </p>
                   </div>

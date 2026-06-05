@@ -64,7 +64,7 @@ function polygonAreaSqm(geometry: unknown): number {
 function formatArea(sqm: number | null | undefined) {
   if (!sqm) return null;
   if (sqm >= 10_000) return `${(sqm / 10_000).toFixed(2)} ha`;
-  return `${Math.round(sqm)} m²`;
+  return `${Math.round(sqm)} m2`;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {

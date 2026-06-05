@@ -71,7 +71,7 @@ export function BlockMasterTable() {
             <TableRow>
               <TableHead>Block</TableHead>
               <TableHead>Sub-Block</TableHead>
-              <TableHead>Area (sqm)</TableHead>
+              <TableHead>Area (m2)</TableHead>
               <TableHead>Rows</TableHead>
               <TableHead>Row Length (m)</TableHead>
               <TableHead>Row Width (m)</TableHead>

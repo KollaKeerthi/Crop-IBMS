@@ -93,7 +93,7 @@ export function FieldForm({ farmId, field, onSuccess }: Props) {
           name="areaSqm"
           render={({ field: f }) => (
             <FormItem>
-              <FormLabel>Area (m²)</FormLabel>
+              <FormLabel>Area (m2)</FormLabel>
               <FormControl>
                 <Input
                   type="number"

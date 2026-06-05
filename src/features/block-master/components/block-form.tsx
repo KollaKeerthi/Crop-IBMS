@@ -131,7 +131,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          {numField("areaSqm", "Area (sqm)")}
+          {numField("areaSqm", "Area (m2)")}
           {numField("rows", "Rows")}
         </div>
         <div className="grid grid-cols-2 gap-4">

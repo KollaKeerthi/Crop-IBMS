@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatDateDisplay } from "@/lib/format";
 import { TaskForm } from "./task-form";
 import type { Task } from "../schema";
 import { useDeleteTask } from "../hooks";
@@ -163,10 +163,10 @@ export function TaskTable({ tasks, farmId }: Props) {
                   {task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "-"}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {task.startDate ? format(new Date(task.startDate), "dd-MM-yyyy") : "-"}
+                  {formatDateDisplay(task.startDate)}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {task.dueDate ? format(new Date(task.dueDate), "dd-MM-yyyy") : "-"}
+                  {formatDateDisplay(task.dueDate)}
                 </div>
                 <div className="flex items-center gap-1">
                   <Button

@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatDateDisplay } from "@/lib/format";
 
 const OPEN_STATUSES = ["Pending", "InProgress"] as const;
 
@@ -22,7 +23,7 @@ type Props = {
 
 function formatDueDate(date: Date | null): string {
   if (!date) return "No due date";
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return formatDateDisplay(date);
 }
 
 export async function DashboardRecentTasks({ farmId }: Props) {

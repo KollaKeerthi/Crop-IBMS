@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { formatDateDisplay } from "@/lib/format";
 import { TaskForm } from "./task-form";
 import type { Task } from "../schema";
 import { useUpdateTaskStatus, useToggleChecklistItem } from "../hooks";
@@ -142,13 +142,13 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
             {task.startDate && (
               <div>
                 <p className="text-xs text-muted-foreground">Start Date</p>
-                <p>{format(new Date(task.startDate), "MMM d, yyyy")}</p>
+                <p>{formatDateDisplay(task.startDate)}</p>
               </div>
             )}
             {task.dueDate && (
               <div>
                 <p className="text-xs text-muted-foreground">Due Date</p>
-                <p>{format(new Date(task.dueDate), "MMM d, yyyy")}</p>
+                <p>{formatDateDisplay(task.dueDate)}</p>
               </div>
             )}
             {task.estimatedHours !== null && (
@@ -205,7 +205,7 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
 
           <Separator />
           <p className="text-xs text-muted-foreground">
-            Created {format(new Date(task.createdAt), "MMM d, yyyy")}
+            Created {formatDateDisplay(task.createdAt)}
           </p>
         </div>
       </DialogContent>

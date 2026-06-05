@@ -10,6 +10,7 @@ import {
   pollinationEstimatedYield,
   postHarvestComputations,
 } from "@/features/crop-data/compute";
+import { formatDateDisplay } from "@/lib/format";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Contract No", record.contractNo ?? ""],
       ["Status", record.status ?? ""],
       ["Notes", record.notes ?? ""],
-      ["Created At", record.createdAt ? new Date(record.createdAt).toLocaleString() : ""],
+      ["Created At", formatDateDisplay(record.createdAt, "")],
     ];
     const wsSummary = wb.addWorksheet("Summary");
     wsSummary.addRows(summaryData);
@@ -47,8 +48,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     const dateVal = (o: Record<string, unknown> | null, k: string): string => {
       const v = o?.[k];
       if (!v) return "";
-      const d = new Date(v as string);
-      return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-GB");
+      return formatDateDisplay(v as string, "");
     };
 
     // Sheet 2: Program Info (Metric / Male / Female)
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         val(pi, "femalePlannedPlantsPerRow"),
       ],
       [
-        "Planned Plants / m²",
+        "Planned Plants / m2",
         val(pi, "malePlannedPlantsPerSqm"),
         val(pi, "femalePlannedPlantsPerSqm"),
       ],
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Proposed gram / Plant (Customer)", "", val(pi, "proposedGramPerPlant")],
       ["Agreed gram / Plant", "", val(pi, "agreedGramPerPlant")],
       ["Base Yield (kg)", "", val(pi, "baseYieldKg")],
-      ["grams / m²", "", val(pi, "gramsPerSqm")],
+      ["grams / m2", "", val(pi, "gramsPerSqm")],
       ["Material Arrival Date (Actual)", "", dateVal(pi, "materialArrivalDate")],
       ["Block Prep Start (Actual)", "", dateVal(pi, "blockPrepStartDate")],
       ["Block Prep End (Actual)", "", dateVal(pi, "blockPrepEndDate")],
@@ -119,12 +119,12 @@ export async function GET(req: NextRequest, { params }: Params) {
         fmtNum(revSideActual.totalRevenue, 3),
       ],
       [
-        "Total Revenue m²",
+        "Total Revenue m2",
         fmtNum(revSidePlanned.totalRevenuePerSqm, 9),
         fmtNum(revSideActual.totalRevenuePerSqm, 9),
       ],
       [
-        "Total Revenue m²/wk",
+        "Total Revenue m2/wk",
         fmtNum(revSidePlanned.totalRevenuePerSqmWk, 9),
         fmtNum(revSideActual.totalRevenuePerSqmWk, 9),
       ],
@@ -182,7 +182,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Realized No. of Plants", val(prod, "realizedPlants")],
       ["Realized No. of Rows", val(prod, "realizedRows")],
       ["Realized Surface Area", val(prod, "realizedSurfaceArea")],
-      ["Realized Plants / m²", val(prod, "realizedPlantsPerSqm")],
+      ["Realized Plants / m2", val(prod, "realizedPlantsPerSqm")],
       ["Avg Temperature", val(prod, "avgTemperature")],
       ["Avg Radiation", val(prod, "avgRadiation")],
       ["Avg Humidity", val(prod, "avgHumidity")],
@@ -230,10 +230,10 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Total No. of Harvests", val(ph, "totalNoOfHarvests")],
       ["Total KGs", val(ph, "totalKgs")],
       ["Actual Yield (%)", fmtNum(phComp.actualYieldPct, 8)],
-      ["Grams per m²", fmtNum(phComp.gramsPerSqm, 8)],
+      ["Grams per m2", fmtNum(phComp.gramsPerSqm, 8)],
       ["Grams per Plant", fmtNum(phComp.gramsPerPlant, 8)],
       ["Net Crop Cycle Weeks", fmtNum(phComp.netWeeks, 0)],
-      ["Actual Gr/m²/wk", fmtNum(phComp.actualGrPerSqmWk, 9)],
+      ["Actual Gr/m2/wk", fmtNum(phComp.actualGrPerSqmWk, 9)],
       ["% Germination", val(ph, "germinationPct")],
       ["Remarks", val(ph, "remarks")],
       ["Recommendations", val(ph, "recommendations")],
@@ -309,13 +309,13 @@ export async function GET(req: NextRequest, { params }: Params) {
         "Block",
         "Variety",
         "Code",
-        "Row m²",
+        "Row m2",
         "Row No",
         "Emp Name",
         "Harvest Code",
         "Kg",
         "% Germination",
-        "Gr/m²",
+        "Gr/m2",
         "Remarks",
       ],
       ...harvestRows.map((r) => {

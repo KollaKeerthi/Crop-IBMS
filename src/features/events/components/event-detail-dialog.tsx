@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import type { Event } from "../schema";
 import { useDeleteEvent } from "../hooks";
 import { EventForm } from "./event-form";
+import { formatDateDisplay } from "@/lib/format";
 
 type Props = {
   event: Event;
@@ -120,9 +120,9 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-20">Date</span>
               <span>
-                {format(new Date(event.startDate), "MMM d, yyyy")}
+                {formatDateDisplay(event.startDate)}
                 {event.endDate && event.endDate !== event.startDate && (
-                  <> - {format(new Date(event.endDate), "MMM d, yyyy")}</>
+                  <> - {formatDateDisplay(event.endDate)}</>
                 )}
               </span>
             </div>
@@ -163,7 +163,7 @@ export function EventDetailDialog({ event, farmId, open, onClose }: Props) {
 
           <Separator />
           <p className="text-xs text-muted-foreground">
-            Created {format(new Date(event.createdAt), "MMM d, yyyy")}
+            Created {formatDateDisplay(event.createdAt)}
           </p>
         </div>
       </DialogContent>
