@@ -55,6 +55,16 @@ function ratio(value: number | undefined) {
   return value && Number.isFinite(value) ? value.toFixed(3) : "-";
 }
 
+function isCompleteSuitableCrop(crop: SuitableCropInput): crop is Required<SuitableCropInput> {
+  return (
+    !!crop.cropId &&
+    typeof crop.rows === "number" &&
+    crop.rows > 0 &&
+    typeof crop.plantsPerRow === "number" &&
+    crop.plantsPerRow > 0
+  );
+}
+
 export function BlockForm({ farmId, block, onSuccess }: Props) {
   const isEdit = !!block;
   const schema = isEdit ? UpdateBlockMasterInputSchema : CreateBlockMasterInputSchema;
@@ -79,9 +89,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   async function onSubmit(values: CreateBlockMasterInput) {
-    const suitableCrops = (values.suitableCrops ?? []).filter(
-      (crop) => crop.cropId && crop.rows > 0 && crop.plantsPerRow > 0
-    );
+    const suitableCrops = (values.suitableCrops ?? []).filter(isCompleteSuitableCrop);
     const createInput: CreateBlockMasterInput = {
       ...values,
       rows: suitableCrops[0]?.rows,
