@@ -136,12 +136,16 @@ export function TaskForm({ farmId, task, defaultStatus, onSuccess }: Props) {
     [members]
   );
 
+  function suitableCropId(crop: string | { cropId: string }) {
+    return typeof crop === "string" ? crop : crop.cropId;
+  }
+
   function cropForBlock(blockId: string | undefined) {
     if (!blockId) return "";
     const block = blocks.find((item) => item.id === blockId);
     if (!block) return "";
 
-    const suitableCropIds = block.suitableCrops ?? [];
+    const suitableCropIds = (block.suitableCrops ?? []).map(suitableCropId);
     const directCropId = suitableCropIds.find((cropId) => crops.some((crop) => crop.id === cropId));
     if (directCropId) return directCropId;
 

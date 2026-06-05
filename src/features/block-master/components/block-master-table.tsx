@@ -7,6 +7,7 @@ import { useFarm } from "@/lib/farm-context";
 import { useBlockMaster, useDeleteBlockMaster } from "../hooks";
 import type { BlockMaster } from "../schema";
 import { BlockForm } from "./block-form";
+import { useCrops } from "@/features/crops/hooks";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -25,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export function BlockMasterTable() {
   const { selectedFarmId } = useFarm();
   const { data: blocks, isLoading } = useBlockMaster(selectedFarmId);
+  const { data: crops = [] } = useCrops();
   const deleteMutation = useDeleteBlockMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editBlock, setEditBlock] = useState<BlockMaster | null>(null);
@@ -42,6 +44,20 @@ export function BlockMasterTable() {
     } catch {
       toast.error("Failed to delete block");
     }
+  }
+
+  function suitableCropsLabel(block: BlockMaster) {
+    const suitableCrops = block.suitableCrops ?? [];
+    if (suitableCrops.length === 0) return "-";
+
+    return suitableCrops
+      .map((item) => {
+        const cropId = typeof item === "string" ? item : item.cropId;
+        const cropName = crops.find((crop) => crop.id === cropId)?.name ?? cropId;
+        if (typeof item === "string") return cropName;
+        return `${cropName}: ${item.rows} rows, ${item.plantsPerRow}/row`;
+      })
+      .join("; ");
   }
 
   return (
@@ -70,11 +86,8 @@ export function BlockMasterTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Block</TableHead>
-              <TableHead>Sub-Block</TableHead>
               <TableHead>Area (m2)</TableHead>
-              <TableHead>Rows</TableHead>
-              <TableHead>Row Length (m)</TableHead>
-              <TableHead>Row Width (m)</TableHead>
+              <TableHead>Suitable Crops</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -82,11 +95,10 @@ export function BlockMasterTable() {
             {blocks.map((block) => (
               <TableRow key={block.id}>
                 <TableCell className="font-semibold text-foreground">{block.blockName}</TableCell>
-                <TableCell className="text-muted-foreground">{block.subBlockName ?? "-"}</TableCell>
                 <TableCell>{block.areaSqm ?? "-"}</TableCell>
-                <TableCell>{block.rows ?? "-"}</TableCell>
-                <TableCell>{block.rowLengthM ?? "-"}</TableCell>
-                <TableCell>{block.rowWidthM ?? "-"}</TableCell>
+                <TableCell className="max-w-[520px] truncate text-muted-foreground">
+                  {suitableCropsLabel(block)}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => setEditBlock(block)}>
@@ -116,7 +128,7 @@ export function BlockMasterTable() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[90vh] max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Add Block</DialogTitle>
           </DialogHeader>
@@ -125,7 +137,7 @@ export function BlockMasterTable() {
       </Dialog>
 
       <Dialog open={!!editBlock} onOpenChange={(o) => !o && setEditBlock(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[90vh] max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Block</DialogTitle>
           </DialogHeader>

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const SuitableCropInputSchema = z.object({
+  cropId: z.string().uuid(),
+  rows: z.number().int().positive(),
+  plantsPerRow: z.number().positive(),
+});
+
 export const CreateBlockMasterInputSchema = z.object({
   blockName: z
     .string({ message: "Block name is required" })
@@ -13,7 +19,7 @@ export const CreateBlockMasterInputSchema = z.object({
   rowWidthM: z.number().positive().optional(),
   fieldId: z.string().uuid().optional(),
   greenhouseId: z.string().uuid().optional(),
-  suitableCrops: z.array(z.string()).optional(),
+  suitableCrops: z.array(SuitableCropInputSchema).optional(),
   notes: z.string().trim().max(2000).optional(),
 });
 
@@ -26,7 +32,7 @@ export const UpdateBlockMasterInputSchema = z.object({
   rowWidthM: z.number().positive().optional().nullable(),
   fieldId: z.string().uuid().optional().nullable(),
   greenhouseId: z.string().uuid().optional().nullable(),
-  suitableCrops: z.array(z.string()).optional().nullable(),
+  suitableCrops: z.array(SuitableCropInputSchema).optional().nullable(),
   notes: z.string().trim().max(2000).optional().nullable(),
 });
 
@@ -41,7 +47,7 @@ export const BlockMasterSchema = z.object({
   rowWidthM: z.number().nullable(),
   fieldId: z.string().uuid().nullable(),
   greenhouseId: z.string().uuid().nullable(),
-  suitableCrops: z.array(z.string()).nullable(),
+  suitableCrops: z.array(z.union([SuitableCropInputSchema, z.string()])).nullable(),
   notes: z.string().nullable(),
   createdAt: z.string(),
 });
@@ -51,3 +57,4 @@ export const BlockMasterResponseSchema = z.array(BlockMasterSchema);
 export type CreateBlockMasterInput = z.infer<typeof CreateBlockMasterInputSchema>;
 export type UpdateBlockMasterInput = z.infer<typeof UpdateBlockMasterInputSchema>;
 export type BlockMaster = z.infer<typeof BlockMasterSchema>;
+export type SuitableCropInput = z.infer<typeof SuitableCropInputSchema>;

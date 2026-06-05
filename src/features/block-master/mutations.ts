@@ -20,6 +20,7 @@ export async function insertBlock(
       rowWidthM: input.rowWidthM ?? null,
       fieldId: input.fieldId ?? null,
       greenhouseId: input.greenhouseId ?? null,
+      suitableCrops: input.suitableCrops ?? null,
       notes: input.notes ?? null,
     })
     .returning();
@@ -44,6 +45,7 @@ export async function updateBlock(
       ...(input.rowWidthM !== undefined && { rowWidthM: input.rowWidthM }),
       ...(input.fieldId !== undefined && { fieldId: input.fieldId }),
       ...(input.greenhouseId !== undefined && { greenhouseId: input.greenhouseId }),
+      ...(input.suitableCrops !== undefined && { suitableCrops: input.suitableCrops }),
       ...(input.notes !== undefined && { notes: input.notes }),
       updatedAt: new Date(),
     })
