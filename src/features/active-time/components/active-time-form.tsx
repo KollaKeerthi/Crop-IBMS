@@ -135,8 +135,13 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                 }}
               >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a crop" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a crop">
+                      {(value) =>
+                        cropOptions.find((crop) => crop.id === value)?.name ??
+                        (value ? "Select a crop" : null)
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -164,7 +169,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                 disabled={!selectedCropId || varieties.length === 0}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue
                       placeholder={
                         !selectedCropId
@@ -173,7 +178,12 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                             ? "No varieties available"
                             : "Select a variety"
                       }
-                    />
+                    >
+                      {(value) =>
+                        varieties.find((variety) => variety.id === value)?.name ??
+                        (value ? "Select a variety" : null)
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -200,8 +210,15 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                 onValueChange={(v) => field.onChange(v || undefined)}
               >
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a season" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a season">
+                      {(value) => {
+                        const season = seasonOptions.find((s) => s.id === value);
+                        if (season)
+                          return season.year ? `${season.name} (${season.year})` : season.name;
+                        return value ? "Select a season" : null;
+                      }}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
