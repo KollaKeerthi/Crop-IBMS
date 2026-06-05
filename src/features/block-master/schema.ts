@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const SuitableCropInputSchema = z.object({
   cropId: z.string().uuid(),
-  rows: z.number().int().positive(),
-  plantsPerRow: z.number().positive(),
+  rows: z.number().int().positive().optional(),
+  plantsPerRow: z.number().positive().optional(),
 });
 
 export const CreateBlockMasterInputSchema = z.object({

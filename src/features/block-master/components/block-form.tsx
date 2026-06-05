@@ -40,15 +40,15 @@ function normalizeSuitableCrops(block?: BlockMaster): SuitableCropInput[] {
       if (typeof crop === "string") {
         return {
           cropId: crop,
-          rows: block?.rows ?? 1,
-          plantsPerRow: 1,
+          rows: block?.rows ?? undefined,
+          plantsPerRow: undefined,
         };
       }
       return crop;
     })
     .filter((crop) => crop.cropId);
 
-  return rows.length > 0 ? rows : [{ cropId: "", rows: 1, plantsPerRow: 1 }];
+  return rows.length > 0 ? rows : [{ cropId: "", rows: undefined, plantsPerRow: undefined }];
 }
 
 function ratio(value: number | undefined) {
@@ -167,7 +167,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => append({ cropId: "", rows: 1, plantsPerRow: 1 })}
+              onClick={() => append({ cropId: "", rows: undefined, plantsPerRow: undefined })}
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Crop
