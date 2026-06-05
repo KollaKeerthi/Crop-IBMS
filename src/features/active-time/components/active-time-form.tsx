@@ -69,24 +69,29 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const { data: crops = [] } = useCrops();
   const { data: seasons = [] } = useSeasons(farmId);
 
+  const activeCropId = activeTime?.cropId;
+  const activeCropName = activeTime?.cropName;
+  const activeVarietyId = activeTime?.varietyId;
+  const activeVarietyName = activeTime?.varietyName;
+  const activeSeasonId = activeTime?.seasonId;
+  const activeSeasonName = activeTime?.seasonName;
+
   const selectedCrop = crops.find((c) => c.id === selectedCropId);
   const cropVarieties = selectedCrop?.varieties ?? [];
   const cropOptions: SelectOption[] =
-    activeTime?.cropId && activeTime.cropName && !crops.some((c) => c.id === activeTime.cropId)
-      ? [...crops, { id: activeTime.cropId, name: activeTime.cropName }]
+    activeCropId && activeCropName && !crops.some((c) => c.id === activeCropId)
+      ? [...crops, { id: activeCropId, name: activeCropName }]
       : crops;
   const varieties: SelectOption[] =
-    selectedCropId === activeTime?.cropId &&
-    activeTime.varietyId &&
-    activeTime.varietyName &&
-    !cropVarieties.some((variety) => variety.id === activeTime.varietyId)
-      ? [...cropVarieties, { id: activeTime.varietyId, name: activeTime.varietyName }]
+    selectedCropId === activeCropId &&
+    activeVarietyId &&
+    activeVarietyName &&
+    !cropVarieties.some((variety) => variety.id === activeVarietyId)
+      ? [...cropVarieties, { id: activeVarietyId, name: activeVarietyName }]
       : cropVarieties;
   const seasonOptions: SeasonOption[] =
-    activeTime?.seasonId &&
-    activeTime.seasonName &&
-    !seasons.some((season) => season.id === activeTime.seasonId)
-      ? [...seasons, { id: activeTime.seasonId, name: activeTime.seasonName, year: null }]
+    activeSeasonId && activeSeasonName && !seasons.some((season) => season.id === activeSeasonId)
+      ? [...seasons, { id: activeSeasonId, name: activeSeasonName, year: null }]
       : seasons;
 
   const createMutation = useCreateActiveTime(farmId);
