@@ -31,7 +31,7 @@ export async function getActiveTimeHandler(
   farmId: string
 ): Promise<ActiveTime> {
   const activeTime = await getActiveTimeById(id, farmId);
-  if (!activeTime) throw new ApiError(404, "not_found", "Active time not found.");
+  if (!activeTime) throw new ApiError(404, "not_found", "Lead time not found.");
   return activeTime;
 }
 
@@ -41,7 +41,7 @@ export async function createActiveTimeHandler(
   input: CreateActiveTimeInput
 ): Promise<ActiveTime> {
   const activeTime = await createActiveTime(farmId, input);
-  if (!activeTime) throw new ApiError(500, "internal_error", "Could not create active time.");
+  if (!activeTime) throw new ApiError(500, "internal_error", "Could not create lead time.");
 
   log.info({ userId: ctx.userId, farmId, activeTimeId: activeTime.id }, "active_time.created");
   await logAudit({
@@ -61,12 +61,12 @@ export async function updateActiveTimeHandler(
   input: UpdateActiveTimeInput
 ): Promise<ActiveTime> {
   const existing = await getActiveTimeById(id, farmId);
-  if (!existing) throw new ApiError(404, "not_found", "Active time not found.");
+  if (!existing) throw new ApiError(404, "not_found", "Lead time not found.");
 
   await updateActiveTime(id, input);
 
   const updated = await getActiveTimeById(id, farmId);
-  if (!updated) throw new ApiError(500, "internal_error", "Could not update active time.");
+  if (!updated) throw new ApiError(500, "internal_error", "Could not update lead time.");
 
   log.info({ userId: ctx.userId, activeTimeId: id }, "active_time.updated");
   await logAudit({ userId: ctx.userId, action: "active_time.updated", resource: id });
@@ -80,7 +80,7 @@ export async function deleteActiveTimeHandler(
   farmId: string
 ): Promise<void> {
   const existing = await getActiveTimeById(id, farmId);
-  if (!existing) throw new ApiError(404, "not_found", "Active time not found.");
+  if (!existing) throw new ApiError(404, "not_found", "Lead time not found.");
 
   await deleteActiveTime(id);
 
@@ -95,7 +95,7 @@ export async function addActivityToActiveTimeHandler(
   input: AddActivityToActiveTimeInput
 ): Promise<ActiveTimeActivity> {
   const existing = await getActiveTimeById(activeTimeId, farmId);
-  if (!existing) throw new ApiError(404, "not_found", "Active time not found.");
+  if (!existing) throw new ApiError(404, "not_found", "Lead time not found.");
 
   const activity = await addActivityToActiveTime(activeTimeId, input);
   if (!activity) throw new ApiError(500, "internal_error", "Could not add activity.");
@@ -115,7 +115,7 @@ export async function removeActivityFromActiveTimeHandler(
   farmId: string
 ): Promise<void> {
   const existing = await getActiveTimeById(activeTimeId, farmId);
-  if (!existing) throw new ApiError(404, "not_found", "Active time not found.");
+  if (!existing) throw new ApiError(404, "not_found", "Lead time not found.");
 
   await removeActivityFromActiveTime(activityId);
 

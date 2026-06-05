@@ -309,7 +309,7 @@ export function PlantingsList() {
           });
         }
 
-        // Active Time Plan Activities scheduler calculations
+        // Lead Time Plan Activities scheduler calculations
         const matchingPlan = findMatchingActiveTime(p, activeTimes);
         if (matchingPlan) {
           matchingPlan.activities.forEach((act) => {
@@ -524,7 +524,7 @@ export function PlantingsList() {
                     });
                   }
 
-                  // Active Time Plan Scheduled Activities
+                  // Lead Time Plan Scheduled Activities
                   const matchingPlan = findMatchingActiveTime(p, activeTimes);
                   if (matchingPlan) {
                     matchingPlan.activities.forEach((act) => {

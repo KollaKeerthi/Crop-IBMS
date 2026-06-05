@@ -32,16 +32,16 @@ export function ActiveTimeTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!selectedFarmId) {
-    return <p className="text-sm text-muted-foreground">Select a farm to manage active times.</p>;
+    return <p className="text-sm text-muted-foreground">Select a farm to manage lead times.</p>;
   }
 
   async function handleDelete(id: string) {
     try {
       await deleteMutation.mutateAsync(id);
-      toast.success("Active time deleted");
+      toast.success("Lead time deleted");
       setDeletingId(null);
     } catch {
-      toast.error("Failed to delete active time");
+      toast.error("Failed to delete lead time");
     }
   }
 
@@ -55,7 +55,7 @@ export function ActiveTimeTable() {
         action={
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Active Time
+            Add Lead Time
           </Button>
         }
       />
@@ -116,7 +116,7 @@ export function ActiveTimeTable() {
           action={
             <Button onClick={() => setCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Active Time
+              Add Lead Time
             </Button>
           }
         />
@@ -125,7 +125,7 @@ export function ActiveTimeTable() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Active Time</DialogTitle>
+            <DialogTitle>Add Lead Time</DialogTitle>
           </DialogHeader>
           <ActiveTimeForm farmId={selectedFarmId} onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
@@ -134,7 +134,7 @@ export function ActiveTimeTable() {
       <Dialog open={!!editItem} onOpenChange={(o) => !o && setEditItem(null)}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Active Time</DialogTitle>
+            <DialogTitle>Edit Lead Time</DialogTitle>
           </DialogHeader>
           {editItem && (
             <ActiveTimeForm
@@ -149,10 +149,10 @@ export function ActiveTimeTable() {
       <Dialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Active Time</DialogTitle>
+            <DialogTitle>Delete Lead Time</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete this active time? This will also remove all associated
+            Are you sure you want to delete this lead time? This will also remove all associated
             activities.
           </p>
           <div className="flex justify-end gap-2 pt-2">

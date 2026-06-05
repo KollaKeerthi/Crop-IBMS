@@ -39,6 +39,15 @@ type Props = {
   onSuccess?: () => void;
 };
 
+type SelectOption = {
+  id: string;
+  name: string;
+};
+
+type SeasonOption = SelectOption & {
+  year: number | null;
+};
+
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
   const schema = isEdit ? UpdateActiveTimeInputSchema : CreateActiveTimeInputSchema;
@@ -61,7 +70,24 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const { data: seasons = [] } = useSeasons(farmId);
 
   const selectedCrop = crops.find((c) => c.id === selectedCropId);
-  const varieties = selectedCrop?.varieties ?? [];
+  const cropVarieties = selectedCrop?.varieties ?? [];
+  const cropOptions: SelectOption[] =
+    activeTime?.cropId && activeTime.cropName && !crops.some((c) => c.id === activeTime.cropId)
+      ? [...crops, { id: activeTime.cropId, name: activeTime.cropName, varieties: [] }]
+      : crops;
+  const varieties: SelectOption[] =
+    selectedCropId === activeTime?.cropId &&
+    activeTime.varietyId &&
+    activeTime.varietyName &&
+    !cropVarieties.some((variety) => variety.id === activeTime.varietyId)
+      ? [...cropVarieties, { id: activeTime.varietyId, name: activeTime.varietyName }]
+      : cropVarieties;
+  const seasonOptions: SeasonOption[] =
+    activeTime?.seasonId &&
+    activeTime.seasonName &&
+    !seasons.some((season) => season.id === activeTime.seasonId)
+      ? [...seasons, { id: activeTime.seasonId, name: activeTime.seasonName, year: null }]
+      : seasons;
 
   const createMutation = useCreateActiveTime(farmId);
   const updateMutation = useUpdateActiveTime(farmId);
@@ -71,10 +97,10 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
     try {
       if (isEdit && activeTime) {
         await updateMutation.mutateAsync({ id: activeTime.id, input: values });
-        toast.success("Active time updated");
+        toast.success("Lead time updated");
       } else {
         await createMutation.mutateAsync(values);
-        toast.success("Active time created");
+        toast.success("Lead time created");
         form.reset();
       }
       onSuccess?.();
@@ -109,7 +135,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {crops.map((crop) => (
+                  {cropOptions.map((crop) => (
                     <SelectItem key={crop.id} value={crop.id}>
                       {crop.name}
                     </SelectItem>
@@ -174,9 +200,9 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {seasons.map((s) => (
+                  {seasonOptions.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.name} ({s.year})
+                      {s.year ? `${s.name} (${s.year})` : s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -239,7 +265,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
               : "Creating..."
             : isEdit
               ? "Save Changes"
-              : "Create Active Time"}
+              : "Create Lead Time"}
         </Button>
       </form>
     </Form>
