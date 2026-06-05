@@ -25,13 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 type Props = {
   farmId: string;
@@ -47,6 +42,16 @@ type SelectOption = {
 type SeasonOption = SelectOption & {
   year: number | null;
 };
+
+function selectLabel(options: SelectOption[], value: string | undefined, placeholder: string) {
+  return options.find((option) => option.id === value)?.name ?? placeholder;
+}
+
+function seasonLabel(options: SeasonOption[], value: string | undefined, placeholder: string) {
+  const season = options.find((option) => option.id === value);
+  if (!season) return placeholder;
+  return season.year ? `${season.name} (${season.year})` : season.name;
+}
 
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
@@ -136,12 +141,14 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a crop">
-                      {(value) =>
-                        cropOptions.find((crop) => crop.id === value)?.name ??
-                        (value ? "Select a crop" : null)
-                      }
-                    </SelectValue>
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {selectLabel(cropOptions, field.value, "Select a crop")}
+                    </span>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -170,20 +177,22 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {selectLabel(
+                        varieties,
+                        field.value,
                         !selectedCropId
                           ? "Select crop first"
                           : varieties.length === 0
                             ? "No varieties available"
                             : "Select a variety"
-                      }
-                    >
-                      {(value) =>
-                        varieties.find((variety) => variety.id === value)?.name ??
-                        (value ? "Select a variety" : null)
-                      }
-                    </SelectValue>
+                      )}
+                    </span>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -211,14 +220,14 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a season">
-                      {(value) => {
-                        const season = seasonOptions.find((s) => s.id === value);
-                        if (season)
-                          return season.year ? `${season.name} (${season.year})` : season.name;
-                        return value ? "Select a season" : null;
-                      }}
-                    </SelectValue>
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {seasonLabel(seasonOptions, field.value, "Select a season")}
+                    </span>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
