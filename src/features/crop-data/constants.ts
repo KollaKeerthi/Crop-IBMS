@@ -6,13 +6,13 @@ export const CROP_DATA_TAB_KEYS = [
   "pollination",
   "post_harvest",
   "post_harvest_summary",
+  "germination_test",
   "seeds_quality",
   "sq_breakdown",
-  "germination_test",
-  "harvest",
-  "planting_records",
   "performance",
+  "harvest",
   "media",
+  "planting_records",
 ] as const;
 
 export type CropDataTabKey = (typeof CROP_DATA_TAB_KEYS)[number];

@@ -101,29 +101,29 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>
           Post Harvest Summary
         </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
+          Germination Test
+        </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
           Seeds Quality
         </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
           SQ Breakdown
         </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
-          Germination Test
+        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
+          Performance Per Person
         </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
           Harvest Details
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="media" className={triggerClassName}>
+          Media Attachment
         </TabsPrimitive.Tab>
         {MODULE_TABS.map((tab) => (
           <TabsPrimitive.Tab key={tab.key} value={tab.key} className={triggerClassName}>
             {tab.label}
           </TabsPrimitive.Tab>
         ))}
-        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
-          Performance
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="media" className={triggerClassName}>
-          Media Attachment
-        </TabsPrimitive.Tab>
       </TabsPrimitive.List>
 
       {/* Program Info */}
@@ -227,6 +227,15 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         />
       </TabsPrimitive.Panel>
 
+      {/* Performance Per Person (multi-row) */}
+      <TabsPrimitive.Panel value="performance" className="mt-0">
+        <PerformanceTable
+          cropDataId={record.id}
+          farmId={farmId}
+          rows={record.collections.performance ?? []}
+        />
+      </TabsPrimitive.Panel>
+
       {/* Harvest Details (multi-row) */}
       <TabsPrimitive.Panel value="harvest" className="mt-0">
         <HarvestDetailsTable
@@ -235,6 +244,11 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           rows={record.collections.harvest_records ?? []}
           seedsQuality={record.sections.seeds_quality ?? null}
         />
+      </TabsPrimitive.Panel>
+
+      {/* Media Attachment */}
+      <TabsPrimitive.Panel value="media" className="mt-0">
+        <MediaAttachments cropDataId={record.id} farmId={farmId} media={record.media ?? []} />
       </TabsPrimitive.Panel>
 
       {/* Remaining JSONB module tabs */}
@@ -251,20 +265,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           </div>
         </TabsPrimitive.Panel>
       ))}
-
-      {/* Performance (multi-row) */}
-      <TabsPrimitive.Panel value="performance" className="mt-0">
-        <PerformanceTable
-          cropDataId={record.id}
-          farmId={farmId}
-          rows={record.collections.performance ?? []}
-        />
-      </TabsPrimitive.Panel>
-
-      {/* Media Attachment */}
-      <TabsPrimitive.Panel value="media" className="mt-0">
-        <MediaAttachments cropDataId={record.id} farmId={farmId} media={record.media ?? []} />
-      </TabsPrimitive.Panel>
     </TabsPrimitive.Root>
   );
 }
