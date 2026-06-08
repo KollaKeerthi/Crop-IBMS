@@ -26,6 +26,7 @@ export async function createFarmHandler(ctx: ApiContext, input: CreateFarmInput)
     action: "farm.created",
     resource: farm.id,
     metadata: { name: input.name },
+    newValue: farm,
   });
 
   return farm;
@@ -47,6 +48,8 @@ export async function updateFarmHandler(
     userId: ctx.userId,
     action: "farm.updated",
     resource: farmId,
+    previousValue: existing,
+    newValue: updated,
   });
 
   return updated;
@@ -63,5 +66,6 @@ export async function deleteFarmHandler(ctx: ApiContext, farmId: string): Promis
     userId: ctx.userId,
     action: "farm.deleted",
     resource: farmId,
+    previousValue: existing,
   });
 }

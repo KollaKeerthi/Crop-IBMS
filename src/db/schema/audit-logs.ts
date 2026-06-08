@@ -7,6 +7,8 @@ export const auditLogs = pgTable("audit_logs", {
   action: text("action").notNull(),
   resource: text("resource").notNull(),
   metadata: jsonb("metadata"),
+  previousValue: jsonb("previous_value"),
+  newValue: jsonb("new_value"),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

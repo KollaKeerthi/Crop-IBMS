@@ -49,6 +49,7 @@ export async function createActiveTimeHandler(
     action: "active_time.created",
     resource: activeTime.id,
     metadata: { farmId },
+    newValue: activeTime,
   });
 
   return activeTime;
@@ -69,7 +70,13 @@ export async function updateActiveTimeHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update lead time.");
 
   log.info({ userId: ctx.userId, activeTimeId: id }, "active_time.updated");
-  await logAudit({ userId: ctx.userId, action: "active_time.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "active_time.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -85,7 +92,12 @@ export async function deleteActiveTimeHandler(
   await deleteActiveTime(id);
 
   log.info({ userId: ctx.userId, activeTimeId: id }, "active_time.deleted");
-  await logAudit({ userId: ctx.userId, action: "active_time.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "active_time.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }
 
 export async function addActivityToActiveTimeHandler(
@@ -104,6 +116,14 @@ export async function addActivityToActiveTimeHandler(
     { userId: ctx.userId, activeTimeId, activityId: activity.id },
     "active_time.activity_added"
   );
+  await logAudit({
+    userId: ctx.userId,
+    action: "active_time.updated",
+    resource: activeTimeId,
+    metadata: { kind: "activity_added", activityId: activity.id },
+    previousValue: existing,
+    newValue: activity,
+  });
 
   return activity;
 }
@@ -120,4 +140,11 @@ export async function removeActivityFromActiveTimeHandler(
   await removeActivityFromActiveTime(activityId);
 
   log.info({ userId: ctx.userId, activeTimeId, activityId }, "active_time.activity_removed");
+  await logAudit({
+    userId: ctx.userId,
+    action: "active_time.updated",
+    resource: activeTimeId,
+    metadata: { kind: "activity_removed", activityId },
+    previousValue: existing,
+  });
 }

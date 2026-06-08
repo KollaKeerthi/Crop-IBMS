@@ -96,7 +96,12 @@ export async function getCropDataHandler(ctx: ApiContext, id: string, farmId: st
 export async function createCropDataHandler(ctx: ApiContext, input: CreateCropDataInput) {
   await verifyFarmAccess(ctx.userId, input.farmId);
   const record = await createCropDataRecord(input);
-  await logAudit({ userId: ctx.userId, action: "crop_data.created", resource: record.id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_data.created",
+    resource: record.id,
+    newValue: record,
+  });
   return record;
 }
 
@@ -110,7 +115,13 @@ export async function updateCropDataHandler(
   const record = await getCropDataById(id, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
   const updated = await updateCropDataRecord(id, input);
-  await logAudit({ userId: ctx.userId, action: "crop_data.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_data.updated",
+    resource: id,
+    previousValue: record,
+    newValue: updated,
+  });
   return updated;
 }
 
@@ -119,7 +130,12 @@ export async function deleteCropDataHandler(ctx: ApiContext, id: string, farmId:
   const record = await getCropDataById(id, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
   await deleteCropDataRecord(id);
-  await logAudit({ userId: ctx.userId, action: "crop_data.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_data.deleted",
+    resource: id,
+    previousValue: record,
+  });
 }
 
 export async function updateProgramInfoHandler(

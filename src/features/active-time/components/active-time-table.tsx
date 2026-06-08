@@ -5,7 +5,9 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useActiveTimes, useDeleteActiveTime } from "../hooks";
+import { useActivities } from "@/features/activities/hooks";
 import type { ActiveTime } from "../schema";
+import type { Activity } from "@/features/activities/schema";
 import { ActiveTimeForm } from "./active-time-form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +25,38 @@ import {
 import { Timer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+type ActiveTimeScheduleField =
+  | "materialArrival"
+  | "sowingMale"
+  | "sowingFemale"
+  | "plantingMale"
+  | "plantingFemale"
+  | "pollinationStart"
+  | "pollinationEnd"
+  | "harvestingStart"
+  | "harvestingEnd";
+
+const ACTIVITY_FIELD_BY_NAME: Record<string, ActiveTimeScheduleField> = {
+  materialarrival: "materialArrival",
+  sowingmale: "sowingMale",
+  sowingfemale: "sowingFemale",
+  plantingmale: "plantingMale",
+  plantingfemale: "plantingFemale",
+  pollinationstart: "pollinationStart",
+  pollinationend: "pollinationEnd",
+  harvestingstart: "harvestingStart",
+  harvestingend: "harvestingEnd",
+};
+
+function activityFieldByName(value: string): ActiveTimeScheduleField | null {
+  const normalized = value.toLowerCase().replace(/[^a-z]/g, "");
+  return ACTIVITY_FIELD_BY_NAME[normalized] ?? null;
+}
+
 export function ActiveTimeTable() {
   const { selectedFarmId } = useFarm();
   const { data: activeTimes, isLoading } = useActiveTimes(selectedFarmId);
+  const { data: activities = [] } = useActivities(selectedFarmId);
   const deleteMutation = useDeleteActiveTime(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<ActiveTime | null>(null);
@@ -47,6 +78,18 @@ export function ActiveTimeTable() {
 
   const valueOrDash = (value?: string | null) =>
     value ? value : <span className="text-muted-foreground">-</span>;
+
+  const activityScheduleValue = (item: ActiveTime, activity: Activity) => {
+    const key = activityFieldByName(activity.name) ?? activityFieldByName(activity.code ?? "");
+    if (key) return valueOrDash(item[key]);
+
+    const assigned = item.activities.find((entry) => entry.activityId === activity.id);
+    if (!assigned) return <span className="text-muted-foreground">-</span>;
+
+    const week = assigned.weekNumber ? `W${assigned.weekNumber}` : "";
+    const day = assigned.dayOffset ? ` +${assigned.dayOffset}d` : "";
+    return week || day ? `${week}${day}` : <span className="text-muted-foreground">-</span>;
+  };
 
   return (
     <div className="space-y-6">
@@ -81,27 +124,11 @@ export function ActiveTimeTable() {
                 <TableHead className="w-32 text-primary">Crop</TableHead>
                 <TableHead className="w-32 whitespace-normal text-primary">Crop Type</TableHead>
                 <TableHead className="w-24 text-primary">Season</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Material Arrival
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Sowing Male</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Sowing Female</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Planting Male</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Planting Female
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Pollination Start
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Pollination End
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Harvesting Start
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Harvesting End
-                </TableHead>
+                {activities.map((activity) => (
+                  <TableHead key={activity.id} className="w-28 whitespace-normal text-primary">
+                    {activity.name}
+                  </TableHead>
+                ))}
                 <TableHead className="w-20 text-primary">Active</TableHead>
                 <TableHead className="w-20 text-right text-primary">Actions</TableHead>
               </TableRow>
@@ -114,15 +141,9 @@ export function ActiveTimeTable() {
                   <TableCell>{valueOrDash(item.cropName)}</TableCell>
                   <TableCell>{valueOrDash(item.varietyName)}</TableCell>
                   <TableCell>{valueOrDash(item.seasonName)}</TableCell>
-                  <TableCell>{valueOrDash(item.materialArrival)}</TableCell>
-                  <TableCell>{valueOrDash(item.sowingMale)}</TableCell>
-                  <TableCell>{valueOrDash(item.sowingFemale)}</TableCell>
-                  <TableCell>{valueOrDash(item.plantingMale)}</TableCell>
-                  <TableCell>{valueOrDash(item.plantingFemale)}</TableCell>
-                  <TableCell>{valueOrDash(item.pollinationStart)}</TableCell>
-                  <TableCell>{valueOrDash(item.pollinationEnd)}</TableCell>
-                  <TableCell>{valueOrDash(item.harvestingStart)}</TableCell>
-                  <TableCell>{valueOrDash(item.harvestingEnd)}</TableCell>
+                  {activities.map((activity) => (
+                    <TableCell key={activity.id}>{activityScheduleValue(item, activity)}</TableCell>
+                  ))}
                   <TableCell>
                     <Badge variant={item.isActive ? "default" : "secondary"}>
                       {item.isActive ? "Yes" : "No"}

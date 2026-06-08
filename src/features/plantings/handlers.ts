@@ -40,6 +40,7 @@ export async function createPlantingHandler(
     action: "planting.created",
     resource: planting.id,
     metadata: { farmId: input.farmId },
+    newValue: planting,
   });
 
   return planting;
@@ -59,7 +60,13 @@ export async function updatePlantingHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update planting.");
 
   log.info({ userId: ctx.userId, plantingId: id }, "planting.updated");
-  await logAudit({ userId: ctx.userId, action: "planting.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "planting.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -75,5 +82,10 @@ export async function deletePlantingHandler(
   await deletePlanting(id);
 
   log.info({ userId: ctx.userId, plantingId: id }, "planting.deleted");
-  await logAudit({ userId: ctx.userId, action: "planting.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "planting.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }

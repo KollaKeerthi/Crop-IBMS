@@ -1,6 +1,6 @@
 "use client";
 
-import { useFieldArray, useForm, type Resolver } from "react-hook-form";
+import { useFieldArray, useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -13,8 +13,11 @@ import {
 } from "../schema";
 import { useCreateBlockMaster, useUpdateBlockMaster } from "../hooks";
 import { useCrops } from "@/features/crops/hooks";
+import { useSeasons } from "@/features/seasons/hooks";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -40,15 +43,18 @@ function normalizeSuitableCrops(block?: BlockMaster): SuitableCropInput[] {
       if (typeof crop === "string") {
         return {
           cropId: crop,
+          seasonIds: [],
           rows: block?.rows ?? undefined,
           plantsPerRow: undefined,
         };
       }
-      return crop;
+      return { ...crop, seasonIds: crop.seasonIds ?? [] };
     })
     .filter((crop) => crop.cropId);
 
-  return rows.length > 0 ? rows : [{ cropId: "", rows: undefined, plantsPerRow: undefined }];
+  return rows.length > 0
+    ? rows
+    : [{ cropId: "", seasonIds: [], rows: undefined, plantsPerRow: undefined }];
 }
 
 function ratio(value: number | undefined) {
@@ -69,6 +75,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
   const isEdit = !!block;
   const schema = isEdit ? UpdateBlockMasterInputSchema : CreateBlockMasterInputSchema;
   const { data: crops = [] } = useCrops();
+  const { data: seasons = [] } = useSeasons(farmId);
 
   const form = useForm<CreateBlockMasterInput>({
     resolver: zodResolver(schema) as Resolver<CreateBlockMasterInput>,
@@ -83,7 +90,8 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
     control: form.control,
     name: "suitableCrops",
   });
-  const areaSqm = form.watch("areaSqm");
+  const areaSqm = useWatch({ control: form.control, name: "areaSqm" });
+  const watchedSuitableCrops = useWatch({ control: form.control, name: "suitableCrops" });
   const createMutation = useCreateBlockMaster(farmId);
   const updateMutation = useUpdateBlockMaster(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -175,28 +183,33 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => append({ cropId: "", rows: undefined, plantsPerRow: undefined })}
+              onClick={() =>
+                append({ cropId: "", seasonIds: [], rows: undefined, plantsPerRow: undefined })
+              }
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Crop
             </Button>
           </div>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[620px] table-fixed text-sm">
+            <table className="w-full min-w-[760px] table-fixed text-sm">
               <thead className="bg-muted/60 text-xs">
                 <tr>
-                  <th className="w-[30%] px-2 py-2 text-left font-medium">Crop</th>
+                  <th className="w-[24%] px-2 py-2 text-left font-medium">Crop</th>
+                  <th className="w-[24%] px-2 py-2 text-left font-medium">Seasons</th>
                   <th className="w-[15%] px-2 py-2 text-left font-medium">No of Rows</th>
-                  <th className="w-[15%] px-2 py-2 text-left font-medium">Plant/Row</th>
-                  <th className="w-[15%] px-2 py-2 text-left font-medium">m2/row</th>
-                  <th className="w-[15%] px-2 py-2 text-left font-medium">Density</th>
+                  <th className="w-[15%] px-2 py-2 text-left font-medium">Plants / row</th>
+                  <th className="w-[11%] px-2 py-2 text-left font-medium">m2 / row</th>
+                  <th className="w-[11%] px-2 py-2 text-left font-medium">Density</th>
                   <th className="w-[10%] px-2 py-2 text-right font-medium"></th>
                 </tr>
               </thead>
               <tbody>
                 {fields.map((row, index) => {
-                  const rows = form.watch(`suitableCrops.${index}.rows` as const);
-                  const plantsPerRow = form.watch(`suitableCrops.${index}.plantsPerRow` as const);
+                  const suitableCrop = watchedSuitableCrops?.[index];
+                  const rows = suitableCrop?.rows;
+                  const plantsPerRow = suitableCrop?.plantsPerRow;
+                  const seasonIds = suitableCrop?.seasonIds ?? [];
                   const m2PerRow = areaSqm && rows ? areaSqm / rows : undefined;
                   const density = plantsPerRow && m2PerRow ? plantsPerRow / m2PerRow : undefined;
 
@@ -230,6 +243,51 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </td>
+                      <td className="px-2 py-2">
+                        <FormField
+                          control={form.control}
+                          name={`suitableCrops.${index}.seasonIds` as const}
+                          render={({ field }) => (
+                            <FormItem>
+                              {seasons.length > 0 ? (
+                                <div className="max-h-24 space-y-2 overflow-y-auto rounded-md border bg-background p-2">
+                                  {seasons.map((season) => {
+                                    const checkboxId = `suitable-crop-${row.id}-season-${season.id}`;
+                                    const checked = seasonIds.includes(season.id);
+                                    return (
+                                      <div key={season.id} className="flex items-center gap-2">
+                                        <Checkbox
+                                          id={checkboxId}
+                                          checked={checked}
+                                          onCheckedChange={(nextChecked) => {
+                                            const current = field.value ?? [];
+                                            field.onChange(
+                                              nextChecked
+                                                ? [...current, season.id]
+                                                : current.filter((id) => id !== season.id)
+                                            );
+                                          }}
+                                        />
+                                        <Label
+                                          htmlFor={checkboxId}
+                                          className="min-w-0 cursor-pointer truncate text-xs font-normal"
+                                        >
+                                          {season.name}
+                                        </Label>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
+                                  No seasons
+                                </p>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}

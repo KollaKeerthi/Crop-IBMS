@@ -70,17 +70,18 @@ export function ActivitiesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Order</TableHead>
+              <TableHead>Activity Name</TableHead>
+              <TableHead>Code</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="text-right">Edit/Delete</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {activities.map((activity) => (
               <TableRow key={activity.id}>
+                <TableCell className="text-muted-foreground">{activity.displayOrder}</TableCell>
                 <TableCell className="font-semibold text-foreground">{activity.name}</TableCell>
                 <TableCell>
                   {activity.code ? (
@@ -91,16 +92,15 @@ export function ActivitiesTable() {
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
+                <TableCell className="text-muted-foreground max-w-xs truncate">
+                  {activity.description ?? "-"}
+                </TableCell>
                 <TableCell>
                   {activity.category ? (
                     <Badge variant="outline">{activity.category}</Badge>
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
-                </TableCell>
-                <TableCell className="text-muted-foreground">{activity.displayOrder}</TableCell>
-                <TableCell className="text-muted-foreground max-w-xs truncate">
-                  {activity.description ?? "-"}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">

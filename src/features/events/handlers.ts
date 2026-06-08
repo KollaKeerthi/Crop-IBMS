@@ -35,6 +35,7 @@ export async function createEventHandler(
     action: "event.created",
     resource: event.id,
     metadata: { title: input.title, farmId },
+    newValue: event,
   });
 
   return event;
@@ -53,7 +54,13 @@ export async function updateEventHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update event.");
 
   log.info({ userId: ctx.userId, eventId: id }, "events.updated");
-  await logAudit({ userId: ctx.userId, action: "event.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "event.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -69,5 +76,10 @@ export async function deleteEventHandler(
   await deleteEvent(id, farmId);
 
   log.info({ userId: ctx.userId, eventId: id }, "events.deleted");
-  await logAudit({ userId: ctx.userId, action: "event.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "event.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }

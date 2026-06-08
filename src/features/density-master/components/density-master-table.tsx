@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useDensityMaster, useDeleteDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
+import { useProductionTypes } from "@/features/production-types";
 import type { DensityMaster } from "../schema";
 import { DensityForm } from "./density-form";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function DensityMasterTable() {
   const { selectedFarmId } = useFarm();
   const { data: densities, isLoading } = useDensityMaster(selectedFarmId);
   const { data: crops } = useCrops();
+  const { data: productionTypes = [] } = useProductionTypes();
   const deleteMutation = useDeleteDensityMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editDensity, setEditDensity] = useState<DensityMaster | null>(null);
@@ -36,6 +38,12 @@ export function DensityMasterTable() {
   }
 
   const cropName = (id: string | null) => crops?.find((c) => c.id === id)?.name ?? id ?? "-";
+  const cropTypeName = (cropId: string | null, cropTypeId: string | null) =>
+    crops?.find((c) => c.id === cropId)?.types.find((type) => type.id === cropTypeId)?.name ??
+    cropTypeId ??
+    "-";
+  const productionTypeName = (id: string | null) =>
+    productionTypes.find((type) => type.id === id)?.code ?? id ?? "-";
 
   async function handleDelete(id: string) {
     try {
@@ -73,10 +81,11 @@ export function DensityMasterTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Crop</TableHead>
-              <TableHead>Male Density</TableHead>
+              <TableHead>Crop Type</TableHead>
+              <TableHead>Production Type</TableHead>
               <TableHead>Female Density</TableHead>
-              <TableHead>Spacing (m)</TableHead>
-              <TableHead>Row Spacing (m)</TableHead>
+              <TableHead>Male Density</TableHead>
+              <TableHead>Year</TableHead>
               <TableHead>Validity</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -87,10 +96,11 @@ export function DensityMasterTable() {
                 <TableCell className="font-semibold text-foreground">
                   {cropName(d.cropId)}
                 </TableCell>
-                <TableCell>{d.maleDensity ?? "-"}</TableCell>
+                <TableCell>{cropTypeName(d.cropId, d.cropTypeId)}</TableCell>
+                <TableCell>{productionTypeName(d.productionTypeId)}</TableCell>
                 <TableCell>{d.femaleDensity ?? "-"}</TableCell>
-                <TableCell>{d.spacingM ?? "-"}</TableCell>
-                <TableCell>{d.rowSpacingM ?? "-"}</TableCell>
+                <TableCell>{d.maleDensity ?? "-"}</TableCell>
+                <TableCell>{d.year}</TableCell>
                 <TableCell className="font-mono text-xs text-primary">
                   W{String(d.validFrom).padStart(2, "0")} - W{String(d.validTo).padStart(2, "0")}
                 </TableCell>

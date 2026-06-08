@@ -154,6 +154,7 @@ async function createGeneratedChildren({
         action: "block.created",
         resource: block.id,
         metadata: { name: block.name, farmId, parentType, parentId, generated: true },
+        newValue: block,
       });
 
       const subPolygons = subBlockPolygons[index] ?? [];
@@ -201,6 +202,7 @@ async function createGeneratedChildren({
               farmId,
               generated: true,
             },
+            newValue: blockMaster,
           });
 
           await logAudit({
@@ -208,6 +210,7 @@ async function createGeneratedChildren({
             action: "sub_block.created",
             resource: subBlock.id,
             metadata: { name: subBlock.name, blockId: block.id, farmId, generated: true },
+            newValue: subBlock,
           });
         })
       );
@@ -263,6 +266,7 @@ export async function createFieldHandler(ctx: ApiContext, input: CreateFieldInpu
     action: "field.created",
     resource: field.id,
     metadata: { name: input.name, farmId: input.farmId },
+    newValue: field,
   });
 
   return field;
@@ -282,7 +286,13 @@ export async function updateFieldHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update field.");
 
   log.info({ userId: ctx.userId, fieldId }, "locations.field_updated");
-  await logAudit({ userId: ctx.userId, action: "field.updated", resource: fieldId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "field.updated",
+    resource: fieldId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -299,7 +309,12 @@ export async function deleteFieldHandler(
   await deleteField(fieldId, farmId);
 
   log.info({ userId: ctx.userId, fieldId }, "locations.field_deleted");
-  await logAudit({ userId: ctx.userId, action: "field.deleted", resource: fieldId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "field.deleted",
+    resource: fieldId,
+    previousValue: existing,
+  });
 }
 
 // ── Greenhouses ───────────────────────────────────────────────────────────────
@@ -356,6 +371,7 @@ export async function createGreenhouseHandler(
     action: "greenhouse.created",
     resource: greenhouse.id,
     metadata: { name: input.name, farmId: input.farmId },
+    newValue: greenhouse,
   });
 
   return greenhouse;
@@ -375,7 +391,13 @@ export async function updateGreenhouseHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update greenhouse.");
 
   log.info({ userId: ctx.userId, greenhouseId }, "locations.greenhouse_updated");
-  await logAudit({ userId: ctx.userId, action: "greenhouse.updated", resource: greenhouseId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "greenhouse.updated",
+    resource: greenhouseId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -392,7 +414,12 @@ export async function deleteGreenhouseHandler(
   await deleteGreenhouse(greenhouseId, farmId);
 
   log.info({ userId: ctx.userId, greenhouseId }, "locations.greenhouse_deleted");
-  await logAudit({ userId: ctx.userId, action: "greenhouse.deleted", resource: greenhouseId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "greenhouse.deleted",
+    resource: greenhouseId,
+    previousValue: existing,
+  });
 }
 
 // ── Blocks ────────────────────────────────────────────────────────────────────
@@ -421,6 +448,7 @@ export async function createBlockHandler(ctx: ApiContext, input: CreateBlockInpu
     action: "block.created",
     resource: block.id,
     metadata: { name: input.name, parentType: input.parentType, parentId: input.parentId },
+    newValue: block,
   });
 
   return block;
@@ -440,7 +468,13 @@ export async function updateBlockHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update block.");
 
   log.info({ userId: ctx.userId, blockId }, "locations.block_updated");
-  await logAudit({ userId: ctx.userId, action: "block.updated", resource: blockId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "block.updated",
+    resource: blockId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -457,7 +491,12 @@ export async function deleteBlockHandler(
   await deleteBlock(blockId, farmId);
 
   log.info({ userId: ctx.userId, blockId }, "locations.block_deleted");
-  await logAudit({ userId: ctx.userId, action: "block.deleted", resource: blockId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "block.deleted",
+    resource: blockId,
+    previousValue: existing,
+  });
 }
 
 // ── Hierarchy ─────────────────────────────────────────────────────────────────

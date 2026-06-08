@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const SuitableCropInputSchema = z.object({
   cropId: z.string().uuid(),
+  seasonIds: z.array(z.string().uuid()).optional(),
   rows: z.number().int().positive().optional(),
   plantsPerRow: z.number().positive().optional(),
 });

@@ -37,6 +37,7 @@ export async function createVariabilityHandler(
     action: "variability.created",
     resource: row.id,
     metadata: { productionTypeId: input.productionTypeId, variability: input.variability },
+    newValue: full,
   });
   return full;
 }
@@ -53,7 +54,13 @@ export async function updateVariabilityHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update record.");
   const full = await getVariabilityById(id);
   if (!full) throw new ApiError(500, "internal_error", "Could not load updated record.");
-  await logAudit({ userId: ctx.userId, action: "variability.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "variability.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: full,
+  });
   return full;
 }
 
@@ -62,5 +69,10 @@ export async function deleteVariabilityHandler(ctx: ApiContext, id: string): Pro
   if (!existing) throw new ApiError(404, "not_found", "Variability record not found.");
   if (existing.farmId) await assertFarmAccess(existing.farmId, ctx.userId);
   await deleteVariability(id);
-  await logAudit({ userId: ctx.userId, action: "variability.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "variability.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }

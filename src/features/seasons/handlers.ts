@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { listSeasons, getSeasonById } from "./queries";
 import { insertSeason, updateSeason, deleteSeason } from "./mutations";
 import type { CreateSeasonInput, UpdateSeasonInput, Season } from "./schema";
+import { assertSeasonCanDelete } from "@/features/crop-information/delete-guards";
 
 export async function listSeasonsHandler(ctx: ApiContext, farmId: string): Promise<Season[]> {
   return listSeasons(farmId);
@@ -34,6 +35,7 @@ export async function createSeasonHandler(
     action: "season.created",
     resource: season.id,
     metadata: { name: input.name, farmId },
+    newValue: season,
   });
 
   return season;
@@ -52,7 +54,13 @@ export async function updateSeasonHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update season.");
 
   log.info({ userId: ctx.userId, seasonId }, "seasons.updated");
-  await logAudit({ userId: ctx.userId, action: "season.updated", resource: seasonId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "season.updated",
+    resource: seasonId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -65,8 +73,14 @@ export async function deleteSeasonHandler(
   const existing = await getSeasonById(seasonId, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Season not found.");
 
+  await assertSeasonCanDelete(seasonId, farmId);
   await deleteSeason(seasonId, farmId);
 
   log.info({ userId: ctx.userId, seasonId }, "seasons.deleted");
-  await logAudit({ userId: ctx.userId, action: "season.deleted", resource: seasonId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "season.deleted",
+    resource: seasonId,
+    previousValue: existing,
+  });
 }

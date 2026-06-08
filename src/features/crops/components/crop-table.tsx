@@ -103,8 +103,8 @@ export function CropTable() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Crop name</TableHead>
-              <TableHead>Scientific name</TableHead>
+              <TableHead>Crop Name</TableHead>
+              <TableHead>Scientific Name</TableHead>
               <TableHead>Family</TableHead>
               <TableHead>Types</TableHead>
               <TableHead>Varieties</TableHead>

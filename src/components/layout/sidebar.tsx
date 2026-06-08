@@ -4,17 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Map,
-  LayoutGrid,
   Leaf,
   BookOpen,
   Database,
   ChevronDown,
   ChevronRight,
   CheckSquare,
-  Settings,
-  Bot,
   Check,
   Tractor,
   Layers,
@@ -25,7 +20,6 @@ import { cn } from "@/lib/utils";
 import { useFarm } from "@/lib/farm-context";
 import { useSidebar } from "@/lib/sidebar-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 
 type Farm = { id: string; name: string };
 type User = { name: string | null; email: string; image: string | null };
@@ -43,24 +37,10 @@ type NavSection = {
 };
 
 const MANAGEMENT_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Farm Map", href: "/dashboard/map", icon: Map },
-  { label: "Layout", href: "/dashboard/map/layout-view", icon: LayoutGrid },
-  { label: "Crop Calendar", href: "/dashboard/plantings", icon: Tractor },
-  {
-    label: "Crop Planning",
-    href: "/dashboard/crop-plan",
-    icon: Layers,
-  },
-  { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
+  { label: "Crop Plan", href: "/dashboard/crop-plan", icon: Layers },
   { label: "Crop Data", href: "/dashboard/crop-data", icon: Database },
+  { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-];
-
-const INTELLIGENCE_ITEMS: NavItem[] = [{ label: "AI Assistant", href: "/dashboard/ai", icon: Bot }];
-
-const PLATFORM_ITEMS: NavItem[] = [
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 function getInitials(name: string | null, email: string): string {
@@ -89,19 +69,9 @@ export function Sidebar({
   const { collapsed, toggle } = useSidebar();
   const [farmDropdownOpen, setFarmDropdownOpen] = useState(false);
 
-  const managementItems = isOwner
-    ? [
-        MANAGEMENT_ITEMS[0]!,
-        { label: "Farms", href: "/dashboard/farms", icon: Tractor },
-        ...MANAGEMENT_ITEMS.slice(1),
-      ]
-    : MANAGEMENT_ITEMS;
+  void isOwner;
 
-  const sections: NavSection[] = [
-    { label: "Management", items: managementItems },
-    { label: "Intelligence", items: INTELLIGENCE_ITEMS },
-    { label: "Platform", items: PLATFORM_ITEMS },
-  ];
+  const sections: NavSection[] = [{ label: "Management", items: MANAGEMENT_ITEMS }];
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};

@@ -53,6 +53,7 @@ export async function createTaskHandler(
     action: "task.created",
     resource: task.id,
     metadata: { title: input.title, farmId },
+    newValue: task,
   });
 
   return task;
@@ -71,7 +72,13 @@ export async function updateTaskHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update task.");
 
   log.info({ userId: ctx.userId, taskId: id }, "tasks.updated");
-  await logAudit({ userId: ctx.userId, action: "task.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "task.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -94,6 +101,8 @@ export async function updateTaskStatusHandler(
     action: "task.status_changed",
     resource: id,
     metadata: { status },
+    previousValue: existing,
+    newValue: updated,
   });
 
   return updated;
@@ -110,7 +119,12 @@ export async function deleteTaskHandler(
   await deleteTask(id, farmId);
 
   log.info({ userId: ctx.userId, taskId: id }, "tasks.deleted");
-  await logAudit({ userId: ctx.userId, action: "task.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "task.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }
 
 export async function toggleChecklistItemHandler(
@@ -182,6 +196,7 @@ export async function createTaskFromTemplateHandler(
     action: "task.created",
     resource: task.id,
     metadata: { templateId, farmId },
+    newValue: task,
   });
 
   return task;
