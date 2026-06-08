@@ -40,7 +40,6 @@ const MANAGEMENT_ITEMS: NavItem[] = [
   { label: "Crop Plan", href: "/dashboard/crop-plan", icon: Layers },
   { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Crop Data", href: "/dashboard/crop-data", icon: Database },
-  { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
 ];
 
@@ -103,7 +102,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "flex h-screen shrink-0 flex-col border-r border-border/40 bg-gradient-to-b from-card via-card/98 to-muted/20 shadow-xs transition-[width] duration-200 ease-out relative z-30",
+        "flex h-screen shrink-0 flex-col border-r border-border/40 bg-linear-to-b from-card via-card/98 to-muted/20 shadow-xs transition-[width] duration-200 ease-out relative z-30",
         collapsed ? "w-16" : "w-64"
       )}
     >
@@ -119,7 +118,7 @@ export function Sidebar({
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm transition-transform hover:scale-105 duration-200">
               <Leaf className="size-4 text-primary animate-pulse" />
             </div>
-            <span className="font-heading text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-primary via-primary/95 to-emerald-500 bg-clip-text text-transparent truncate">
+            <span className="font-heading text-sm font-bold tracking-wider uppercase bg-linear-to-r from-primary via-primary/95 to-emerald-500 bg-clip-text text-transparent truncate">
               Agriplatform
             </span>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -28,6 +28,8 @@ import {
   getWeeksInYear,
   getWeekStartDate,
 } from "@/lib/week-calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   farmId: string;
@@ -258,37 +260,6 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
         form.setError("root", { message: "Something went wrong. Please try again." });
       }
     }
-  }
-
-  function weekField(name: "startWeek" | "endWeek", label: string) {
-    return (
-      <FormField
-        control={form.control}
-        name={name}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{label}</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                min={1}
-                max={maxWeek}
-                step={1}
-                {...field}
-                value={field.value ?? ""}
-                onChange={(e) =>
-                  field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10))
-                }
-              />
-            </FormControl>
-            <p className="text-xs text-muted-foreground">
-              {weekDateLabel(selectedYear, field.value as number | undefined)}
-            </p>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
   }
 
   return (

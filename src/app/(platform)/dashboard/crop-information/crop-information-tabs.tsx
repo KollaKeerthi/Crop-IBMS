@@ -25,7 +25,6 @@ import { DensityMasterTable } from "@/features/density-master";
 import { ActiveTimeTable } from "@/features/active-time";
 import { BlockMasterTable } from "@/features/block-master";
 import { VariabilityTable } from "@/features/variability";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS =
@@ -58,13 +57,6 @@ export function CropInformationTabs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function updateScrollState() {
-    const list = listRef.current;
-    if (!list) return;
-    setCanScrollLeft(list.scrollLeft > 0);
-    setCanScrollRight(list.scrollLeft + list.clientWidth < list.scrollWidth - 1);
-  }
-
   function scrollTabs(direction: "left" | "right") {
     const list = listRef.current;
     if (!list) return;
@@ -84,12 +76,6 @@ export function CropInformationTabs() {
     setTimeout(checkScroll, 300);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
-
-  function scrollTabs(dir: "left" | "right") {
-    const el = listRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
-  }
 
   return (
     <Tabs value={active} onValueChange={setActive}>

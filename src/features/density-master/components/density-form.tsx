@@ -64,16 +64,6 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
   const createMutation = useCreateDensityMaster(farmId);
   const updateMutation = useUpdateDensityMaster(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const selectedCropId = useWatch({ control: form.control, name: "cropId" });
-  const selectedCrop = crops?.find((crop) => crop.id === selectedCropId);
-  const cropTypes = useMemo(() => selectedCrop?.types ?? [], [selectedCrop]);
-
-  useEffect(() => {
-    const cropTypeId = form.getValues("cropTypeId");
-    if (cropTypeId && !cropTypes.some((type) => type.id === cropTypeId)) {
-      form.setValue("cropTypeId", undefined);
-    }
-  }, [cropTypes, form]);
 
   async function onSubmit(values: CreateDensityMasterInput) {
     try {

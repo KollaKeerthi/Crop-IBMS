@@ -5,7 +5,6 @@ export const SuitableCropInputSchema = z.object({
   seasonIds: z.array(z.string().uuid()).optional(),
   rows: z.number().int().positive().optional(),
   plantsPerRow: z.number().positive().optional(),
-  seasonIds: z.array(z.string().uuid()).optional(),
 });
 
 export const CreateBlockMasterInputSchema = z.object({

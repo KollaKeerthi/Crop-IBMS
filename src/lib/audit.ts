@@ -130,8 +130,6 @@ export async function logAudit(params: LogAuditParams): Promise<void> {
     previousData: params.previousData ?? null,
     newData: params.newData ?? null,
     metadata: params.metadata,
-    previousValue: params.previousValue,
-    newValue: params.newValue,
     ipAddress: meta.ip,
     userAgent: meta.userAgent,
   });

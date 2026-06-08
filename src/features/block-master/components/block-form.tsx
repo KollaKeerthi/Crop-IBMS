@@ -18,7 +18,7 @@ import { useFarm } from "@/lib/farm-context";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -47,7 +47,6 @@ function normalizeSuitableCrops(block?: BlockMaster): SuitableCropInput[] {
           seasonIds: [],
           rows: block?.rows ?? undefined,
           plantsPerRow: undefined,
-          seasonIds: [],
         };
       }
       return { ...crop, seasonIds: (crop as SuitableCropInput).seasonIds ?? [] };
@@ -263,7 +262,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
                                 <div className="max-h-24 space-y-2 overflow-y-auto rounded-md border bg-background p-2">
                                   {seasons.map((season) => {
                                     const checkboxId = `suitable-crop-${row.id}-season-${season.id}`;
-                                    const checked = seasonIds.includes(season.id);
+                                    const checked = (field.value ?? []).includes(season.id);
                                     return (
                                       <div key={season.id} className="flex items-center gap-2">
                                         <Checkbox
