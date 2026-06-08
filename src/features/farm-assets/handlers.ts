@@ -32,6 +32,7 @@ export async function createFarmAssetHandler(
     action: "farm_asset.created",
     resource: asset.id,
     metadata: { assetType: input.assetType },
+    newValue: asset,
   });
   return asset as unknown as FarmAsset;
 }
@@ -47,7 +48,13 @@ export async function updateFarmAssetHandler(
   if (!existing) throw new ApiError(404, "not_found", "Asset not found.");
   const updated = await updateFarmAsset(id, farmId, input);
   if (!updated) throw new ApiError(500, "internal_error", "Could not update asset.");
-  await logAudit({ userId: ctx.userId, action: "farm_asset.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "farm_asset.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
   return updated as unknown as FarmAsset;
 }
 
@@ -60,5 +67,10 @@ export async function deleteFarmAssetHandler(
   const existing = await getFarmAssetById(id, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Asset not found.");
   await deleteFarmAsset(id, farmId);
-  await logAudit({ userId: ctx.userId, action: "farm_asset.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "farm_asset.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }

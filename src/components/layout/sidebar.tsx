@@ -40,6 +40,7 @@ const MANAGEMENT_ITEMS: NavItem[] = [
   { label: "Crop Plan", href: "/dashboard/crop-plan", icon: Layers },
   { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Crop Data", href: "/dashboard/crop-data", icon: Database },
+  { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
 ];
 

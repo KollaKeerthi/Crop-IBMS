@@ -1,6 +1,6 @@
 "use client";
 
-import { useFieldArray, useForm, type Resolver } from "react-hook-form";
+import { useFieldArray, useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -16,6 +16,7 @@ import { useCrops } from "@/features/crops/hooks";
 import { useSeasons } from "@/features/seasons/hooks";
 import { useFarm } from "@/lib/farm-context";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -43,6 +44,7 @@ function normalizeSuitableCrops(block?: BlockMaster): SuitableCropInput[] {
       if (typeof crop === "string") {
         return {
           cropId: crop,
+          seasonIds: [],
           rows: block?.rows ?? undefined,
           plantsPerRow: undefined,
           seasonIds: [],
@@ -93,7 +95,8 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
     control: form.control,
     name: "suitableCrops",
   });
-  const areaSqm = form.watch("areaSqm");
+  const areaSqm = useWatch({ control: form.control, name: "areaSqm" });
+  const watchedSuitableCrops = useWatch({ control: form.control, name: "suitableCrops" });
   const createMutation = useCreateBlockMaster(farmId);
   const updateMutation = useUpdateBlockMaster(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -245,6 +248,51 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </td>
+                      <td className="px-2 py-2">
+                        <FormField
+                          control={form.control}
+                          name={`suitableCrops.${index}.seasonIds` as const}
+                          render={({ field }) => (
+                            <FormItem>
+                              {seasons.length > 0 ? (
+                                <div className="max-h-24 space-y-2 overflow-y-auto rounded-md border bg-background p-2">
+                                  {seasons.map((season) => {
+                                    const checkboxId = `suitable-crop-${row.id}-season-${season.id}`;
+                                    const checked = seasonIds.includes(season.id);
+                                    return (
+                                      <div key={season.id} className="flex items-center gap-2">
+                                        <Checkbox
+                                          id={checkboxId}
+                                          checked={checked}
+                                          onCheckedChange={(nextChecked) => {
+                                            const current = field.value ?? [];
+                                            field.onChange(
+                                              nextChecked
+                                                ? [...current, season.id]
+                                                : current.filter((id) => id !== season.id)
+                                            );
+                                          }}
+                                        />
+                                        <Label
+                                          htmlFor={checkboxId}
+                                          className="min-w-0 cursor-pointer truncate text-xs font-normal"
+                                        >
+                                          {season.name}
+                                        </Label>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
+                                  No seasons
+                                </p>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}

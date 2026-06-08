@@ -22,6 +22,11 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CalendarDays } from "lucide-react";
+import { formatDateDisplay } from "@/lib/week-calendar";
+
+function weekLabel(value: number | null) {
+  return value ? `W${String(value).padStart(2, "0")}` : "-";
+}
 
 export function SeasonsTable() {
   const { selectedFarmId } = useFarm();

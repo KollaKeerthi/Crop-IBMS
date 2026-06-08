@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { listSeasons, getSeasonById } from "./queries";
 import { insertSeason, updateSeason, deleteSeason } from "./mutations";
 import type { CreateSeasonInput, UpdateSeasonInput, Season } from "./schema";
+import { assertSeasonCanDelete } from "@/features/crop-information/delete-guards";
 
 export async function listSeasonsHandler(ctx: ApiContext, farmId: string): Promise<Season[]> {
   return listSeasons(farmId);
@@ -90,6 +91,7 @@ export async function deleteSeasonHandler(
   const existing = await getSeasonById(seasonId, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Season not found.");
 
+  await assertSeasonCanDelete(seasonId, farmId);
   await deleteSeason(seasonId, farmId);
 
   log.info({ userId: ctx.userId, seasonId }, "seasons.deleted");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useDensityMaster, useDeleteDensityMaster } from "../hooks";
@@ -21,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Boxes } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function DensityMasterTable() {

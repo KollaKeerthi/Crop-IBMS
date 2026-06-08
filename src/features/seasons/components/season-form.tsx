@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
 import {
   CreateSeasonInputSchema,
@@ -15,7 +14,6 @@ import {
 import { useCreateSeason, useUpdateSeason } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -24,6 +22,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  formatDateDisplay,
+  getWeekEndDate,
+  getWeeksInYear,
+  getWeekStartDate,
+} from "@/lib/week-calendar";
 
 type Props = {
   farmId: string;
@@ -183,10 +187,13 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
     defaultValues: {
       name: season?.name ?? "",
       year: season?.year ?? new Date().getFullYear(),
-      startDate: season?.startDate ?? undefined,
-      endDate: season?.endDate ?? undefined,
+      startWeek: season?.startWeek ?? 1,
+      endWeek: season?.endWeek ?? 1,
     },
   });
+
+  const selectedYear = form.watch("year") || new Date().getFullYear();
+  const maxWeek = useMemo(() => getWeeksInYear(selectedYear), [selectedYear]);
 
   const createMutation = useCreateSeason(farmId);
   const updateMutation = useUpdateSeason(farmId);
@@ -253,6 +260,37 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
     }
   }
 
+  function weekField(name: "startWeek" | "endWeek", label: string) {
+    return (
+      <FormField
+        control={form.control}
+        name={name}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min={1}
+                max={maxWeek}
+                step={1}
+                {...field}
+                value={field.value ?? ""}
+                onChange={(e) =>
+                  field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10))
+                }
+              />
+            </FormControl>
+            <p className="text-xs text-muted-foreground">
+              {weekDateLabel(selectedYear, field.value as number | undefined)}
+            </p>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -282,6 +320,10 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
                   onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                 />
               </FormControl>
+              <p className="text-xs text-muted-foreground">
+                Week 1 starts on {formatDateDisplay(getWeekStartDate(selectedYear, 1))}. This year
+                has {maxWeek} weeks.
+              </p>
               <FormMessage />
             </FormItem>
           )}

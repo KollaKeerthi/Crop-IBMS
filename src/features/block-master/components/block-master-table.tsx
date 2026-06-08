@@ -8,6 +8,7 @@ import { useBlockMaster, useDeleteBlockMaster } from "../hooks";
 import type { BlockMaster } from "../schema";
 import { BlockForm } from "./block-form";
 import { useCrops } from "@/features/crops/hooks";
+import { useSeasons } from "@/features/seasons/hooks";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -27,6 +28,7 @@ export function BlockMasterTable() {
   const { selectedFarmId } = useFarm();
   const { data: blocks, isLoading } = useBlockMaster(selectedFarmId);
   const { data: crops = [] } = useCrops();
+  const { data: seasons = [] } = useSeasons(selectedFarmId);
   const deleteMutation = useDeleteBlockMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editBlock, setEditBlock] = useState<BlockMaster | null>(null);
@@ -55,7 +57,13 @@ export function BlockMasterTable() {
         const cropId = typeof item === "string" ? item : item.cropId;
         const cropName = crops.find((crop) => crop.id === cropId)?.name ?? cropId;
         if (typeof item === "string") return cropName;
-        return `${cropName}: ${item.rows} rows, ${item.plantsPerRow}/row`;
+        const seasonNames =
+          item.seasonIds
+            ?.map((seasonId) => seasons.find((season) => season.id === seasonId)?.name)
+            .filter(Boolean)
+            .join(", ") ?? "";
+        const seasonLabel = seasonNames ? ` (${seasonNames})` : "";
+        return `${cropName}${seasonLabel}: ${item.rows} rows, ${item.plantsPerRow} plants / row`;
       })
       .join("; ");
   }

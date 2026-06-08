@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { integer, pgTable, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { farms } from "./farms";
 import { crops } from "./crops";
@@ -18,6 +19,9 @@ export const densityMaster = pgTable("density_master", {
   productionSiteId: uuid("production_site_id"),
   maleDensity: real("male_density"),
   femaleDensity: real("female_density"),
+  year: integer("year")
+    .notNull()
+    .default(sql`EXTRACT(YEAR FROM now())::integer`),
   spacingM: real("spacing_m"),
   rowSpacingM: real("row_spacing_m"),
   validFrom: integer("valid_from").notNull().default(1),

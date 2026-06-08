@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { CropTable, CropTypesTable, CropVarietiesTable } from "@/features/crops";
 import { SeasonsTable } from "@/features/seasons";
 import { ActivitiesTable } from "@/features/activities";
@@ -56,6 +57,22 @@ export function CropInformationTabs() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function updateScrollState() {
+    const list = listRef.current;
+    if (!list) return;
+    setCanScrollLeft(list.scrollLeft > 0);
+    setCanScrollRight(list.scrollLeft + list.clientWidth < list.scrollWidth - 1);
+  }
+
+  function scrollTabs(direction: "left" | "right") {
+    const list = listRef.current;
+    if (!list) return;
+    list.scrollBy({
+      left: direction === "left" ? -list.clientWidth * 0.75 : list.clientWidth * 0.75,
+      behavior: "smooth",
+    });
+  }
 
   useEffect(() => {
     const list = listRef.current;

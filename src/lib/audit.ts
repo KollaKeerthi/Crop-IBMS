@@ -35,6 +35,9 @@ export type AuditAction =
   | "density_master.created"
   | "density_master.updated"
   | "density_master.deleted"
+  | "production_type.created"
+  | "production_type.updated"
+  | "production_type.deleted"
   | "production_site.created"
   | "production_site.updated"
   | "production_site.deleted"
@@ -101,6 +104,8 @@ type LogAuditParams = {
   previousData?: Record<string, unknown> | null;
   newData?: Record<string, unknown> | null;
   metadata?: Record<string, unknown>;
+  previousValue?: unknown;
+  newValue?: unknown;
 };
 
 async function readRequestMeta(): Promise<{ ip: string | null; userAgent: string | null }> {
@@ -125,6 +130,8 @@ export async function logAudit(params: LogAuditParams): Promise<void> {
     previousData: params.previousData ?? null,
     newData: params.newData ?? null,
     metadata: params.metadata,
+    previousValue: params.previousValue,
+    newValue: params.newValue,
     ipAddress: meta.ip,
     userAgent: meta.userAgent,
   });

@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { listBlockMaster, getBlockById } from "./queries";
 import { insertBlock, updateBlock, deleteBlock } from "./mutations";
 import type { CreateBlockMasterInput, UpdateBlockMasterInput, BlockMaster } from "./schema";
+import { assertBlockCanDelete } from "@/features/crop-information/delete-guards";
 
 export async function listBlockMasterHandler(
   ctx: ApiContext,
@@ -37,6 +38,7 @@ export async function createBlockHandler(
     action: "block_master.created",
     resource: block.id,
     metadata: { blockName: input.blockName, farmId },
+    newValue: block,
   });
 
   return block;
@@ -55,7 +57,13 @@ export async function updateBlockHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update block.");
 
   log.info({ userId: ctx.userId, blockId }, "block_master.updated");
-  await logAudit({ userId: ctx.userId, action: "block_master.updated", resource: blockId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "block_master.updated",
+    resource: blockId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -68,8 +76,14 @@ export async function deleteBlockHandler(
   const existing = await getBlockById(blockId, farmId);
   if (!existing) throw new ApiError(404, "not_found", "Block not found.");
 
+  await assertBlockCanDelete(blockId, farmId);
   await deleteBlock(blockId, farmId);
 
   log.info({ userId: ctx.userId, blockId }, "block_master.deleted");
-  await logAudit({ userId: ctx.userId, action: "block_master.deleted", resource: blockId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "block_master.deleted",
+    resource: blockId,
+    previousValue: existing,
+  });
 }

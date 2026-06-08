@@ -37,6 +37,7 @@ export async function createDensityHandler(
     action: "density_master.created",
     resource: density.id,
     metadata: { farmId },
+    newValue: density,
   });
 
   return density;
@@ -55,7 +56,13 @@ export async function updateDensityHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update density record.");
 
   log.info({ userId: ctx.userId, densityId }, "density_master.updated");
-  await logAudit({ userId: ctx.userId, action: "density_master.updated", resource: densityId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "density_master.updated",
+    resource: densityId,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -71,5 +78,10 @@ export async function deleteDensityHandler(
   await deleteDensity(densityId, farmId);
 
   log.info({ userId: ctx.userId, densityId }, "density_master.deleted");
-  await logAudit({ userId: ctx.userId, action: "density_master.deleted", resource: densityId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "density_master.deleted",
+    resource: densityId,
+    previousValue: existing,
+  });
 }

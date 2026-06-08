@@ -7,7 +7,7 @@ export default function CropInformationPage() {
     <PageShell>
       <SectionHeader
         title="Crop Information"
-        description="Manage crops, varieties, seasons, activities, and production sites in one place."
+        description="Manage crops, varieties, seasons, activities, and crop planning references in one place."
       />
       <CropInformationTabs />
     </PageShell>

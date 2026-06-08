@@ -7,6 +7,7 @@ import { useFarm } from "@/lib/farm-context";
 import { useActiveTimes, useDeleteActiveTime } from "../hooks";
 import { useActivities } from "@/features/activities/hooks";
 import type { ActiveTime } from "../schema";
+import type { Activity } from "@/features/activities/schema";
 import { ActiveTimeForm } from "./active-time-form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,34 @@ import {
 } from "@/components/ui/table";
 import { Timer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+type ActiveTimeScheduleField =
+  | "materialArrival"
+  | "sowingMale"
+  | "sowingFemale"
+  | "plantingMale"
+  | "plantingFemale"
+  | "pollinationStart"
+  | "pollinationEnd"
+  | "harvestingStart"
+  | "harvestingEnd";
+
+const ACTIVITY_FIELD_BY_NAME: Record<string, ActiveTimeScheduleField> = {
+  materialarrival: "materialArrival",
+  sowingmale: "sowingMale",
+  sowingfemale: "sowingFemale",
+  plantingmale: "plantingMale",
+  plantingfemale: "plantingFemale",
+  pollinationstart: "pollinationStart",
+  pollinationend: "pollinationEnd",
+  harvestingstart: "harvestingStart",
+  harvestingend: "harvestingEnd",
+};
+
+function activityFieldByName(value: string): ActiveTimeScheduleField | null {
+  const normalized = value.toLowerCase().replace(/[^a-z]/g, "");
+  return ACTIVITY_FIELD_BY_NAME[normalized] ?? null;
+}
 
 export function ActiveTimeTable() {
   const { selectedFarmId } = useFarm();
@@ -59,6 +88,18 @@ export function ActiveTimeTable() {
   function activityWeek(at: ActiveTime, activityId: string) {
     return at.activities.find((a) => a.activityId === activityId)?.weekNumber ?? null;
   }
+
+  const activityScheduleValue = (item: ActiveTime, activity: Activity) => {
+    const key = activityFieldByName(activity.name) ?? activityFieldByName(activity.code ?? "");
+    if (key) return valueOrDash(item[key]);
+
+    const assigned = item.activities.find((entry) => entry.activityId === activity.id);
+    if (!assigned) return <span className="text-muted-foreground">-</span>;
+
+    const week = assigned.weekNumber ? `W${assigned.weekNumber}` : "";
+    const day = assigned.dayOffset ? ` +${assigned.dayOffset}d` : "";
+    return week || day ? `${week}${day}` : <span className="text-muted-foreground">-</span>;
+  };
 
   return (
     <div className="space-y-6">

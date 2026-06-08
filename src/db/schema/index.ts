@@ -28,7 +28,6 @@ export * from "./activities";
 export * from "./active-times";
 export * from "./active-time-activities";
 export * from "./density-master";
-export * from "./production-sites";
 export * from "./production-types";
 export * from "./variability";
 

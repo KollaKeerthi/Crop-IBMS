@@ -25,6 +25,11 @@ import type {
   CropType,
   CropVariety,
 } from "./schema";
+import {
+  assertCropCanDelete,
+  assertCropTypeCanDelete,
+  assertCropVarietyCanDelete,
+} from "@/features/crop-information/delete-guards";
 
 export async function listCropsHandler(ctx: ApiContext, search?: string): Promise<Crop[]> {
   return listCrops(search);
@@ -82,6 +87,7 @@ export async function deleteCropHandler(ctx: ApiContext, cropId: string): Promis
   const existing = await getCropById(cropId);
   if (!existing) throw new ApiError(404, "not_found", "Crop not found.");
 
+  await assertCropCanDelete(cropId);
   await deleteCrop(cropId);
 
   log.info({ userId: ctx.userId, cropId }, "crops.deleted");
@@ -123,6 +129,8 @@ export async function updateCropTypeHandler(
 ): Promise<CropType> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+  const existingType = crop.types.find((type) => type.id === typeId);
+  if (!existingType) throw new ApiError(404, "not_found", "Crop type not found.");
 
   const type = await updateCropType(cropId, typeId, input);
   if (!type) throw new ApiError(404, "not_found", "Crop type not found.");
@@ -145,7 +153,10 @@ export async function deleteCropTypeHandler(
 ): Promise<void> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+  const existingType = crop.types.find((type) => type.id === typeId);
+  if (!existingType) throw new ApiError(404, "not_found", "Crop type not found.");
 
+  await assertCropTypeCanDelete(typeId);
   await deleteCropType(cropId, typeId);
   log.info({ userId: ctx.userId, typeId }, "crop_types.deleted");
   await logAudit({
@@ -186,6 +197,8 @@ export async function updateCropVarietyHandler(
 ): Promise<CropVariety> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+  const existingVariety = crop.varieties.find((variety) => variety.id === varietyId);
+  if (!existingVariety) throw new ApiError(404, "not_found", "Crop variety not found.");
 
   const variety = await updateCropVariety(cropId, varietyId, input);
   if (!variety) throw new ApiError(404, "not_found", "Crop variety not found.");
@@ -208,7 +221,10 @@ export async function deleteCropVarietyHandler(
 ): Promise<void> {
   const crop = await getCropById(cropId);
   if (!crop) throw new ApiError(404, "not_found", "Crop not found.");
+  const existingVariety = crop.varieties.find((variety) => variety.id === varietyId);
+  if (!existingVariety) throw new ApiError(404, "not_found", "Crop variety not found.");
 
+  await assertCropVarietyCanDelete(varietyId);
   await deleteCropVariety(cropId, varietyId);
   log.info({ userId: ctx.userId, varietyId }, "crop_varieties.deleted");
   await logAudit({

@@ -49,6 +49,7 @@ export async function createSubBlockHandler(
     action: "sub_block.created",
     resource: subBlock.id,
     metadata: { name: input.name, blockId: input.blockId, farmId: input.farmId },
+    newValue: subBlock,
   });
 
   return subBlock;
@@ -68,7 +69,13 @@ export async function updateSubBlockHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update sub-block.");
 
   log.info({ userId: ctx.userId, subBlockId: id }, "sub_blocks.updated");
-  await logAudit({ userId: ctx.userId, action: "sub_block.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "sub_block.updated",
+    resource: id,
+    previousValue: existing,
+    newValue: updated,
+  });
 
   return updated;
 }
@@ -85,5 +92,10 @@ export async function deleteSubBlockHandler(
   await deleteSubBlock(id);
 
   log.info({ userId: ctx.userId, subBlockId: id }, "sub_blocks.deleted");
-  await logAudit({ userId: ctx.userId, action: "sub_block.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    action: "sub_block.deleted",
+    resource: id,
+    previousValue: existing,
+  });
 }
