@@ -28,6 +28,11 @@ export const CreatePlantingInputSchema = z.object({
   blockMasterId: z.string().uuid().optional(),
   locationType: z.string().trim().max(200).optional(),
   notes: z.string().trim().max(2000).optional(),
+  // ➕ Add these 4 configuration parameters for the date calculator engine
+  daysInNursery: z.number().int().positive().optional(),
+  daysToMaturity: z.number().int().positive().optional(),
+  harvestWindowDays: z.number().int().positive().optional(),
+  timeBetweenPlantingsDays: z.number().int().positive().optional(),
 });
 
 export const UpdatePlantingInputSchema = z.object({
@@ -47,6 +52,11 @@ export const UpdatePlantingInputSchema = z.object({
   blockMasterId: z.string().uuid().optional().nullable(),
   locationType: z.string().trim().max(200).optional().nullable(),
   notes: z.string().trim().max(2000).optional().nullable(),
+  // ➕ Add them here as well (allowing nullable/optional changes on edit)
+  daysInNursery: z.number().int().positive().optional().nullable(),
+  daysToMaturity: z.number().int().positive().optional().nullable(),
+  harvestWindowDays: z.number().int().positive().optional().nullable(),
+  timeBetweenPlantingsDays: z.number().int().positive().optional().nullable(),
 });
 
 export const PlantingSchema = z.object({

@@ -5,6 +5,7 @@ import { CalendarDays } from "lucide-react";
 import { formatDateDisplay } from "@/lib/format";
 import { TaskDetailDialog } from "./task-detail-dialog";
 import type { Task } from "../schema";
+import { useTeamMembers } from "@/features/team/hooks";
 
 type Props = {
   tasks: Task[];
@@ -25,6 +26,11 @@ const COLUMNS: Column[] = [
 
 function BoardTaskCard({ task, farmId }: { task: Task; farmId: string }) {
   const [detailOpen, setDetailOpen] = useState(false);
+  const { data: members = [] } = useTeamMembers(farmId);
+  const member = members.find((m) => m.userId === task.assignedTo);
+  const assigneeDisplay = member
+    ? (member.name ?? member.email)
+    : (task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "unassigned");
 
   return (
     <>
@@ -47,7 +53,7 @@ function BoardTaskCard({ task, farmId }: { task: Task; farmId: string }) {
           </div>
         )}
         <div className="border-t pt-3 text-sm italic text-muted-foreground">
-          {task.assignedTo ? task.assignedTo.slice(0, 8) : "unassigned"}
+          {assigneeDisplay}
         </div>
       </button>
 

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateDisplay } from "@/lib/format";
 import type { Task } from "../schema";
 import { TaskDetailDialog } from "./task-detail-dialog";
+import { useTeamMembers } from "@/features/team/hooks";
 
 type Props = {
   task: Task;
@@ -22,6 +23,11 @@ const PRIORITY_COLORS: Record<Task["priority"], string> = {
 
 export function TaskCard({ task, farmId }: Props) {
   const [detailOpen, setDetailOpen] = useState(false);
+  const { data: members = [] } = useTeamMembers(farmId);
+  const member = members.find((m) => m.userId === task.assignedTo);
+  const assigneeDisplay = member
+    ? (member.name ?? member.email)
+    : (task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "");
 
   const completedCount = task.checklistItems.filter((c) => c.completed).length;
   const totalCount = task.checklistItems.length;
@@ -56,8 +62,8 @@ export function TaskCard({ task, farmId }: Props) {
             {task.assignedTo && (
               <span className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span className="truncate max-w-[60px] font-mono">
-                  {task.assignedTo.slice(0, 8)}
+                <span className="truncate max-w-[100px]" title={assigneeDisplay}>
+                  {assigneeDisplay}
                 </span>
               </span>
             )}

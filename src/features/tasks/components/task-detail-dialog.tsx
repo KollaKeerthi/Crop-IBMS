@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pencil, X } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { formatDateDisplay } from "@/lib/format";
 import { TaskForm } from "./task-form";
 import type { Task } from "../schema";
 import { useUpdateTaskStatus, useToggleChecklistItem } from "../hooks";
+import { useTeamMembers } from "@/features/team/hooks";
 
 type Props = {
   task: Task;
@@ -44,6 +45,9 @@ const STATUS_OPTIONS: Task["status"][] = ["Pending", "InProgress", "Completed"];
 
 export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
   const [isEditing, setIsEditing] = useState(false);
+  const { data: members = [] } = useTeamMembers(farmId);
+  const member = members.find((m) => m.userId === task.assignedTo);
+  const assigneeDisplay = member ? (member.name ?? member.email) : task.assignedTo;
 
   const updateStatusMutation = useUpdateTaskStatus();
   const toggleChecklistMutation = useToggleChecklistItem();
@@ -160,7 +164,7 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
             {task.assignedTo && (
               <div>
                 <p className="text-xs text-muted-foreground">Assigned To</p>
-                <p className="truncate text-xs font-mono">{task.assignedTo}</p>
+                <p className="truncate text-xs">{assigneeDisplay}</p>
               </div>
             )}
           </div>

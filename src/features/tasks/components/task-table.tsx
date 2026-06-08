@@ -10,6 +10,7 @@ import { formatDateDisplay } from "@/lib/format";
 import { TaskForm } from "./task-form";
 import type { Task } from "../schema";
 import { useDeleteTask } from "../hooks";
+import { useTeamMembers } from "@/features/team/hooks";
 
 type Props = {
   tasks: Task[];
@@ -73,6 +74,7 @@ export function TaskTable({ tasks, farmId }: Props) {
   const [editTask, setEditTask] = useState<Task | null>(null);
 
   const deleteMutation = useDeleteTask();
+  const { data: members = [] } = useTeamMembers(farmId);
   const sorted = sortTasks(tasks, sortKey, sortDir);
 
   function handleSort(key: SortKey) {
@@ -159,8 +161,12 @@ export function TaskTable({ tasks, farmId }: Props) {
                   </Badge>
                 </div>
                 <div className="text-sm">{STATUS_LABELS[task.status]}</div>
-                <div className="truncate text-xs font-mono text-muted-foreground">
-                  {task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "-"}
+                <div className="truncate text-xs text-muted-foreground">
+                  {task.assignedTo
+                    ? (members.find((m) => m.userId === task.assignedTo)?.name ??
+                      members.find((m) => m.userId === task.assignedTo)?.email ??
+                      `${task.assignedTo.slice(0, 8)}...`)
+                    : "-"}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {formatDateDisplay(task.startDate)}

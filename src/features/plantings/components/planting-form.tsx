@@ -32,6 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { calculatePlantingDates } from "../compute";
+import { useEffect } from "react";
 
 const STATUS_OPTIONS = [
   "Planned",
@@ -56,6 +58,15 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
   const isEdit = !!planting;
   const schema = isEdit ? UpdatePlantingInputSchema : CreatePlantingInputSchema;
 
+  const plantingState = planting as
+    | (Planting & {
+        daysInNursery?: number;
+        daysToMaturity?: number;
+        harvestWindowDays?: number;
+        timeBetweenPlantingsDays?: number;
+      })
+    | undefined;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
     defaultValues: {
@@ -73,6 +84,11 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
       spacingM: planting?.spacingM ?? undefined,
       locationType: planting?.locationType ?? "",
       notes: planting?.notes ?? "",
+      //➕ Set fallback defaults for the form state fields
+      daysInNursery: plantingState?.daysInNursery ?? 28,
+      daysToMaturity: plantingState?.daysToMaturity ?? 60,
+      harvestWindowDays: plantingState?.harvestWindowDays ?? 30,
+      timeBetweenPlantingsDays: plantingState?.timeBetweenPlantingsDays ?? 14,
     },
   });
 
@@ -86,6 +102,44 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
   const updateMutation = useUpdatePlanting(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
 
+  //----------
+  // Insert inside the PlantingForm component body:
+  const watchedMethod = form.watch("plantingMethod");
+  const watchedNurseryStart = form.watch("nurseryStartDate");
+  const watchedFieldPlanting = form.watch("fieldPlantingDate");
+
+  useEffect(() => {
+    try {
+      // Only attempt calculations if critical base data coordinates are present
+      if (watchedMethod === "Transplant" && watchedNurseryStart) {
+        const projection = calculatePlantingDates({
+          plantingMethod: "Transplant",
+          nurseryStartDate: watchedNurseryStart,
+          daysToMaturity: 60, // Standard crop index fallbacks
+          harvestWindowDays: 30,
+          timeBetweenPlantingsDays: 14,
+          daysInNursery: 28,
+        });
+
+        form.setValue("fieldPlantingDate", projection.fieldPlantingDate);
+        form.setValue("firstHarvestDate", projection.firstHarvestDate);
+        form.setValue("harvestEndDate", projection.harvestEndDate);
+      } else if (watchedMethod && watchedMethod !== "Transplant" && watchedFieldPlanting) {
+        const projection = calculatePlantingDates({
+          plantingMethod: watchedMethod,
+          fieldPlantingDate: watchedFieldPlanting,
+          daysToMaturity: 60,
+          harvestWindowDays: 30,
+          timeBetweenPlantingsDays: 14,
+        });
+
+        form.setValue("firstHarvestDate", projection.firstHarvestDate);
+        form.setValue("harvestEndDate", projection.harvestEndDate);
+      }
+    } catch (err) {
+      console.error("Automated scheduling projection failed:", err);
+    }
+  }, [watchedMethod, watchedNurseryStart, watchedFieldPlanting, form]);
   async function onSubmit(values: FormValues) {
     try {
       if (isEdit && planting) {
@@ -128,7 +182,12 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select crop" />
+                      <SelectValue placeholder="Select crop">
+                        {(value) =>
+                          crops.find((c) => c.id === value)?.name ??
+                          (value ? "Select crop" : null)
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -159,7 +218,12 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
                     <SelectTrigger>
                       <SelectValue
                         placeholder={!selectedCropId ? "Select crop first" : "Select variety"}
-                      />
+                      >
+                        {(value) =>
+                          varieties.find((v) => v.id === value)?.name ??
+                          (value ? "Select variety" : null)
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -188,7 +252,12 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select season" />
+                    <SelectValue placeholder="Select season">
+                      {(value) => {
+                        const s = seasons.find((s) => s.id === value);
+                        return s ? `${s.name} (${s.year})` : (value ? "Select season" : null);
+                      }}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
