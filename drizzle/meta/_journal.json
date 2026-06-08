@@ -78,6 +78,27 @@
       "when": 1780159557463,
       "tag": "0010_aberrant_boomerang",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780160000000,
+      "tag": "0011_update_crop_data_sex_expression_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780161000000,
+      "tag": "0012_add_teedy_media_attachment_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780162000000,
+      "tag": "0013_add_lead_time_schedule_fields",
+      "breakpoints": true
     }
   ]
 }

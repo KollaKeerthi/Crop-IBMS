@@ -35,6 +35,8 @@ function formatBytes(bytes?: number | null): string {
 export function MediaAttachments({ cropDataId, farmId, media }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { upload, remove } = useMediaMutations(cropDataId, farmId);
+  const mediaUrl = (id: string) =>
+    `/api/v1/crop-data/${cropDataId}/media/${id}?farmId=${encodeURIComponent(farmId)}`;
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -92,7 +94,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                 {isImage(item) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={item.url}
+                    src={mediaUrl(item.id)}
                     alt={item.name ?? "Attachment"}
                     className="h-32 w-full object-cover"
                   />
@@ -109,7 +111,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                   </span>
                   <div className="flex shrink-0 items-center">
                     <a
-                      href={item.url}
+                      href={mediaUrl(item.id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded p-1 text-muted-foreground hover:text-foreground"

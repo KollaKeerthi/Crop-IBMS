@@ -245,6 +245,8 @@ export async function insertMedia(values: {
   entityId: string;
   url: string;
   cloudinaryId?: string | null;
+  teedyDocumentId?: string | null;
+  teedyFileId?: string | null;
   name?: string | null;
   mimeType?: string | null;
   sizeBytes?: number | null;

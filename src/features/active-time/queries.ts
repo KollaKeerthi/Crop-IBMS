@@ -1,6 +1,13 @@
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { activeTimes, activeTimeActivities, crops, cropVarieties, seasons } from "@/db/schema";
+import {
+  activeTimes,
+  activeTimeActivities,
+  crops,
+  cropVarieties,
+  seasons,
+  productionTypes,
+} from "@/db/schema";
 import type { ActiveTime, ActiveTimeActivity } from "./schema";
 
 function toActiveTimeActivity(row: typeof activeTimeActivities.$inferSelect): ActiveTimeActivity {
@@ -20,6 +27,7 @@ function buildActiveTime(
   cropName: string | null,
   varietyName: string | null,
   seasonName: string | null,
+  productionTypeName: string | null,
   activityRows: (typeof activeTimeActivities.$inferSelect)[]
 ): ActiveTime {
   return {
@@ -30,12 +38,22 @@ function buildActiveTime(
     seasonId: row.seasonId ?? null,
     productionTypeId: row.productionTypeId ?? null,
     leadTimeType: row.leadTimeType ?? null,
+    materialArrival: row.materialArrival ?? null,
+    sowingMale: row.sowingMale ?? null,
+    sowingFemale: row.sowingFemale ?? null,
+    plantingMale: row.plantingMale ?? null,
+    plantingFemale: row.plantingFemale ?? null,
+    pollinationStart: row.pollinationStart ?? null,
+    pollinationEnd: row.pollinationEnd ?? null,
+    harvestingStart: row.harvestingStart ?? null,
+    harvestingEnd: row.harvestingEnd ?? null,
     isActive: row.isActive,
     notes: row.notes ?? null,
     createdAt: row.createdAt.toISOString(),
     cropName,
     varietyName,
     seasonName,
+    productionTypeName,
     activities: activityRows.map(toActiveTimeActivity),
   };
 }
@@ -47,11 +65,13 @@ export async function listActiveTimes(farmId: string): Promise<ActiveTime[]> {
       cropName: crops.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      productionTypeName: productionTypes.code,
     })
     .from(activeTimes)
     .leftJoin(crops, eq(activeTimes.cropId, crops.id))
     .leftJoin(cropVarieties, eq(activeTimes.varietyId, cropVarieties.id))
     .leftJoin(seasons, eq(activeTimes.seasonId, seasons.id))
+    .leftJoin(productionTypes, eq(activeTimes.productionTypeId, productionTypes.id))
     .where(eq(activeTimes.farmId, farmId))
     .orderBy(activeTimes.createdAt);
 
@@ -80,6 +100,7 @@ export async function listActiveTimes(farmId: string): Promise<ActiveTime[]> {
       r.cropName ?? null,
       r.varietyName ?? null,
       r.seasonName ?? null,
+      r.productionTypeName ?? null,
       activityMap.get(r.activeTime.id) ?? []
     )
   );
@@ -92,11 +113,13 @@ export async function getActiveTimeById(id: string, farmId: string): Promise<Act
       cropName: crops.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      productionTypeName: productionTypes.code,
     })
     .from(activeTimes)
     .leftJoin(crops, eq(activeTimes.cropId, crops.id))
     .leftJoin(cropVarieties, eq(activeTimes.varietyId, cropVarieties.id))
     .leftJoin(seasons, eq(activeTimes.seasonId, seasons.id))
+    .leftJoin(productionTypes, eq(activeTimes.productionTypeId, productionTypes.id))
     .where(and(eq(activeTimes.id, id), eq(activeTimes.farmId, farmId)));
 
   const row = rows[0];
@@ -112,6 +135,7 @@ export async function getActiveTimeById(id: string, farmId: string): Promise<Act
     row.cropName ?? null,
     row.varietyName ?? null,
     row.seasonName ?? null,
+    row.productionTypeName ?? null,
     activityRows
   );
 }

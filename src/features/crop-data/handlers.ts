@@ -234,6 +234,8 @@ export async function addMediaHandler(
   input: {
     url: string;
     cloudinaryId?: string | null;
+    teedyDocumentId?: string | null;
+    teedyFileId?: string | null;
     name?: string | null;
     mimeType?: string | null;
     sizeBytes?: number | null;
@@ -257,6 +259,20 @@ export async function deleteMediaHandler(
   const media = await getMediaById(mediaId, cropDataId);
   if (!media) throw new ApiError(404, "not_found", "Attachment not found.");
   await deleteMedia(mediaId, cropDataId);
+  return media;
+}
+
+export async function getMediaDownloadHandler(
+  ctx: ApiContext,
+  cropDataId: string,
+  farmId: string,
+  mediaId: string
+) {
+  await verifyFarmAccess(ctx.userId, farmId);
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  const media = await getMediaById(mediaId, cropDataId);
+  if (!media) throw new ApiError(404, "not_found", "Attachment not found.");
   return media;
 }
 

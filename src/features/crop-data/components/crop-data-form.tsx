@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api/errors";
-import { CreateCropDataInputSchema, type CreateCropDataInput } from "../schema";
+import {
+  CreateCropDataInputSchema,
+  SexExpressionSchema,
+  type CreateCropDataInput,
+} from "../schema";
 import { useCreateCropData } from "../hooks";
 import { listCrops, getCrop } from "@/features/crops/api";
 import { listSeasons } from "@/features/seasons/api";
@@ -43,7 +46,6 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   });
 
   const selectedCropId = useWatch({ control: form.control, name: "cropId" });
-  const selectedVarietyId = useWatch({ control: form.control, name: "varietyId" });
 
   const { data: crops = [] } = useQuery({
     queryKey: ["crops"],
@@ -66,19 +68,6 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   const fieldsInDb = hierarchy?.fields ?? [];
 
   const varieties = selectedCrop?.varieties ?? [];
-
-  useEffect(() => {
-    form.setValue("varietyId", undefined);
-  }, [selectedCropId, form]);
-
-  useEffect(() => {
-    if (selectedVarietyId && varieties.length > 0) {
-      const variety = varieties.find((v) => v.id === selectedVarietyId);
-      if (variety?.gender) {
-        form.setValue("sexExpression", variety.gender);
-      }
-    }
-  }, [selectedVarietyId, varieties, form]);
 
   const createMutation = useCreateCropData();
 
@@ -107,7 +96,13 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Crop</FormLabel>
-                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.setValue("varietyId", undefined);
+                  }}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a crop">
@@ -212,9 +207,11 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Bisexual">Bisexual</SelectItem>
+                    {SexExpressionSchema.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -6,7 +6,17 @@ import { cropVarieties } from "./crop-varieties";
 import { seasons } from "./seasons";
 import { users } from "./users";
 
-export const sexExpressionEnum = pgEnum("sex_expression", ["Male", "Female", "Bisexual"]);
+export const sexExpressionEnum = pgEnum("sex_expression", [
+  "Male",
+  "Female",
+  "Bisexual",
+  "Gynoecious",
+  "Monoecious",
+  "Andromonoecious",
+  "Semi-gynoecious",
+  "2n",
+  "4n",
+]);
 
 export const cropData = pgTable("crop_data", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -303,6 +313,8 @@ export const mediaAttachments = pgTable("media_attachments", {
   entityId: uuid("entity_id").notNull(),
   url: text("url").notNull(),
   cloudinaryId: text("cloudinary_id"),
+  teedyDocumentId: text("teedy_document_id"),
+  teedyFileId: text("teedy_file_id"),
   name: text("name"),
   mimeType: text("mime_type"),
   sizeBytes: integer("size_bytes"),

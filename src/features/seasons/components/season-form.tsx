@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
 import {
   CreateSeasonInputSchema,
@@ -13,6 +15,7 @@ import {
 import { useCreateSeason, useUpdateSeason } from "../hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -27,6 +30,139 @@ type Props = {
   season?: Season;
   onSuccess?: () => void;
 };
+
+const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function parseDate(value?: string | null) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateDisplay(value?: string | null) {
+  const date = parseDate(value);
+  if (!date) return "Select date";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}-${month}-${date.getFullYear()}`;
+}
+
+function getSimpleWeekNumber(date: Date) {
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const dayOfYear =
+    Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+  return Math.floor((dayOfYear - 1) / 7) + 1;
+}
+
+function getCalendarWeeks(monthDate: Date) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - firstOfMonth.getDay());
+
+  return Array.from({ length: 6 }, (_, weekIndex) =>
+    Array.from({ length: 7 }, (_, dayIndex) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + weekIndex * 7 + dayIndex);
+      return date;
+    })
+  );
+}
+
+function DateWithWeekPicker({
+  value,
+  onChange,
+}: {
+  value?: string | null;
+  onChange: (value: string) => void;
+}) {
+  const selectedDate = parseDate(value);
+  const [monthDate, setMonthDate] = useState(
+    selectedDate ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
+  const weeks = useMemo(() => getCalendarWeeks(monthDate), [monthDate]);
+  const monthLabel = monthDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+  function moveMonth(offset: number) {
+    setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button type="button" variant="outline" className="w-full justify-start font-normal">
+            <CalendarDays className="mr-2 h-4 w-4" />
+            {formatDateDisplay(value)}
+          </Button>
+        }
+      />
+      <PopoverContent align="start" className="w-[22rem]">
+        <div className="flex items-center justify-between">
+          <Button type="button" variant="ghost" size="icon" onClick={() => moveMonth(-1)}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-sm font-semibold">{monthLabel}</div>
+          <Button type="button" variant="ghost" size="icon" onClick={() => moveMonth(1)}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-[2.75rem_repeat(7,minmax(0,1fr))] gap-1 text-center text-xs">
+          <div className="py-1 font-medium text-primary">Wk</div>
+          {weekdayLabels.map((label) => (
+            <div key={label} className="py-1 font-medium text-muted-foreground">
+              {label}
+            </div>
+          ))}
+
+          {weeks.map((week) => {
+            const weekAnchor =
+              week.find((date) => date.getMonth() === monthDate.getMonth()) ?? week[0]!;
+            return (
+              <div key={week.map(formatDateInput).join("-")} className="contents">
+                <div className="rounded-md bg-muted/60 py-2 font-semibold text-primary">
+                  {getSimpleWeekNumber(weekAnchor)}
+                </div>
+                {week.map((date) => {
+                  const dateValue = formatDateInput(date);
+                  const isCurrentMonth = date.getMonth() === monthDate.getMonth();
+                  const isSelected = value === dateValue;
+                  return (
+                    <button
+                      key={dateValue}
+                      type="button"
+                      onClick={() => onChange(dateValue)}
+                      className={[
+                        "h-8 rounded-md text-sm transition-colors",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted hover:text-foreground",
+                        !isCurrentMonth && "text-muted-foreground/50",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {date.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function SeasonForm({ farmId, season, onSuccess }: Props) {
   const isEdit = !!season;
@@ -107,7 +243,7 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>Start Date</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
+                  <DateWithWeekPicker value={field.value} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -120,7 +256,7 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>End Date</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
+                  <DateWithWeekPicker value={field.value} onChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

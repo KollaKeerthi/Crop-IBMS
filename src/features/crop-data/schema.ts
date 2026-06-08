@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const SexExpressionSchema = z.enum([
+  "Gynoecious",
+  "Monoecious",
+  "Andromonoecious",
+  "Semi-gynoecious",
+  "2n",
+  "4n",
+]);
+
 export const CreateCropDataInputSchema = z.object({
   farmId: z.string().uuid(),
   cropId: z.string().uuid().optional(),
@@ -9,7 +18,7 @@ export const CreateCropDataInputSchema = z.object({
   block: z.string().optional(),
   fieldName: z.string().optional(),
   fieldCode: z.string().optional(),
-  sexExpression: z.enum(["Male", "Female", "Bisexual"]).optional(),
+  sexExpression: SexExpressionSchema.optional(),
   contractNo: z.string().optional(),
   headerNo: z.string().optional(),
   customerCode: z.string().optional(),

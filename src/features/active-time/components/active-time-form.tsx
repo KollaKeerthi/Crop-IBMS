@@ -13,10 +13,9 @@ import {
 import { useCreateActiveTime, useUpdateActiveTime } from "../hooks";
 import { useCrops } from "@/features/crops/hooks";
 import { useSeasons } from "@/features/seasons/hooks";
+import { useProductionTypes } from "@/features/production-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormControl,
@@ -53,6 +52,20 @@ function seasonLabel(options: SeasonOption[], value: string | undefined, placeho
   return season.year ? `${season.name} (${season.year})` : season.name;
 }
 
+const LEAD_TIME_TYPES = ["Reservation", "Standard", "Custom"];
+
+const timingFields: Array<{ name: keyof CreateActiveTimeInput; label: string }> = [
+  { name: "materialArrival", label: "Material Arrival" },
+  { name: "sowingMale", label: "Sowing Male" },
+  { name: "sowingFemale", label: "Sowing Female" },
+  { name: "plantingMale", label: "Planting Male" },
+  { name: "plantingFemale", label: "Planting Female" },
+  { name: "pollinationStart", label: "Pollination Start" },
+  { name: "pollinationEnd", label: "Pollination End" },
+  { name: "harvestingStart", label: "Harvesting Start" },
+  { name: "harvestingEnd", label: "Harvesting End" },
+];
+
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
   const schema = isEdit ? UpdateActiveTimeInputSchema : CreateActiveTimeInputSchema;
@@ -63,41 +76,54 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
       cropId: activeTime?.cropId ?? undefined,
       varietyId: activeTime?.varietyId ?? undefined,
       seasonId: activeTime?.seasonId ?? undefined,
-      leadTimeType: activeTime?.leadTimeType ?? "",
+      productionTypeId: activeTime?.productionTypeId ?? undefined,
+      leadTimeType: activeTime?.leadTimeType ?? "Reservation",
+      materialArrival: activeTime?.materialArrival ?? "",
+      sowingMale: activeTime?.sowingMale ?? "",
+      sowingFemale: activeTime?.sowingFemale ?? "",
+      plantingMale: activeTime?.plantingMale ?? "",
+      plantingFemale: activeTime?.plantingFemale ?? "",
+      pollinationStart: activeTime?.pollinationStart ?? "",
+      pollinationEnd: activeTime?.pollinationEnd ?? "",
+      harvestingStart: activeTime?.harvestingStart ?? "",
+      harvestingEnd: activeTime?.harvestingEnd ?? "",
       isActive: activeTime?.isActive ?? true,
       notes: activeTime?.notes ?? "",
     },
   });
 
-  const selectedCropId = form.watch("cropId");
-
   const { data: crops = [] } = useCrops();
   const { data: seasons = [] } = useSeasons(farmId);
+  const { data: productionTypes = [] } = useProductionTypes();
 
   const activeCropId = activeTime?.cropId;
   const activeCropName = activeTime?.cropName;
-  const activeVarietyId = activeTime?.varietyId;
-  const activeVarietyName = activeTime?.varietyName;
   const activeSeasonId = activeTime?.seasonId;
   const activeSeasonName = activeTime?.seasonName;
+  const activeProductionTypeId = activeTime?.productionTypeId;
+  const activeProductionTypeName = activeTime?.productionTypeName;
 
-  const selectedCrop = crops.find((c) => c.id === selectedCropId);
-  const cropVarieties = selectedCrop?.varieties ?? [];
   const cropOptions: SelectOption[] =
     activeCropId && activeCropName && !crops.some((c) => c.id === activeCropId)
       ? [...crops, { id: activeCropId, name: activeCropName }]
       : crops;
-  const varieties: SelectOption[] =
-    selectedCropId === activeCropId &&
-    activeVarietyId &&
-    activeVarietyName &&
-    !cropVarieties.some((variety) => variety.id === activeVarietyId)
-      ? [...cropVarieties, { id: activeVarietyId, name: activeVarietyName }]
-      : cropVarieties;
   const seasonOptions: SeasonOption[] =
     activeSeasonId && activeSeasonName && !seasons.some((season) => season.id === activeSeasonId)
       ? [...seasons, { id: activeSeasonId, name: activeSeasonName, year: null }]
       : seasons;
+  const productionTypeMasterOptions = productionTypes.map((type) => ({
+    id: type.id,
+    name: type.code,
+  }));
+  const productionTypeOptions: SelectOption[] =
+    activeProductionTypeId &&
+    activeProductionTypeName &&
+    !productionTypes.some((type) => type.id === activeProductionTypeId)
+      ? [
+          ...productionTypeMasterOptions,
+          { id: activeProductionTypeId, name: activeProductionTypeName },
+        ]
+      : productionTypeMasterOptions;
 
   const createMutation = useCreateActiveTime(farmId);
   const updateMutation = useUpdateActiveTime(farmId);
@@ -128,10 +154,86 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
+          name="leadTimeType"
+          render={({ field }) => (
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">
+                LeadTime Type <span className="text-destructive">*</span>
+              </FormLabel>
+              <Select
+                value={field.value ?? ""}
+                onValueChange={(v) => field.onChange(v || undefined)}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value || "Select"}
+                    </span>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {LEAD_TIME_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="productionTypeId"
+          render={({ field }) => (
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">
+                Production Type <span className="text-destructive">*</span>
+              </FormLabel>
+              <Select
+                value={field.value ?? ""}
+                onValueChange={(v) => field.onChange(v || undefined)}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {selectLabel(productionTypeOptions, field.value, "")}
+                    </span>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {productionTypeOptions.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="cropId"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Crop</FormLabel>
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">
+                Crop <span className="text-destructive">*</span>
+              </FormLabel>
               <Select
                 value={field.value ?? ""}
                 onValueChange={(v) => {
@@ -147,7 +249,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {selectLabel(cropOptions, field.value, "Select a crop")}
+                      {selectLabel(cropOptions, field.value, "")}
                     </span>
                   </SelectTrigger>
                 </FormControl>
@@ -166,54 +268,12 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
 
         <FormField
           control={form.control}
-          name="varietyId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Variety</FormLabel>
-              <Select
-                value={field.value ?? ""}
-                onValueChange={(v) => field.onChange(v || undefined)}
-                disabled={!selectedCropId || varieties.length === 0}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <span
-                      className={cn(
-                        "flex flex-1 truncate text-left",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {selectLabel(
-                        varieties,
-                        field.value,
-                        !selectedCropId
-                          ? "Select crop first"
-                          : varieties.length === 0
-                            ? "No varieties available"
-                            : "Select a variety"
-                      )}
-                    </span>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {varieties.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="seasonId"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Season</FormLabel>
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">
+                Season <span className="text-destructive">*</span>
+              </FormLabel>
               <Select
                 value={field.value ?? ""}
                 onValueChange={(v) => field.onChange(v || undefined)}
@@ -226,7 +286,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {seasonLabel(seasonOptions, field.value, "Select a season")}
+                      {seasonLabel(seasonOptions, field.value, "Select")}
                     </span>
                   </SelectTrigger>
                 </FormControl>
@@ -245,59 +305,62 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
 
         <FormField
           control={form.control}
-          name="leadTimeType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lead Time Type</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value ?? ""} placeholder="e.g. 8 weeks" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="isActive"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-3">
-              <FormLabel className="mt-0">Active</FormLabel>
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">
+                Active <span className="text-destructive">*</span>
+              </FormLabel>
+              <Select
+                value={field.value ? "yes" : "no"}
+                onValueChange={(v) => field.onChange(v === "yes")}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <span className="flex flex-1 truncate text-left">
+                      {field.value ? "Yes" : "No"}
+                    </span>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea {...field} value={field.value ?? ""} rows={3} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {timingFields.map((item) => (
+          <FormField
+            key={item.name}
+            control={form.control}
+            name={item.name}
+            render={({ field }) => (
+              <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+                <FormLabel className="sm:text-right">{item.label}</FormLabel>
+                <FormControl>
+                  <Input {...field} value={(field.value as string | undefined) ?? ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
 
         {form.formState.errors.root && (
           <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
         )}
 
-        <Button type="submit" disabled={isPending} className="w-full">
-          {isPending
-            ? isEdit
-              ? "Saving..."
-              : "Creating..."
-            : isEdit
-              ? "Save Changes"
-              : "Create Lead Time"}
-        </Button>
+        <div className="flex justify-center gap-3 pt-2">
+          <Button type="submit" disabled={isPending} className="min-w-28">
+            {isPending ? "Saving..." : "Save"}
+          </Button>
+          <Button type="button" variant="secondary" onClick={onSuccess} className="min-w-28">
+            Cancel
+          </Button>
+        </div>
       </form>
     </Form>
   );

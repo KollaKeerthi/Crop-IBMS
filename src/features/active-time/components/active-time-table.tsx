@@ -45,6 +45,9 @@ export function ActiveTimeTable() {
     }
   }
 
+  const valueOrDash = (value?: string | null) =>
+    value ? value : <span className="text-muted-foreground">-</span>;
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -67,47 +70,79 @@ export function ActiveTimeTable() {
           ))}
         </div>
       ) : activeTimes && activeTimes.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Crop</TableHead>
-              <TableHead>Variety</TableHead>
-              <TableHead>Season</TableHead>
-              <TableHead>Lead Time Type</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead># Activities</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {activeTimes.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-semibold text-foreground">
-                  {item.cropName ?? <span className="text-muted-foreground">-</span>}
-                </TableCell>
-                <TableCell className="text-muted-foreground">{item.varietyName ?? "-"}</TableCell>
-                <TableCell className="text-muted-foreground">{item.seasonName ?? "-"}</TableCell>
-                <TableCell className="text-muted-foreground">{item.leadTimeType ?? "-"}</TableCell>
-                <TableCell>
-                  <Badge variant={item.isActive ? "default" : "secondary"}>
-                    {item.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{item.activities.length}</TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setEditItem(item)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeletingId(item.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
+        <div className="overflow-x-auto rounded-md border">
+          <Table className="min-w-[1180px] text-xs">
+            <TableHeader>
+              <TableRow className="bg-muted/60">
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Lead Time Ref.
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">Prod. Type</TableHead>
+                <TableHead className="w-32 text-primary">Crop</TableHead>
+                <TableHead className="w-32 whitespace-normal text-primary">Crop Type</TableHead>
+                <TableHead className="w-24 text-primary">Season</TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Material Arrival
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">Sowing Male</TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">Sowing Female</TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">Planting Male</TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Planting Female
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Pollination Start
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Pollination End
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Harvesting Start
+                </TableHead>
+                <TableHead className="w-24 whitespace-normal text-primary">
+                  Harvesting End
+                </TableHead>
+                <TableHead className="w-20 text-primary">Active</TableHead>
+                <TableHead className="w-20 text-right text-primary">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {activeTimes.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{valueOrDash(item.leadTimeType)}</TableCell>
+                  <TableCell>{valueOrDash(item.productionTypeName)}</TableCell>
+                  <TableCell>{valueOrDash(item.cropName)}</TableCell>
+                  <TableCell>{valueOrDash(item.varietyName)}</TableCell>
+                  <TableCell>{valueOrDash(item.seasonName)}</TableCell>
+                  <TableCell>{valueOrDash(item.materialArrival)}</TableCell>
+                  <TableCell>{valueOrDash(item.sowingMale)}</TableCell>
+                  <TableCell>{valueOrDash(item.sowingFemale)}</TableCell>
+                  <TableCell>{valueOrDash(item.plantingMale)}</TableCell>
+                  <TableCell>{valueOrDash(item.plantingFemale)}</TableCell>
+                  <TableCell>{valueOrDash(item.pollinationStart)}</TableCell>
+                  <TableCell>{valueOrDash(item.pollinationEnd)}</TableCell>
+                  <TableCell>{valueOrDash(item.harvestingStart)}</TableCell>
+                  <TableCell>{valueOrDash(item.harvestingEnd)}</TableCell>
+                  <TableCell>
+                    <Badge variant={item.isActive ? "default" : "secondary"}>
+                      {item.isActive ? "Yes" : "No"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setEditItem(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(item.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       ) : (
         <EmptyState
           icon={Timer}
@@ -123,16 +158,16 @@ export function ActiveTimeTable() {
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Lead Time</DialogTitle>
+            <DialogTitle>New Lead Time</DialogTitle>
           </DialogHeader>
           <ActiveTimeForm farmId={selectedFarmId} onSuccess={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!editItem} onOpenChange={(o) => !o && setEditItem(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Lead Time</DialogTitle>
           </DialogHeader>
