@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listFarmAssets, createFarmAsset, updateFarmAsset, deleteFarmAsset } from "../api";
-import type { CreateFarmAssetInput, UpdateFarmAssetInput } from "../schema";
+import type { UpdateFarmAssetInput } from "../schema";
 
 const key = (farmId: string) => ["farm-assets", farmId];
 

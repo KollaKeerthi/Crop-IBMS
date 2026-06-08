@@ -82,37 +82,39 @@ export function BlockMasterTable() {
           ))}
         </div>
       ) : blocks && blocks.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Block</TableHead>
-              <TableHead>Area (m2)</TableHead>
-              <TableHead>Suitable Crops</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {blocks.map((block) => (
-              <TableRow key={block.id}>
-                <TableCell className="font-semibold text-foreground">{block.blockName}</TableCell>
-                <TableCell>{block.areaSqm ?? "-"}</TableCell>
-                <TableCell className="max-w-[520px] truncate text-muted-foreground">
-                  {suitableCropsLabel(block)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setEditBlock(block)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeletingId(block.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
+        <div className="overflow-auto rounded-md border max-h-[calc(100vh-280px)]">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-background">
+              <TableRow>
+                <TableHead>Block</TableHead>
+                <TableHead>Area (m2)</TableHead>
+                <TableHead>Suitable Crops</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {blocks.map((block) => (
+                <TableRow key={block.id}>
+                  <TableCell className="font-semibold text-foreground">{block.blockName}</TableCell>
+                  <TableCell>{block.areaSqm ?? "-"}</TableCell>
+                  <TableCell className="max-w-130 truncate text-muted-foreground">
+                    {suitableCropsLabel(block)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setEditBlock(block)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(block.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       ) : (
         <EmptyState
           icon={LayoutGrid}

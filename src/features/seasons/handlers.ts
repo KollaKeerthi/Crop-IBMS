@@ -31,9 +31,16 @@ export async function createSeasonHandler(
   log.info({ userId: ctx.userId, farmId, seasonId: season.id }, "seasons.created");
   await logAudit({
     userId: ctx.userId,
+    farmId,
     action: "season.created",
     resource: season.id,
-    metadata: { name: input.name, farmId },
+    resourceName: season.name,
+    newData: {
+      name: season.name,
+      year: season.year,
+      startDate: season.startDate,
+      endDate: season.endDate,
+    } as Record<string, unknown>,
   });
 
   return season;
@@ -52,7 +59,25 @@ export async function updateSeasonHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update season.");
 
   log.info({ userId: ctx.userId, seasonId }, "seasons.updated");
-  await logAudit({ userId: ctx.userId, action: "season.updated", resource: seasonId });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "season.updated",
+    resource: seasonId,
+    resourceName: existing.name,
+    previousData: {
+      name: existing.name,
+      year: existing.year,
+      startDate: existing.startDate,
+      endDate: existing.endDate,
+    } as Record<string, unknown>,
+    newData: {
+      name: updated.name,
+      year: updated.year,
+      startDate: updated.startDate,
+      endDate: updated.endDate,
+    } as Record<string, unknown>,
+  });
 
   return updated;
 }
@@ -68,5 +93,12 @@ export async function deleteSeasonHandler(
   await deleteSeason(seasonId, farmId);
 
   log.info({ userId: ctx.userId, seasonId }, "seasons.deleted");
-  await logAudit({ userId: ctx.userId, action: "season.deleted", resource: seasonId });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "season.deleted",
+    resource: seasonId,
+    resourceName: existing.name,
+    previousData: { name: existing.name, year: existing.year } as Record<string, unknown>,
+  });
 }

@@ -64,7 +64,7 @@ export function TaskCard({ task, farmId }: Props) {
             {task.assignedTo && (
               <span className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span className="truncate max-w-[100px]" title={assigneeDisplay}>
+                <span className="truncate max-w-25" title={assigneeDisplay}>
                   {assigneeDisplay}
                 </span>
               </span>

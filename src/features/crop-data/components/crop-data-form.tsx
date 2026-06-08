@@ -67,6 +67,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   const { data: hierarchy } = useLocationHierarchy(farmId);
   const fieldsInDb = hierarchy?.fields ?? [];
 
+  const types = selectedCrop?.types ?? [];
   const varieties = selectedCrop?.varieties ?? [];
 
   const createMutation = useCreateCropData();
@@ -100,6 +101,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                   value={field.value ?? ""}
                   onValueChange={(value) => {
                     field.onChange(value);
+                    form.setValue("cropTypeId", undefined);
                     form.setValue("varietyId", undefined);
                   }}
                 >
@@ -117,6 +119,40 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                     {crops.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="cropTypeId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Crop Type</FormLabel>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.setValue("varietyId", undefined);
+                  }}
+                  disabled={!selectedCropId || types.length === 0}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={selectedCropId ? "Select a type" : "Select a crop first"}
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {types.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

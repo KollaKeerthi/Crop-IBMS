@@ -75,9 +75,9 @@ export function VariabilityTable() {
           ))}
         </div>
       ) : variabilities && variabilities.length > 0 ? (
-        <div className="rounded-md border">
+        <div className="overflow-auto rounded-md border max-h-[calc(100vh-280px)]">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-background">
               <TableRow>
                 <TableHead>Production Type</TableHead>
                 <TableHead>Description</TableHead>

@@ -20,8 +20,11 @@ export function createCropData(input: CreateCropDataInput) {
   return apiFetch<unknown>("/api/v1/crop-data", { method: "POST", body: input });
 }
 
-export function updateCropData(id: string, input: UpdateCropDataInput) {
-  return apiFetch<unknown>(`/api/v1/crop-data/${id}`, { method: "PATCH", body: input });
+export function updateCropData(id: string, farmId: string, input: UpdateCropDataInput) {
+  return apiFetch<unknown>(`/api/v1/crop-data/${id}?farmId=${encodeURIComponent(farmId)}`, {
+    method: "PATCH",
+    body: input,
+  });
 }
 
 export function deleteCropData(id: string, farmId: string) {

@@ -5,6 +5,7 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useActiveTimes, useDeleteActiveTime } from "../hooks";
+import { useActivities } from "@/features/activities/hooks";
 import type { ActiveTime } from "../schema";
 import { ActiveTimeForm } from "./active-time-form";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export function ActiveTimeTable() {
   const { selectedFarmId } = useFarm();
   const { data: activeTimes, isLoading } = useActiveTimes(selectedFarmId);
+  const { data: activitiesList = [] } = useActivities(selectedFarmId);
   const deleteMutation = useDeleteActiveTime(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editItem, setEditItem] = useState<ActiveTime | null>(null);
@@ -45,8 +47,18 @@ export function ActiveTimeTable() {
     }
   }
 
-  const valueOrDash = (value?: string | null) =>
-    value ? value : <span className="text-muted-foreground">-</span>;
+  const valueOrDash = (value?: string | number | null) =>
+    value != null && value !== "" ? (
+      String(value)
+    ) : (
+      <span className="text-muted-foreground">-</span>
+    );
+
+  const sortedActivities = [...activitiesList].sort((a, b) => a.displayOrder - b.displayOrder);
+
+  function activityWeek(at: ActiveTime, activityId: string) {
+    return at.activities.find((a) => a.activityId === activityId)?.weekNumber ?? null;
+  }
 
   return (
     <div className="space-y-6">
@@ -70,9 +82,9 @@ export function ActiveTimeTable() {
           ))}
         </div>
       ) : activeTimes && activeTimes.length > 0 ? (
-        <div className="overflow-x-auto rounded-md border">
-          <Table className="min-w-[1180px] text-xs">
-            <TableHeader>
+        <div className="overflow-auto rounded-md border max-h-[calc(100vh-280px)]">
+          <Table className="text-xs">
+            <TableHeader className="sticky top-0 z-10 bg-background">
               <TableRow className="bg-muted/60">
                 <TableHead className="w-24 whitespace-normal text-primary">
                   Lead Time Ref.
@@ -81,27 +93,11 @@ export function ActiveTimeTable() {
                 <TableHead className="w-32 text-primary">Crop</TableHead>
                 <TableHead className="w-32 whitespace-normal text-primary">Crop Type</TableHead>
                 <TableHead className="w-24 text-primary">Season</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Material Arrival
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Sowing Male</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Sowing Female</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">Planting Male</TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Planting Female
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Pollination Start
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Pollination End
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Harvesting Start
-                </TableHead>
-                <TableHead className="w-24 whitespace-normal text-primary">
-                  Harvesting End
-                </TableHead>
+                {sortedActivities.map((act) => (
+                  <TableHead key={act.id} className="w-24 whitespace-normal text-primary">
+                    {act.name}
+                  </TableHead>
+                ))}
                 <TableHead className="w-20 text-primary">Active</TableHead>
                 <TableHead className="w-20 text-right text-primary">Actions</TableHead>
               </TableRow>
@@ -114,15 +110,9 @@ export function ActiveTimeTable() {
                   <TableCell>{valueOrDash(item.cropName)}</TableCell>
                   <TableCell>{valueOrDash(item.varietyName)}</TableCell>
                   <TableCell>{valueOrDash(item.seasonName)}</TableCell>
-                  <TableCell>{valueOrDash(item.materialArrival)}</TableCell>
-                  <TableCell>{valueOrDash(item.sowingMale)}</TableCell>
-                  <TableCell>{valueOrDash(item.sowingFemale)}</TableCell>
-                  <TableCell>{valueOrDash(item.plantingMale)}</TableCell>
-                  <TableCell>{valueOrDash(item.plantingFemale)}</TableCell>
-                  <TableCell>{valueOrDash(item.pollinationStart)}</TableCell>
-                  <TableCell>{valueOrDash(item.pollinationEnd)}</TableCell>
-                  <TableCell>{valueOrDash(item.harvestingStart)}</TableCell>
-                  <TableCell>{valueOrDash(item.harvestingEnd)}</TableCell>
+                  {sortedActivities.map((act) => (
+                    <TableCell key={act.id}>{valueOrDash(activityWeek(item, act.id))}</TableCell>
+                  ))}
                   <TableCell>
                     <Badge variant={item.isActive ? "default" : "secondary"}>
                       {item.isActive ? "Yes" : "No"}

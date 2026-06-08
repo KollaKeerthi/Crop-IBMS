@@ -13,14 +13,15 @@ import {
   type CreateCropInput,
   type Crop,
 } from "../schema";
+import { useCreateCrop, useUpdateCrop, CROPS_QUERY_KEY } from "../hooks";
 import {
-  useCreateCrop,
-  useUpdateCrop,
-  useCreateCropType,
-  useCreateCropVariety,
-  CROPS_QUERY_KEY,
-} from "../hooks";
-import { createCropType, createCropVariety } from "../api";
+  createCropType,
+  createCropVariety,
+  updateCropType,
+  deleteCropType,
+  updateCropVariety,
+  deleteCropVariety,
+} from "../api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,6 +81,9 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       colourDescription: v.colourDescription ?? "",
     })) ?? []
   );
+  // Track original DB IDs so we can distinguish create vs update vs delete in edit mode
+  const originalTypeIds = useRef<Set<string>>(new Set(crop?.types.map((t) => t.id) ?? []));
+  const originalVarietyIds = useRef<Set<string>>(new Set(crop?.varieties.map((v) => v.id) ?? []));
 
   const form = useForm<CreateCropInput>({
     resolver: zodResolver(schema) as Resolver<CreateCropInput>,
@@ -97,14 +101,8 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   const createMutation = useCreateCrop();
   const updateMutation = useUpdateCrop();
   const qc = useQueryClient();
-  // Use generic mutation status; per-crop hook needs cropId we don't have at form construction time
-  const createTypeStandalone = useCreateCropType(crop?.id ?? "");
-  const createVarietyStandalone = useCreateCropVariety(crop?.id ?? "");
-  const isPending =
-    createMutation.isPending ||
-    updateMutation.isPending ||
-    createTypeStandalone.isPending ||
-    createVarietyStandalone.isPending;
+  const [submitting, setSubmitting] = useState(false);
+  const isPending = submitting || createMutation.isPending || updateMutation.isPending;
 
   const accentColor = form.watch("color") || DEFAULT_ACCENT;
 
@@ -161,14 +159,10 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
   }
 
   async function onSubmit(values: CreateCropInput) {
-    // Validate pending lists before hitting the API
     const validTypes = pendingTypes.filter((t) => t.name.trim().length > 0);
-    if (validTypes.length === 0) {
-      toast.error("Define at least one production type to continue.");
-      return;
-    }
     const validVarieties = pendingVarieties.filter((v) => v.name.trim().length > 0);
 
+    setSubmitting(true);
     try {
       let cropId: string;
       if (isEdit && crop) {
@@ -179,29 +173,82 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
         cropId = created.id;
       }
 
-      // Persist any new types that weren't already on the crop
-      const existingTypeNames = new Set((crop?.types ?? []).map((t) => t.name.toLowerCase()));
-      for (const t of pendingTypes) {
-        const name = t.name.trim();
-        if (!name || existingTypeNames.has(name.toLowerCase())) continue;
-        await createCropType(cropId, {
-          name,
-          colour: t.colour || undefined,
-          description: t.description || undefined,
-        });
-      }
+      if (isEdit && crop) {
+        // Delete types that were removed from the list
+        const pendingTypeIds = new Set(validTypes.map((t) => t.id));
+        for (const t of crop.types) {
+          if (!pendingTypeIds.has(t.id)) await deleteCropType(cropId, t.id);
+        }
+        // Update changed existing types; create new ones
+        for (const t of validTypes) {
+          if (originalTypeIds.current.has(t.id)) {
+            const orig = crop.types.find((o) => o.id === t.id);
+            if (
+              orig &&
+              (orig.name !== t.name ||
+                (orig.colour ?? "") !== t.colour ||
+                (orig.description ?? "") !== t.description)
+            ) {
+              await updateCropType(cropId, t.id, {
+                name: t.name,
+                colour: t.colour || undefined,
+                description: t.description || undefined,
+              });
+            }
+          } else {
+            await createCropType(cropId, {
+              name: t.name,
+              colour: t.colour || undefined,
+              description: t.description || undefined,
+            });
+          }
+        }
 
-      // Persist any new varieties
-      const existingVarietyNames = new Set(
-        (crop?.varieties ?? []).map((v) => v.name.toLowerCase())
-      );
-      for (const v of validVarieties) {
-        if (existingVarietyNames.has(v.name.toLowerCase())) continue;
-        await createCropVariety(cropId, {
-          name: v.name,
-          gender: v.gender || undefined,
-          colourDescription: v.colourDescription || undefined,
-        });
+        // Delete varieties that were removed from the list
+        const pendingVarietyIds = new Set(validVarieties.map((v) => v.id));
+        for (const v of crop.varieties) {
+          if (!pendingVarietyIds.has(v.id)) await deleteCropVariety(cropId, v.id);
+        }
+        // Update changed existing varieties; create new ones
+        for (const v of validVarieties) {
+          if (originalVarietyIds.current.has(v.id)) {
+            const orig = crop.varieties.find((o) => o.id === v.id);
+            if (
+              orig &&
+              (orig.name !== v.name ||
+                (orig.gender ?? "") !== v.gender ||
+                (orig.colourDescription ?? "") !== v.colourDescription)
+            ) {
+              await updateCropVariety(cropId, v.id, {
+                name: v.name,
+                gender: v.gender || undefined,
+                colourDescription: v.colourDescription || undefined,
+              });
+            }
+          } else {
+            await createCropVariety(cropId, {
+              name: v.name,
+              gender: v.gender || undefined,
+              colourDescription: v.colourDescription || undefined,
+            });
+          }
+        }
+      } else {
+        // Create mode: persist all types and varieties
+        for (const t of validTypes) {
+          await createCropType(cropId, {
+            name: t.name,
+            colour: t.colour || undefined,
+            description: t.description || undefined,
+          });
+        }
+        for (const v of validVarieties) {
+          await createCropVariety(cropId, {
+            name: v.name,
+            gender: v.gender || undefined,
+            colourDescription: v.colourDescription || undefined,
+          });
+        }
       }
 
       toast.success(isEdit ? "Crop updated" : "Crop created");
@@ -216,11 +263,12 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       const message = err instanceof ApiError ? err.message : "Something went wrong.";
       form.setError("root", { message });
       toast.error(message);
-      // Editing a row that no longer exists in DB - refresh and close so user isn't stuck
       if (err instanceof ApiError && err.status === 404) {
         qc.invalidateQueries({ queryKey: CROPS_QUERY_KEY });
         onCancel?.();
       }
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -431,7 +479,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
           {pendingTypes.length === 0 ? (
             <div className="rounded-lg border border-dashed bg-muted/20 py-6 text-center">
               <p className="text-small italic text-muted-foreground">
-                Define at least one production type to continue.
+                No production types added yet.
               </p>
             </div>
           ) : (

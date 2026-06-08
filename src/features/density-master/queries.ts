@@ -10,14 +10,13 @@ function toDensity(row: DensityRow): DensityMaster {
     id: row.id,
     farmId: row.farmId,
     cropId: row.cropId ?? null,
-    productionSiteId: row.productionSiteId ?? null,
+    cropTypeId: row.cropTypeId ?? null,
+    productionTypeId: row.productionTypeId ?? null,
+    year: row.year ?? null,
     maleDensity: row.maleDensity ?? null,
     femaleDensity: row.femaleDensity ?? null,
-    spacingM: row.spacingM ?? null,
-    rowSpacingM: row.rowSpacingM ?? null,
     validFrom: row.validFrom,
     validTo: row.validTo,
-    notes: row.notes ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

@@ -6,7 +6,7 @@ import { CreateProductionTypeInputSchema } from "@/features/production-types/sch
 import { listProductionTypes } from "@/features/production-types/queries";
 import { insertProductionType as insert } from "@/features/production-types/mutations";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await requireAuth();
     const rows = await listProductionTypes();

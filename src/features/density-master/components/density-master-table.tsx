@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useDensityMaster, useDeleteDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
-import { useProductionSites } from "@/features/production-sites";
+import { useProductionTypes } from "@/features/production-types";
 import type { DensityMaster } from "../schema";
 import { DensityForm } from "./density-form";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 export function DensityMasterTable() {
   const { selectedFarmId } = useFarm();
   const { data: densities, isLoading } = useDensityMaster(selectedFarmId);
-  const { data: crops } = useCrops();
-  const { data: sites } = useProductionSites();
+  const { data: crops = [] } = useCrops();
+  const { data: productionTypes = [] } = useProductionTypes();
   const deleteMutation = useDeleteDensityMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editDensity, setEditDensity] = useState<DensityMaster | null>(null);
@@ -38,8 +38,14 @@ export function DensityMasterTable() {
     return <p className="text-sm text-muted-foreground">Select a farm to manage density master.</p>;
   }
 
-  const cropName = (id: string | null) => crops?.find((c) => c.id === id)?.name ?? id ?? "-";
-  const siteName = (id: string | null) => sites?.find((s) => s.id === id)?.code ?? id ?? "-";
+  const cropName = (id: string | null) => crops.find((c) => c.id === id)?.name ?? "-";
+  const cropTypeName = (cropId: string | null, typeId: string | null) => {
+    if (!cropId || !typeId) return "-";
+    const crop = crops.find((c) => c.id === cropId);
+    return crop?.types.find((t) => t.id === typeId)?.name ?? "-";
+  };
+  const productionTypeName = (id: string | null) =>
+    productionTypes.find((t) => t.id === id)?.code ?? "-";
 
   async function handleDelete(id: string) {
     try {
@@ -55,7 +61,7 @@ export function DensityMasterTable() {
     <div className="space-y-6">
       <SectionHeader
         title="Density"
-        description="Planting density and spacing reference values for each crop × site combination."
+        description="Planting density reference values for each crop × production type combination."
         count={densities?.length ?? 0}
         countUnit="records"
         action={
@@ -73,52 +79,54 @@ export function DensityMasterTable() {
           ))}
         </div>
       ) : densities && densities.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Crop</TableHead>
-              <TableHead>Production Site</TableHead>
-              <TableHead>Male Density</TableHead>
-              <TableHead>Female Density</TableHead>
-              <TableHead>Spacing (m)</TableHead>
-              <TableHead>Row Spacing (m)</TableHead>
-              <TableHead>Validity</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {densities.map((d) => (
-              <TableRow key={d.id}>
-                <TableCell className="font-semibold text-foreground">
-                  {cropName(d.cropId)}
-                </TableCell>
-                <TableCell>{siteName(d.productionSiteId)}</TableCell>
-                <TableCell>{d.maleDensity ?? "-"}</TableCell>
-                <TableCell>{d.femaleDensity ?? "-"}</TableCell>
-                <TableCell>{d.spacingM ?? "-"}</TableCell>
-                <TableCell>{d.rowSpacingM ?? "-"}</TableCell>
-                <TableCell className="font-mono text-xs text-primary">
-                  W{String(d.validFrom).padStart(2, "0")} – W{String(d.validTo).padStart(2, "0")}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setEditDensity(d)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeletingId(d.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
+        <div className="overflow-auto rounded-md border max-h-[calc(100vh-280px)]">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-background">
+              <TableRow>
+                <TableHead>Crop</TableHead>
+                <TableHead>Crop Type</TableHead>
+                <TableHead>Production Type</TableHead>
+                <TableHead>Female Density</TableHead>
+                <TableHead>Male Density</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead>Validity</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {densities.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell className="font-semibold text-foreground">
+                    {cropName(d.cropId)}
+                  </TableCell>
+                  <TableCell>{cropTypeName(d.cropId, d.cropTypeId)}</TableCell>
+                  <TableCell>{productionTypeName(d.productionTypeId)}</TableCell>
+                  <TableCell>{d.femaleDensity ?? "-"}</TableCell>
+                  <TableCell>{d.maleDensity ?? "-"}</TableCell>
+                  <TableCell>{d.year ?? "-"}</TableCell>
+                  <TableCell className="font-mono text-xs text-primary">
+                    W{String(d.validFrom).padStart(2, "0")} – W{String(d.validTo).padStart(2, "0")}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setEditDensity(d)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(d.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       ) : (
         <EmptyState
           icon={Boxes}
           title="No density records yet"
-          description="Planting density and spacing reference for each crop × production site combination."
+          description="Planting density reference for each crop × production type combination."
           action={
             <Button onClick={() => setCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />

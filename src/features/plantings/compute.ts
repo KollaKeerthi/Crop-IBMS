@@ -1,4 +1,4 @@
-import { addDays, differenceInDays, parseISO, format } from "date-fns";
+import { addDays, parseISO, format } from "date-fns";
 
 export interface PlantingCalculationInput {
   plantingMethod: "Direct" | "Transplant" | "Cutting" | "Seed";

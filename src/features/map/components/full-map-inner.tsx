@@ -6,19 +6,9 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import L from "leaflet";
 import "./patch-leaflet-reinit"; // Must be before any MapContainer usage
 import "leaflet-draw";
-import { MapContainer, TileLayer, Polygon, Marker, Popup, useMap, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, Marker, Popup, useMap } from "react-leaflet";
 import { toast } from "sonner";
-import {
-  Plus,
-  Layers,
-  MapPin,
-  TreePine,
-  Building2,
-  SlidersHorizontal,
-  Cloud,
-  Copy,
-  Trash2,
-} from "lucide-react";
+import { Plus, Layers, MapPin, SlidersHorizontal, Cloud, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -442,182 +432,6 @@ function CreationPanel({
   );
 }
 
-// ── Field layer ───────────────────────────────────────────────────────────────
-
-function LegacyFieldLayer({
-  field,
-  onAddBlock,
-}: {
-  field: FieldWithBlocks;
-  onAddBlock: (fieldId: string) => void;
-}) {
-  const deleteField = useDeleteField();
-  const positions = geoToLatLngs(field.boundary);
-  if (!positions) return null;
-
-  return (
-    <>
-      <Polygon
-        positions={positions}
-        pathOptions={STYLES.field}
-        eventHandlers={{
-          mouseover: (e) => e.target.setStyle(STYLES.fieldHover),
-          mouseout: (e) => e.target.setStyle(STYLES.field),
-        }}
-      >
-        <Popup>
-          <div className="space-y-1.5 min-w-40">
-            <p className="font-semibold text-sm">{field.name}</p>
-            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-              Field
-            </Badge>
-            {field.areaSqm && (
-              <p className="text-xs text-muted-foreground">
-                {(field.areaSqm / 10000).toFixed(2)} ha
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground">{field.blocks.length} block(s)</p>
-            <div className="flex gap-1 pt-1">
-              <button
-                className="text-xs text-blue-600 hover:underline"
-                onClick={() => onAddBlock(field.id)}
-              >
-                + Add block
-              </button>
-              <span className="text-muted-foreground">·</span>
-              <button
-                className="text-xs text-destructive hover:underline"
-                onClick={async () => {
-                  if (!confirm(`Delete "${field.name}"?`)) return;
-                  await deleteField.mutateAsync({ id: field.id, farmId: field.farmId });
-                  toast.success("Field deleted.");
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </Popup>
-      </Polygon>
-
-      {/* Blocks inside this field */}
-      {field.blocks.map((block) => {
-        const bPositions = geoToLatLngs(block.boundary);
-        if (!bPositions) return null;
-        return (
-          <Polygon
-            key={block.id}
-            positions={bPositions}
-            pathOptions={STYLES.block}
-            eventHandlers={{
-              mouseover: (e) => e.target.setStyle(STYLES.blockHover),
-              mouseout: (e) => e.target.setStyle(STYLES.block),
-            }}
-          >
-            <Popup>
-              <div className="space-y-1">
-                <p className="font-semibold text-sm">{block.name}</p>
-                <Badge variant="outline" className="text-xs">
-                  Block
-                </Badge>
-                {block.areaSqm && (
-                  <p className="text-xs text-muted-foreground">
-                    {(block.areaSqm / 10000).toFixed(2)} ha
-                  </p>
-                )}
-              </div>
-            </Popup>
-          </Polygon>
-        );
-      })}
-    </>
-  );
-}
-
-// ── Greenhouse layer ──────────────────────────────────────────────────────────
-
-function LegacyGreenhouseLayer({
-  gh,
-  onAddBlock,
-}: {
-  gh: GreenhouseWithBlocks;
-  onAddBlock: (ghId: string) => void;
-}) {
-  const { selectedFarmId } = useFarm();
-  const deleteGreenhouse = useDeleteGreenhouse();
-  const positions = geoToLatLngs(gh.boundary);
-  if (!positions) return null;
-
-  return (
-    <>
-      <Polygon
-        positions={positions}
-        pathOptions={STYLES.greenhouse}
-        eventHandlers={{
-          mouseover: (e) => e.target.setStyle({ ...STYLES.greenhouse, fillOpacity: 0.55 }),
-          mouseout: (e) => e.target.setStyle(STYLES.greenhouse),
-        }}
-      >
-        <Popup>
-          <div className="space-y-1.5 min-w-40">
-            <p className="font-semibold text-sm">{gh.name}</p>
-            <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">
-              Greenhouse
-            </Badge>
-            {gh.areaSqm && (
-              <p className="text-xs text-muted-foreground">{(gh.areaSqm / 10000).toFixed(2)} ha</p>
-            )}
-            <p className="text-xs text-muted-foreground">{gh.blocks.length} block(s)</p>
-            <div className="flex gap-1 pt-1">
-              <button
-                className="text-xs text-blue-600 hover:underline"
-                onClick={() => onAddBlock(gh.id)}
-              >
-                + Add block
-              </button>
-              <span className="text-muted-foreground">·</span>
-              <button
-                className="text-xs text-destructive hover:underline"
-                onClick={async () => {
-                  if (!selectedFarmId) return;
-                  if (!confirm(`Delete "${gh.name}"?`)) return;
-                  try {
-                    await deleteGreenhouse.mutateAsync({ id: gh.id, farmId: selectedFarmId });
-                    toast.success("Greenhouse deleted.");
-                  } catch (err) {
-                    const message =
-                      err instanceof ApiError ? err.message : "Failed to delete greenhouse.";
-                    toast.error(message);
-                  }
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </Popup>
-      </Polygon>
-
-      {gh.blocks.map((block) => {
-        const bPositions = geoToLatLngs(block.boundary);
-        if (!bPositions) return null;
-        return (
-          <Polygon key={block.id} positions={bPositions} pathOptions={STYLES.block}>
-            <Popup>
-              <div className="space-y-1">
-                <p className="font-semibold text-sm">{block.name}</p>
-                <Badge variant="outline" className="text-xs">
-                  Block
-                </Badge>
-              </div>
-            </Popup>
-          </Polygon>
-        );
-      })}
-    </>
-  );
-}
-
 // ── Main full map viewer ──────────────────────────────────────────────────────
 
 function FarmMarkerLayer({
@@ -934,7 +748,7 @@ export default function FullMapInner() {
     try {
       mapInstance.invalidateSize();
       mapInstance.dragging?.enable();
-    } catch (_) {}
+    } catch {}
   }, [mapInstance, mapTileLayer]);
 
   const getNextBlockGroupName = (blocks: typeof locationBlocks) => {
@@ -972,16 +786,6 @@ export default function FullMapInner() {
   } | null>(null);
   const leafletDrawMode = drawMode ? "polygon" : null;
 
-  const startAddField = () => {
-    setPendingBlock(null);
-    setDrawMode("field");
-    toast.info("Draw the field boundary on the map.");
-  };
-  const startAddGreenhouse = () => {
-    setPendingBlock(null);
-    setDrawMode("greenhouse");
-    toast.info("Draw the greenhouse boundary on the map.");
-  };
   const startAddBlock = (parentType: "field" | "greenhouse", parentId: string) => {
     setPendingBlock({ parentType, parentId });
     setDrawMode("block");
@@ -1209,7 +1013,7 @@ export default function FullMapInner() {
                 m.boxZoom.enable();
                 m.keyboard.enable();
                 (m as LeafletMapWithTap).tap?.enable();
-              } catch (_) {}
+              } catch {}
             }, 150);
           }}
         />

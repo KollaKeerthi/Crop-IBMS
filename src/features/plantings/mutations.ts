@@ -72,7 +72,7 @@
 // export async function deletePlanting(id: string): Promise<void> {
 //   await db.delete(plantings).where(eq(plantings.id, id));
 // }
-import { eq, and, ne, gte, lte, or } from "drizzle-orm";
+import { eq, and, ne, gte, lte } from "drizzle-orm";
 import { db } from "@/db";
 import { plantings } from "@/db/schema";
 import type { CreatePlantingInput, UpdatePlantingInput, Planting } from "./schema";

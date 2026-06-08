@@ -54,8 +54,6 @@ type Props = {
   activeTab: string;
 };
 
-import { CROP_DATA_TAB_KEYS, type CropDataTabKey, isCropDataTab } from "../constants";
-
 const MODULE_TABS: { key: string; label: string }[] = [
   { key: "planting_records", label: "Planting Records" },
 ];

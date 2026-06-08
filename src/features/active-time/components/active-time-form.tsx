@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
 import {
@@ -10,7 +12,9 @@ import {
   type CreateActiveTimeInput,
   type ActiveTime,
 } from "../schema";
-import { useCreateActiveTime, useUpdateActiveTime } from "../hooks";
+import { useCreateActiveTime, useUpdateActiveTime, activeTimeKey } from "../hooks";
+import { addActivityToActiveTime, removeActivityFromActiveTime } from "../api";
+import { useActivities } from "@/features/activities/hooks";
 import { useCrops } from "@/features/crops/hooks";
 import { useSeasons } from "@/features/seasons/hooks";
 import { useProductionTypes } from "@/features/production-types";
@@ -54,21 +58,10 @@ function seasonLabel(options: SeasonOption[], value: string | undefined, placeho
 
 const LEAD_TIME_TYPES = ["Reservation", "Standard", "Custom"];
 
-const timingFields: Array<{ name: keyof CreateActiveTimeInput; label: string }> = [
-  { name: "materialArrival", label: "Material Arrival" },
-  { name: "sowingMale", label: "Sowing Male" },
-  { name: "sowingFemale", label: "Sowing Female" },
-  { name: "plantingMale", label: "Planting Male" },
-  { name: "plantingFemale", label: "Planting Female" },
-  { name: "pollinationStart", label: "Pollination Start" },
-  { name: "pollinationEnd", label: "Pollination End" },
-  { name: "harvestingStart", label: "Harvesting Start" },
-  { name: "harvestingEnd", label: "Harvesting End" },
-];
-
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
   const schema = isEdit ? UpdateActiveTimeInputSchema : CreateActiveTimeInputSchema;
+  const qc = useQueryClient();
 
   const form = useForm<CreateActiveTimeInput>({
     resolver: zodResolver(schema) as Resolver<CreateActiveTimeInput>,
@@ -78,23 +71,27 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
       seasonId: activeTime?.seasonId ?? undefined,
       productionTypeId: activeTime?.productionTypeId ?? undefined,
       leadTimeType: activeTime?.leadTimeType ?? "Reservation",
-      materialArrival: activeTime?.materialArrival ?? "",
-      sowingMale: activeTime?.sowingMale ?? "",
-      sowingFemale: activeTime?.sowingFemale ?? "",
-      plantingMale: activeTime?.plantingMale ?? "",
-      plantingFemale: activeTime?.plantingFemale ?? "",
-      pollinationStart: activeTime?.pollinationStart ?? "",
-      pollinationEnd: activeTime?.pollinationEnd ?? "",
-      harvestingStart: activeTime?.harvestingStart ?? "",
-      harvestingEnd: activeTime?.harvestingEnd ?? "",
       isActive: activeTime?.isActive ?? true,
       notes: activeTime?.notes ?? "",
     },
   });
 
+  const [activityWeeks, setActivityWeeks] = useState<Record<string, number | undefined>>(() => {
+    const initial: Record<string, number | undefined> = {};
+    for (const a of activeTime?.activities ?? []) {
+      if (a.activityId && a.weekNumber != null) {
+        initial[a.activityId] = a.weekNumber;
+      }
+    }
+    return initial;
+  });
+
   const { data: crops = [] } = useCrops();
   const { data: seasons = [] } = useSeasons(farmId);
   const { data: productionTypes = [] } = useProductionTypes();
+  const { data: activitiesList = [] } = useActivities(farmId);
+
+  const sortedActivities = [...activitiesList].sort((a, b) => a.displayOrder - b.displayOrder);
 
   const activeCropId = activeTime?.cropId;
   const activeCropName = activeTime?.cropName;
@@ -108,7 +105,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
       ? [...crops, { id: activeCropId, name: activeCropName }]
       : crops;
   const seasonOptions: SeasonOption[] =
-    activeSeasonId && activeSeasonName && !seasons.some((season) => season.id === activeSeasonId)
+    activeSeasonId && activeSeasonName && !seasons.some((s) => s.id === activeSeasonId)
       ? [...seasons, { id: activeSeasonId, name: activeSeasonName, year: null }]
       : seasons;
   const productionTypeMasterOptions = productionTypes.map((type) => ({
@@ -129,16 +126,36 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const updateMutation = useUpdateActiveTime(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
 
+  async function syncActivities(atId: string) {
+    const existingActivities = activeTime?.activities ?? [];
+    for (const old of existingActivities) {
+      if (old.activityId) {
+        await removeActivityFromActiveTime(farmId, atId, old.activityId);
+      }
+    }
+    for (const [activityId, weekNumber] of Object.entries(activityWeeks)) {
+      if (weekNumber !== undefined) {
+        await addActivityToActiveTime(farmId, atId, { activityId, weekNumber });
+      }
+    }
+    qc.invalidateQueries({ queryKey: activeTimeKey(farmId) });
+  }
+
   async function onSubmit(values: CreateActiveTimeInput) {
     try {
+      let atId: string;
       if (isEdit && activeTime) {
         await updateMutation.mutateAsync({ id: activeTime.id, input: values });
+        atId = activeTime.id;
         toast.success("Lead time updated");
       } else {
-        await createMutation.mutateAsync(values);
+        const created = await createMutation.mutateAsync(values);
+        atId = created.id;
         toast.success("Lead time created");
         form.reset();
+        setActivityWeeks({});
       }
+      await syncActivities(atId);
       onSuccess?.();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -158,7 +175,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
           render={({ field }) => (
             <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
               <FormLabel className="sm:text-right">
-                LeadTime Type <span className="text-destructive">*</span>
+                Lead Time Type <span className="text-destructive">*</span>
               </FormLabel>
               <Select
                 value={field.value ?? ""}
@@ -332,22 +349,40 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
           )}
         />
 
-        {timingFields.map((item) => (
-          <FormField
-            key={item.name}
-            control={form.control}
-            name={item.name}
-            render={({ field }) => (
-              <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
-                <FormLabel className="sm:text-right">{item.label}</FormLabel>
-                <FormControl>
-                  <Input {...field} value={(field.value as string | undefined) ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        {/* Dynamic activity week inputs */}
+        {sortedActivities.length > 0 && (
+          <div className="space-y-2 rounded-lg border p-4">
+            <p className="text-sm font-medium text-foreground mb-3">Activity Week Numbers</p>
+            {sortedActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center"
+              >
+                <label className="text-sm sm:text-right text-muted-foreground font-medium">
+                  {activity.name} (week)
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={52}
+                  value={activityWeeks[activity.id] ?? ""}
+                  onChange={(e) =>
+                    setActivityWeeks((prev) => ({
+                      ...prev,
+                      [activity.id]: e.target.value ? Number(e.target.value) : undefined,
+                    }))
+                  }
+                  placeholder="—"
+                />
+              </div>
+            ))}
+            {sortedActivities.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No activities defined. Add activities in the Activities tab first.
+              </p>
             )}
-          />
-        ))}
+          </div>
+        )}
 
         {form.formState.errors.root && (
           <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>

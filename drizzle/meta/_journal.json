@@ -5,99 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778963158511,
-      "tag": "0000_wonderful_nightmare",
+      "when": 1780913566550,
+      "tag": "0000_damp_blur",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1778978454153,
-      "tag": "0001_lonely_siren",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1779036090045,
-      "tag": "0002_acoustic_starjammers",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1779289082000,
-      "tag": "0003_task_extra_fields",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1780067246791,
-      "tag": "0004_wealthy_george_stacy",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1780068205988,
-      "tag": "0005_known_masked_marvel",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1780095594634,
-      "tag": "0006_crop_data_typed_sections",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1780124329869,
-      "tag": "0007_crop_data_phase2_sections",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1780124816051,
-      "tag": "0008_crop_data_phase3_sections",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1780125249898,
-      "tag": "0009_crop_data_phase4_collections",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1780159557463,
-      "tag": "0010_aberrant_boomerang",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1780160000000,
-      "tag": "0011_update_crop_data_sex_expression_values",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "7",
-      "when": 1780161000000,
-      "tag": "0012_add_teedy_media_attachment_ids",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1780162000000,
-      "tag": "0013_add_lead_time_schedule_fields",
+      "when": 1780918444034,
+      "tag": "0001_sticky_lake",
       "breakpoints": true
     }
   ]

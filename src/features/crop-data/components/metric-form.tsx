@@ -270,7 +270,7 @@ export function MetricForm({
         <table className="w-full text-sm">
           {showGenderColumns && (
             <thead>
-              <tr className="border-b bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
                 <th className="px-5 py-2.5 text-left font-medium">Metric</th>
                 <th
                   className={`px-3 py-2.5 text-left font-medium ${columnLabels ? "" : "text-blue-600"}`}
@@ -292,7 +292,7 @@ export function MetricForm({
                   <tr key={i} className="bg-muted/30">
                     <td
                       colSpan={colCount}
-                      className="px-5 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                      className="px-5 py-2 text-xs font-semibold text-muted-foreground"
                     >
                       {row.label}
                     </td>

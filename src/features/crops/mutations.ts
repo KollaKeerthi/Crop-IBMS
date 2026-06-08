@@ -12,7 +12,7 @@ import type {
   CropType,
   CropVariety,
 } from "./schema";
-import { getCropById, listCropTypes, listCropVarieties } from "./queries";
+import { getCropById } from "./queries";
 
 export async function insertCrop(input: CreateCropInput): Promise<Crop | null> {
   const [row] = await db

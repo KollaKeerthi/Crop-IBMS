@@ -12,8 +12,6 @@ import {
   ChevronRight,
   AlertTriangle,
   CheckCircle,
-  HelpCircle,
-  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
@@ -21,10 +19,14 @@ import { usePlantings, useDeletePlanting } from "../hooks";
 import { useSeasons } from "@/features/seasons/hooks";
 import { useActiveTimes, type ActiveTime } from "@/features/active-time";
 import { useActivities } from "@/features/activities";
+import { useTasks } from "@/features/tasks";
+import { useBlockMaster } from "@/features/block-master";
 import type { Planting, PlantingStatus } from "../schema";
 import { PlantingForm } from "./planting-form";
 import { PlantingFilters, type PlantingFilters as PlantingFiltersType } from "./planting-filters";
-import { PlantingsTimeline } from "./plantings-timeline";
+import { PlantingsTimeline, type TimelineViewMode } from "./plantings-timeline";
+import { PlantingsBlockGrid } from "./plantings-block-grid";
+import { PlantingsPlanActual } from "./plantings-plan-actual";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -210,7 +212,8 @@ function getPlanActivityColor(name: string): string {
 
 export function PlantingsList() {
   const { selectedFarmId } = useFarm();
-  const [view, setView] = useState<"list" | "timeline" | "calendar">("calendar");
+  const [view, setView] = useState<"list" | "timeline" | "calendar" | "grid" | "plan">("calendar");
+  const [viewMode, setViewMode] = useState<TimelineViewMode>("crops");
   const [filters, setFilters] = useState<PlantingFiltersType>({ seasonId: null, statuses: [] });
   const [createOpen, setCreateOpen] = useState(false);
   const [editPlanting, setEditPlanting] = useState<Planting | null>(null);
@@ -229,6 +232,8 @@ export function PlantingsList() {
   const { data: seasons = [] } = useSeasons(selectedFarmId);
   const { data: activeTimes = [] } = useActiveTimes(selectedFarmId);
   const { data: activities = [] } = useActivities(selectedFarmId);
+  const { data: taskList = [] } = useTasks(selectedFarmId);
+  const { data: blocks = [] } = useBlockMaster(selectedFarmId);
   const deleteMutation = useDeletePlanting(selectedFarmId ?? "");
 
   // Load calendar integrations status
@@ -342,11 +347,24 @@ export function PlantingsList() {
       })
     : [];
 
+  // Tasks due on selected date shown in the dialog
+  const activeDateTasks = selectedDate
+    ? taskList
+        .filter((t) => isSameDay(selectedDate, t.dueDate))
+        .map((t) => ({
+          planting: null as null,
+          type: `Task: ${t.priority}`,
+          icon: "✓",
+          details: `${t.title}${t.notes ? ` — ${t.notes}` : ""}`,
+          status: t.status,
+        }))
+    : [];
+
   return (
     <div className="space-y-6">
       {/* 🔌 Production-Grade Calendar Sync Warning Banner */}
       {!loadingIntegrations && (
-        <div className="rounded-2xl border border-border/50 bg-gradient-to-r from-card via-card to-muted/20 p-4 shadow-sm relative overflow-hidden transition-all duration-200">
+        <div className="rounded-2xl border border-border/50 bg-linear-to-r from-card via-card to-muted/20 p-4 shadow-sm relative overflow-hidden transition-all duration-200">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
             <div className="flex items-center gap-3">
               <div
@@ -415,13 +433,45 @@ export function PlantingsList() {
             <Button
               variant={view === "timeline" ? "secondary" : "ghost"}
               size="sm"
-              className="rounded-l-none h-8 font-semibold text-xs cursor-pointer"
+              className="rounded-none border-x h-8 font-semibold text-xs cursor-pointer"
               onClick={() => setView("timeline")}
             >
               <CalendarRange className="mr-1.5 h-3.5 w-3.5" />
               Timeline
             </Button>
+            <Button
+              variant={view === "grid" ? "secondary" : "ghost"}
+              size="sm"
+              className="rounded-none border-r h-8 font-semibold text-xs cursor-pointer"
+              onClick={() => setView("grid")}
+            >
+              Grid
+            </Button>
+            <Button
+              variant={view === "plan" ? "secondary" : "ghost"}
+              size="sm"
+              className="rounded-l-none h-8 font-semibold text-xs cursor-pointer"
+              onClick={() => setView("plan")}
+            >
+              Plan vs Actual
+            </Button>
           </div>
+          {view === "timeline" && (
+            <div className="flex items-center gap-1.5 rounded-lg border bg-card p-1 shadow-2xs">
+              <span className="pl-1 text-xs text-muted-foreground font-medium">View by:</span>
+              {(["crops", "dates", "blocks"] as TimelineViewMode[]).map((m) => (
+                <Button
+                  key={m}
+                  variant={viewMode === m ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2.5 text-xs font-semibold capitalize cursor-pointer"
+                  onClick={() => setViewMode(m)}
+                >
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
+                </Button>
+              ))}
+            </div>
+          )}
           <PlantingFilters seasons={seasons} filters={filters} onChange={setFilters} />
         </div>
         <Button onClick={() => setCreateOpen(true)} className="cursor-pointer">
@@ -476,7 +526,7 @@ export function PlantingsList() {
           </div>
 
           <div className="rounded-xl border border-border/80 overflow-hidden bg-card shadow-xs">
-            <div className="grid grid-cols-7 border-b bg-muted/40 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2.5">
+            <div className="grid grid-cols-7 border-b bg-muted/40 text-center text-[10px] font-bold text-muted-foreground py-2.5">
               <div>Sun</div>
               <div>Mon</div>
               <div>Tue</div>
@@ -491,6 +541,14 @@ export function PlantingsList() {
                   new Date().getFullYear() === day.date.getFullYear() &&
                   new Date().getMonth() === day.date.getMonth() &&
                   new Date().getDate() === day.date.getDate();
+
+                // Season band: does this day fall inside any season?
+                const seasonBand = seasons.find((s) => {
+                  if (!s.startDate || !s.endDate) return false;
+                  const sd = new Date(s.startDate + "T00:00:00");
+                  const ed = new Date(s.endDate + "T00:00:00");
+                  return day.date >= sd && day.date <= ed;
+                });
 
                 // Gather events for the specific date
                 const dayEvents = plantings.flatMap((p) => {
@@ -560,11 +618,22 @@ export function PlantingsList() {
                   return events;
                 });
 
+                // Tasks due on this day
+                const dayTasks = taskList.filter((t) => isSameDay(day.date, t.dueDate));
+                const taskEvents = dayTasks.map((t) => ({
+                  type: "Task",
+                  label: t.title,
+                  icon: "✓",
+                  color:
+                    "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20",
+                }));
+                const allEvents = [...dayEvents, ...taskEvents];
+
                 return (
                   <div
                     key={idx}
                     onClick={() => {
-                      if (dayEvents.length > 0) {
+                      if (allEvents.length > 0) {
                         setSelectedDate(day.date);
                       } else {
                         toast.info(
@@ -572,12 +641,19 @@ export function PlantingsList() {
                         );
                       }
                     }}
-                    className={`min-h-[110px] p-2 flex flex-col justify-between bg-card transition-colors select-none ${
-                      day.isCurrentMonth
-                        ? "text-foreground"
-                        : "text-muted-foreground/30 bg-muted/10"
-                    } ${dayEvents.length > 0 ? "hover:bg-muted/30 cursor-pointer" : "hover:bg-muted/10"} relative`}
+                    className={`min-h-27.5 p-2 flex flex-col justify-between transition-colors select-none ${
+                      day.isCurrentMonth ? "text-foreground" : "text-muted-foreground/30"
+                    } ${allEvents.length > 0 ? "hover:bg-muted/30 cursor-pointer" : "hover:bg-muted/10"} relative ${
+                      seasonBand && day.isCurrentMonth
+                        ? "bg-emerald-50/40 dark:bg-emerald-950/10"
+                        : "bg-card"
+                    }`}
                   >
+                    {/* Season band indicator */}
+                    {seasonBand && day.isCurrentMonth && (
+                      <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-400/50 rounded-t" />
+                    )}
+
                     <div className="flex justify-between items-start">
                       <span
                         className={`text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center ${
@@ -590,11 +666,21 @@ export function PlantingsList() {
                       >
                         {day.date.getDate()}
                       </span>
-                      {isToday && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      <div className="flex items-center gap-1">
+                        {seasonBand && day.isCurrentMonth && (
+                          <span
+                            className="text-[7px] font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-10"
+                            title={seasonBand.name}
+                          >
+                            {seasonBand.name}
+                          </span>
+                        )}
+                        {isToday && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      </div>
                     </div>
 
                     <div className="space-y-1 mt-2">
-                      {dayEvents.slice(0, 2).map((ev, eIdx) => (
+                      {allEvents.slice(0, 2).map((ev, eIdx) => (
                         <div
                           key={eIdx}
                           title={ev.label}
@@ -604,9 +690,9 @@ export function PlantingsList() {
                           <span className="truncate">{ev.label}</span>
                         </div>
                       ))}
-                      {dayEvents.length > 2 && (
+                      {allEvents.length > 2 && (
                         <div className="text-[8px] font-bold text-muted-foreground/70 px-1">
-                          + {dayEvents.length - 2} more events
+                          + {allEvents.length - 2} more
                         </div>
                       )}
                     </div>
@@ -621,38 +707,46 @@ export function PlantingsList() {
           No plantings yet. Add your first planting.
         </div>
       ) : view === "timeline" ? (
-        <PlantingsTimeline plantings={plantings} onEdit={setEditPlanting} />
+        <PlantingsTimeline plantings={plantings} onEdit={setEditPlanting} viewMode={viewMode} />
+      ) : view === "grid" ? (
+        <PlantingsBlockGrid plantings={plantings} blocks={blocks} onEdit={setEditPlanting} />
+      ) : view === "plan" ? (
+        <PlantingsPlanActual
+          plantings={plantings}
+          activeTimes={activeTimes}
+          onEdit={setEditPlanting}
+        />
       ) : (
         <div className="rounded-xl border overflow-hidden bg-card shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Crop
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Variety
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Season
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Status
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Nursery Start
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Planting Date
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Harvest Start
                   </th>
-                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-left font-semibold text-muted-foreground text-xs">
                     Harvest End
                   </th>
-                  <th className="px-4 py-3.5 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-right font-semibold text-muted-foreground text-xs">
                     Actions
                   </th>
                 </tr>
@@ -708,7 +802,7 @@ export function PlantingsList() {
         </div>
       )}
 
-      {/* 📅 Active Calendar Date Details Dialog */}
+      {/*  Active Calendar Date Details Dialog */}
       <Dialog open={!!selectedDate} onOpenChange={(o) => !o && setSelectedDate(null)}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
@@ -718,11 +812,11 @@ export function PlantingsList() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">
-            {activeDateEvents.length > 0 ? (
+            {activeDateEvents.length > 0 || activeDateTasks.length > 0 ? (
               <div className="space-y-3">
                 {activeDateEvents.map((ev, idx) => (
                   <div
-                    key={idx}
+                    key={`planting-${idx}`}
                     className="rounded-xl border p-4 bg-muted/20 flex flex-col gap-2 transition-shadow hover:shadow-2xs"
                   >
                     <div className="flex items-center justify-between">
@@ -752,6 +846,27 @@ export function PlantingsList() {
                         Edit Details
                       </Button>
                     </div>
+                  </div>
+                ))}
+                {activeDateTasks.map((t, idx) => (
+                  <div
+                    key={`task-${idx}`}
+                    className="rounded-xl border p-4 bg-violet-50/60 dark:bg-violet-950/20 flex flex-col gap-2 transition-shadow hover:shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{t.icon}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400">
+                          Task Due
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-semibold">
+                        {t.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground/90 font-medium leading-relaxed">
+                      {t.details}
+                    </p>
                   </div>
                 ))}
               </div>

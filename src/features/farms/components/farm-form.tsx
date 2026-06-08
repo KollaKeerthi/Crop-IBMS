@@ -34,7 +34,6 @@ type Props = {
   layout?: "compact" | "split";
 };
 
-const SQM_PER_ACRE = 4046.8564224;
 const EARTH_RADIUS_M = 6378137;
 
 function toRadians(d: number) {

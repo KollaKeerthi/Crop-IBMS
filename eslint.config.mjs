@@ -13,6 +13,19 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
+  {
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

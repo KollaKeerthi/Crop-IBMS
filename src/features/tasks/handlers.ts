@@ -50,9 +50,16 @@ export async function createTaskHandler(
   log.info({ userId: ctx.userId, farmId, taskId: task.id }, "tasks.created");
   await logAudit({
     userId: ctx.userId,
+    farmId,
     action: "task.created",
     resource: task.id,
-    metadata: { title: input.title, farmId },
+    resourceName: task.title,
+    newData: {
+      title: task.title,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+    } as Record<string, unknown>,
   });
 
   return task;
@@ -71,7 +78,29 @@ export async function updateTaskHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update task.");
 
   log.info({ userId: ctx.userId, taskId: id }, "tasks.updated");
-  await logAudit({ userId: ctx.userId, action: "task.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "task.updated",
+    resource: id,
+    resourceName: existing.title,
+    previousData: {
+      title: existing.title,
+      status: existing.status,
+      priority: existing.priority,
+      dueDate: existing.dueDate,
+      assignedTo: existing.assignedTo,
+      notes: existing.notes,
+    } as Record<string, unknown>,
+    newData: {
+      title: updated.title,
+      status: updated.status,
+      priority: updated.priority,
+      dueDate: updated.dueDate,
+      assignedTo: updated.assignedTo,
+      notes: updated.notes,
+    } as Record<string, unknown>,
+  });
 
   return updated;
 }
@@ -91,9 +120,12 @@ export async function updateTaskStatusHandler(
   log.info({ userId: ctx.userId, taskId: id, status }, "tasks.status_changed");
   await logAudit({
     userId: ctx.userId,
+    farmId,
     action: "task.status_changed",
     resource: id,
-    metadata: { status },
+    resourceName: existing.title,
+    previousData: { status: existing.status } as Record<string, unknown>,
+    newData: { status } as Record<string, unknown>,
   });
 
   return updated;
@@ -110,7 +142,18 @@ export async function deleteTaskHandler(
   await deleteTask(id, farmId);
 
   log.info({ userId: ctx.userId, taskId: id }, "tasks.deleted");
-  await logAudit({ userId: ctx.userId, action: "task.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "task.deleted",
+    resource: id,
+    resourceName: existing.title,
+    previousData: {
+      title: existing.title,
+      status: existing.status,
+      priority: existing.priority,
+    } as Record<string, unknown>,
+  });
 }
 
 export async function toggleChecklistItemHandler(
@@ -135,6 +178,15 @@ export async function createTaskTemplateHandler(
 ): Promise<TaskTemplate> {
   const template = await createTaskTemplate(farmId, input);
   if (!template) throw new ApiError(500, "internal_error", "Could not create task template.");
+
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "task_template.created",
+    resource: template.id,
+    resourceName: template.title,
+    newData: { title: template.title } as Record<string, unknown>,
+  });
   return template;
 }
 
@@ -150,6 +202,15 @@ export async function updateTaskTemplateHandler(
   const updated = await updateTaskTemplate(id, farmId, input);
   if (!updated) throw new ApiError(500, "internal_error", "Could not update task template.");
 
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "task_template.updated",
+    resource: id,
+    resourceName: existing.title,
+    previousData: { title: existing.title } as Record<string, unknown>,
+    newData: { title: updated.title } as Record<string, unknown>,
+  });
   return updated;
 }
 
@@ -162,6 +223,14 @@ export async function deleteTaskTemplateHandler(
   if (!existing) throw new ApiError(404, "not_found", "Task template not found.");
 
   await deleteTaskTemplate(id, farmId);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "task_template.deleted",
+    resource: id,
+    resourceName: existing.title,
+    previousData: { title: existing.title } as Record<string, unknown>,
+  });
 }
 
 export async function createTaskFromTemplateHandler(
@@ -179,9 +248,15 @@ export async function createTaskFromTemplateHandler(
   );
   await logAudit({
     userId: ctx.userId,
+    farmId,
     action: "task.created",
     resource: task.id,
-    metadata: { templateId, farmId },
+    resourceName: task.title,
+    metadata: { templateId },
+    newData: { title: task.title, status: task.status, priority: task.priority } as Record<
+      string,
+      unknown
+    >,
   });
 
   return task;

@@ -3,7 +3,7 @@ import { logAudit } from "@/lib/audit";
 import type { ApiContext } from "@/lib/api/auth";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { farmMemberships } from "@/db/schema";
+import { farmMemberships, cropVarieties, cropTypes } from "@/db/schema";
 import {
   listCropData,
   getCropDataById,
@@ -51,6 +51,35 @@ async function verifyFarmAccess(userId: string, farmId: string) {
   if (!rows[0]) throw new ApiError(403, "forbidden", "You do not have access to this farm.");
 }
 
+async function validateCropLinks(input: {
+  cropId?: string | null;
+  cropTypeId?: string | null;
+  varietyId?: string | null;
+}) {
+  if (input.cropTypeId && input.cropId) {
+    const [type] = await db
+      .select({ id: cropTypes.id, cropId: cropTypes.cropId })
+      .from(cropTypes)
+      .where(eq(cropTypes.id, input.cropTypeId))
+      .limit(1);
+    if (!type || type.cropId !== input.cropId)
+      throw new ApiError(
+        400,
+        "invalid_crop_type",
+        "Crop type does not belong to the selected crop."
+      );
+  }
+  if (input.varietyId && input.cropId) {
+    const [variety] = await db
+      .select({ id: cropVarieties.id, cropId: cropVarieties.cropId })
+      .from(cropVarieties)
+      .where(eq(cropVarieties.id, input.varietyId))
+      .limit(1);
+    if (!variety || variety.cropId !== input.cropId)
+      throw new ApiError(400, "invalid_variety", "Variety does not belong to the selected crop.");
+  }
+}
+
 export async function listCropDataHandler(ctx: ApiContext, farmId: string) {
   await verifyFarmAccess(ctx.userId, farmId);
   return listCropData(farmId);
@@ -95,8 +124,20 @@ export async function getCropDataHandler(ctx: ApiContext, id: string, farmId: st
 
 export async function createCropDataHandler(ctx: ApiContext, input: CreateCropDataInput) {
   await verifyFarmAccess(ctx.userId, input.farmId);
+  await validateCropLinks(input);
   const record = await createCropDataRecord(input);
-  await logAudit({ userId: ctx.userId, action: "crop_data.created", resource: record.id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId: input.farmId,
+    action: "crop_data.created",
+    resource: record.id,
+    newData: {
+      cropId: record.cropId,
+      cropTypeId: record.cropTypeId,
+      varietyId: record.varietyId,
+      status: record.status,
+    } as Record<string, unknown>,
+  });
   return record;
 }
 
@@ -109,8 +150,32 @@ export async function updateCropDataHandler(
   await verifyFarmAccess(ctx.userId, farmId);
   const record = await getCropDataById(id, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  // Resolve effective cropId for FK validation (use input value or fall back to existing)
+  const effectiveCropId = input.cropId ?? record.cropId;
+  await validateCropLinks({
+    cropId: effectiveCropId,
+    cropTypeId: input.cropTypeId,
+    varietyId: input.varietyId,
+  });
   const updated = await updateCropDataRecord(id, input);
-  await logAudit({ userId: ctx.userId, action: "crop_data.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.updated",
+    resource: id,
+    previousData: {
+      cropId: record.cropId,
+      cropTypeId: record.cropTypeId,
+      varietyId: record.varietyId,
+      status: record.status,
+    } as Record<string, unknown>,
+    newData: {
+      cropId: updated?.cropId,
+      cropTypeId: updated?.cropTypeId,
+      varietyId: updated?.varietyId,
+      status: updated?.status,
+    } as Record<string, unknown>,
+  });
   return updated;
 }
 
@@ -119,7 +184,18 @@ export async function deleteCropDataHandler(ctx: ApiContext, id: string, farmId:
   const record = await getCropDataById(id, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
   await deleteCropDataRecord(id);
-  await logAudit({ userId: ctx.userId, action: "crop_data.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.deleted",
+    resource: id,
+    previousData: {
+      cropId: record.cropId,
+      cropTypeId: record.cropTypeId,
+      varietyId: record.varietyId,
+      status: record.status,
+    } as Record<string, unknown>,
+  });
 }
 
 export async function updateProgramInfoHandler(
@@ -170,7 +246,16 @@ export async function updateSectionHandler(
   if (!config) throw new ApiError(404, "not_found", "Unknown section.");
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  return upsertSectionRow(config.table, cropDataId, input, config.dateFields);
+  const result = await upsertSectionRow(config.table, cropDataId, input, config.dateFields);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.section_updated",
+    resource: cropDataId,
+    metadata: { section },
+    newData: input,
+  });
+  return result;
 }
 
 export async function createCollectionRowHandler(
@@ -185,7 +270,16 @@ export async function createCollectionRowHandler(
   if (!config) throw new ApiError(404, "not_found", "Unknown collection.");
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  return insertCollectionRow(config.table, cropDataId, input, config.dateFields);
+  const row = await insertCollectionRow(config.table, cropDataId, input, config.dateFields);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.collection_row_created",
+    resource: (row as { id: string }).id,
+    metadata: { collection, cropDataId },
+    newData: input,
+  });
+  return row;
 }
 
 export async function updateCollectionRowHandler(
@@ -209,6 +303,14 @@ export async function updateCollectionRowHandler(
     config.dateFields
   );
   if (!updated) throw new ApiError(404, "not_found", "Row not found.");
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.collection_row_updated",
+    resource: rowId,
+    metadata: { collection, cropDataId },
+    newData: input,
+  });
   return updated;
 }
 
@@ -225,6 +327,13 @@ export async function deleteCollectionRowHandler(
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
   await deleteCollectionRow(config.table, cropDataId, rowId);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.collection_row_deleted",
+    resource: rowId,
+    metadata: { collection, cropDataId },
+  });
 }
 
 export async function addMediaHandler(
@@ -244,7 +353,16 @@ export async function addMediaHandler(
   await verifyFarmAccess(ctx.userId, farmId);
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  return insertMedia({ entityId: cropDataId, uploadedBy: ctx.userId, ...input });
+  const media = await insertMedia({ entityId: cropDataId, uploadedBy: ctx.userId, ...input });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.media_added",
+    resource: (media as { id: string }).id,
+    resourceName: input.name ?? null,
+    metadata: { cropDataId, mimeType: input.mimeType, sizeBytes: input.sizeBytes },
+  });
+  return media;
 }
 
 export async function deleteMediaHandler(
@@ -259,6 +377,14 @@ export async function deleteMediaHandler(
   const media = await getMediaById(mediaId, cropDataId);
   if (!media) throw new ApiError(404, "not_found", "Attachment not found.");
   await deleteMedia(mediaId, cropDataId);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.media_deleted",
+    resource: mediaId,
+    resourceName: (media as { name?: string }).name ?? null,
+    metadata: { cropDataId },
+  });
   return media;
 }
 
@@ -286,5 +412,14 @@ export async function updateModuleHandler(
   await verifyFarmAccess(ctx.userId, farmId);
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
-  return upsertModule(cropDataId, moduleType, input.data);
+  const result = await upsertModule(cropDataId, moduleType, input.data);
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "crop_data.module_updated",
+    resource: cropDataId,
+    metadata: { moduleType },
+    newData: input.data as Record<string, unknown>,
+  });
+  return result;
 }

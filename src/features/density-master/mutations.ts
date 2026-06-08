@@ -13,14 +13,13 @@ export async function insertDensity(
     .values({
       farmId,
       cropId: input.cropId ?? null,
-      productionSiteId: input.productionSiteId ?? null,
+      cropTypeId: input.cropTypeId ?? null,
+      productionTypeId: input.productionTypeId ?? null,
+      year: input.year ?? null,
       maleDensity: input.maleDensity ?? null,
       femaleDensity: input.femaleDensity ?? null,
-      spacingM: input.spacingM ?? null,
-      rowSpacingM: input.rowSpacingM ?? null,
       validFrom: input.validFrom ?? 1,
       validTo: input.validTo ?? 52,
-      notes: input.notes ?? null,
     })
     .returning();
 
@@ -37,14 +36,13 @@ export async function updateDensity(
     .update(densityMaster)
     .set({
       ...(input.cropId !== undefined && { cropId: input.cropId }),
-      ...(input.productionSiteId !== undefined && { productionSiteId: input.productionSiteId }),
+      ...(input.cropTypeId !== undefined && { cropTypeId: input.cropTypeId }),
+      ...(input.productionTypeId !== undefined && { productionTypeId: input.productionTypeId }),
+      ...(input.year !== undefined && { year: input.year }),
       ...(input.maleDensity !== undefined && { maleDensity: input.maleDensity }),
       ...(input.femaleDensity !== undefined && { femaleDensity: input.femaleDensity }),
-      ...(input.spacingM !== undefined && { spacingM: input.spacingM }),
-      ...(input.rowSpacingM !== undefined && { rowSpacingM: input.rowSpacingM }),
       ...(input.validFrom !== undefined && { validFrom: input.validFrom }),
       ...(input.validTo !== undefined && { validTo: input.validTo }),
-      ...(input.notes !== undefined && { notes: input.notes }),
       updatedAt: new Date(),
     })
     .where(and(eq(densityMaster.id, densityId), eq(densityMaster.farmId, farmId)));

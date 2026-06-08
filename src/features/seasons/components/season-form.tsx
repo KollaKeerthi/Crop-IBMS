@@ -31,7 +31,7 @@ type Props = {
   onSuccess?: () => void;
 };
 
-const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function parseDate(value?: string | null) {
   if (!value) return null;
@@ -47,26 +47,30 @@ function formatDateInput(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function formatDateDisplay(value?: string | null) {
-  const date = parseDate(value);
-  if (!date) return "Select date";
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}-${month}-${date.getFullYear()}`;
+/** ISO 8601: week 1 = week containing first Thursday of year. Weeks start Monday. */
+function getISOWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-function getSimpleWeekNumber(date: Date) {
-  const startOfYear = new Date(date.getFullYear(), 0, 1);
-  const dayOfYear =
-    Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-  return Math.floor((dayOfYear - 1) / 7) + 1;
+/** Monday of the given ISO week in the given year */
+function isoWeekToMonday(year: number, week: number): Date {
+  const jan4 = new Date(year, 0, 4);
+  const jan4Day = jan4.getDay() || 7;
+  const monday = new Date(jan4);
+  monday.setDate(jan4.getDate() - jan4Day + 1 + (week - 1) * 7);
+  return monday;
 }
 
 function getCalendarWeeks(monthDate: Date) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const firstOfMonth = new Date(year, month, 1);
-  const start = new Date(year, month, 1 - firstOfMonth.getDay());
+  const firstDay = firstOfMonth.getDay() || 7;
+  const start = new Date(year, month, 2 - firstDay);
 
   return Array.from({ length: 6 }, (_, weekIndex) =>
     Array.from({ length: 7 }, (_, dayIndex) => {
@@ -77,99 +81,10 @@ function getCalendarWeeks(monthDate: Date) {
   );
 }
 
-function DateWithWeekPicker({
-  value,
-  onChange,
-}: {
-  value?: string | null;
-  onChange: (value: string) => void;
-}) {
-  const selectedDate = parseDate(value);
-  const [monthDate, setMonthDate] = useState(
-    selectedDate ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  );
-  const weeks = useMemo(() => getCalendarWeeks(monthDate), [monthDate]);
-  const monthLabel = monthDate.toLocaleString("en-US", { month: "long", year: "numeric" });
-
-  function moveMonth(offset: number) {
-    setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
-  }
-
-  return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <Button type="button" variant="outline" className="w-full justify-start font-normal">
-            <CalendarDays className="mr-2 h-4 w-4" />
-            {formatDateDisplay(value)}
-          </Button>
-        }
-      />
-      <PopoverContent align="start" className="w-[22rem]">
-        <div className="flex items-center justify-between">
-          <Button type="button" variant="ghost" size="icon" onClick={() => moveMonth(-1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-sm font-semibold">{monthLabel}</div>
-          <Button type="button" variant="ghost" size="icon" onClick={() => moveMonth(1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-[2.75rem_repeat(7,minmax(0,1fr))] gap-1 text-center text-xs">
-          <div className="py-1 font-medium text-primary">Wk</div>
-          {weekdayLabels.map((label) => (
-            <div key={label} className="py-1 font-medium text-muted-foreground">
-              {label}
-            </div>
-          ))}
-
-          {weeks.map((week) => {
-            const weekAnchor =
-              week.find((date) => date.getMonth() === monthDate.getMonth()) ?? week[0]!;
-            return (
-              <div key={week.map(formatDateInput).join("-")} className="contents">
-                <div className="rounded-md bg-muted/60 py-2 font-semibold text-primary">
-                  {getSimpleWeekNumber(weekAnchor)}
-                </div>
-                {week.map((date) => {
-                  const dateValue = formatDateInput(date);
-                  const isCurrentMonth = date.getMonth() === monthDate.getMonth();
-                  const isSelected = value === dateValue;
-                  return (
-                    <button
-                      key={dateValue}
-                      type="button"
-                      onClick={() => onChange(dateValue)}
-                      className={[
-                        "h-8 rounded-md text-sm transition-colors",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-muted hover:text-foreground",
-                        !isCurrentMonth && "text-muted-foreground/50",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    >
-                      {date.getDate()}
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 function WeekPicker({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   const [monthDate, setMonthDate] = useState(() => {
-    // If week number is set, default the calendar view to that week's date in current year
     const year = new Date().getFullYear();
-    const date = new Date(year, 0, (value - 1) * 7 + 4); // Anchor day in the middle of the week
-    return date;
+    return isoWeekToMonday(year, value);
   });
 
   const weeks = useMemo(() => getCalendarWeeks(monthDate), [monthDate]);
@@ -189,7 +104,7 @@ function WeekPicker({ value, onChange }: { value: number; onChange: (value: numb
           </Button>
         }
       />
-      <PopoverContent align="start" className="w-[22rem]">
+      <PopoverContent align="start" className="w-88">
         <div className="flex items-center justify-between">
           <Button type="button" variant="ghost" size="icon" onClick={() => moveMonth(-1)}>
             <ChevronLeft className="h-4 w-4" />
@@ -210,8 +125,8 @@ function WeekPicker({ value, onChange }: { value: number; onChange: (value: numb
 
           {weeks.map((week) => {
             const weekAnchor =
-              week.find((date) => date.getMonth() === monthDate.getMonth()) ?? week[0]!;
-            const weekNum = getSimpleWeekNumber(weekAnchor);
+              week.find((date) => date.getMonth() === monthDate.getMonth()) ?? week[3]!;
+            const weekNum = getISOWeekNumber(weekAnchor);
             const isRowSelected = value === weekNum;
 
             return (
@@ -277,32 +192,16 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
   const updateMutation = useUpdateSeason(farmId);
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const initialIsWeek = useMemo(() => {
-    if (!season?.startDate || !season?.endDate) return false;
-    const sDate = parseDate(season.startDate);
-    const eDate = parseDate(season.endDate);
-    if (!sDate || !eDate) return false;
-    const startOfYearS = new Date(sDate.getFullYear(), 0, 1);
-    const dayOfYearS =
-      Math.floor((sDate.getTime() - startOfYearS.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-    const startOfYearE = new Date(eDate.getFullYear(), 0, 1);
-    const dayOfYearE =
-      Math.floor((eDate.getTime() - startOfYearE.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-    return (dayOfYearS - 1) % 7 === 0 && dayOfYearE % 7 === 0;
-  }, [season]);
-
-  const [rangeType, setRangeType] = useState<"date" | "week">(initialIsWeek ? "week" : "date");
-
   const initialStartWeek = useMemo(() => {
-    if (!season?.startDate) return 18; // Standard crop season fallback default
+    if (!season?.startDate) return 18;
     const d = parseDate(season.startDate);
-    return d ? getSimpleWeekNumber(d) : 18;
+    return d ? getISOWeekNumber(d) : 18;
   }, [season]);
 
   const initialEndWeek = useMemo(() => {
     if (!season?.endDate) return 36;
     const d = parseDate(season.endDate);
-    return d ? getSimpleWeekNumber(d) : 36;
+    return d ? getISOWeekNumber(d) : 36;
   }, [season]);
 
   const [startWeek, setStartWeek] = useState<number>(initialStartWeek);
@@ -312,30 +211,27 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
 
   const computedStartDate = useMemo(() => {
     if (!watchedYear) return "";
-    const date = new Date(watchedYear, 0, (startWeek - 1) * 7 + 1);
+    const date = isoWeekToMonday(watchedYear, startWeek);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }, [startWeek, watchedYear]);
 
   const computedEndDate = useMemo(() => {
     if (!watchedYear) return "";
-    const date = new Date(watchedYear, 0, (endWeek - 1) * 7 + 7);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const monday = isoWeekToMonday(watchedYear, endWeek);
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    return sunday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }, [endWeek, watchedYear]);
 
   useEffect(() => {
-    if (rangeType === "week" && watchedYear) {
-      const sDate = new Date(watchedYear, 0, (startWeek - 1) * 7 + 1);
-      const eDate = new Date(watchedYear, 0, (endWeek - 1) * 7 + 7);
-      form.setValue("startDate", formatDateInput(sDate), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      form.setValue("endDate", formatDateInput(eDate), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    }
-  }, [rangeType, startWeek, endWeek, watchedYear, form]);
+    if (!watchedYear) return;
+    const sDate = isoWeekToMonday(watchedYear, startWeek);
+    const eMonday = isoWeekToMonday(watchedYear, endWeek);
+    const eDate = new Date(eMonday);
+    eDate.setDate(eDate.getDate() + 6);
+    form.setValue("startDate", formatDateInput(sDate), { shouldDirty: true, shouldValidate: true });
+    form.setValue("endDate", formatDateInput(eDate), { shouldDirty: true, shouldValidate: true });
+  }, [startWeek, endWeek, watchedYear, form]);
 
   async function onSubmit(values: CreateSeasonInput) {
     try {
@@ -391,77 +287,22 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
           )}
         />
 
-        <div className="space-y-1.5">
-          <FormLabel>Timeframe Format</FormLabel>
-          <div className="flex rounded-lg border bg-muted/20 p-1">
-            <Button
-              type="button"
-              variant={rangeType === "date" ? "secondary" : "ghost"}
-              size="sm"
-              className="flex-1 text-xs h-7 font-semibold"
-              onClick={() => setRangeType("date")}
-            >
-              Calendar Dates
-            </Button>
-            <Button
-              type="button"
-              variant={rangeType === "week" ? "secondary" : "ghost"}
-              size="sm"
-              className="flex-1 text-xs h-7 font-semibold"
-              onClick={() => setRangeType("week")}
-            >
-              Week Numbers (1-53)
-            </Button>
-          </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormItem className="flex flex-col">
+            <FormLabel className="mb-1.5">Start Week (ISO)</FormLabel>
+            <FormControl>
+              <WeekPicker value={startWeek} onChange={setStartWeek} />
+            </FormControl>
+            <p className="text-xs text-muted-foreground mt-1">Starts: {computedStartDate}</p>
+          </FormItem>
+          <FormItem className="flex flex-col">
+            <FormLabel className="mb-1.5">End Week (ISO)</FormLabel>
+            <FormControl>
+              <WeekPicker value={endWeek} onChange={setEndWeek} />
+            </FormControl>
+            <p className="text-xs text-muted-foreground mt-1">Ends: {computedEndDate}</p>
+          </FormItem>
         </div>
-
-        {rangeType === "date" ? (
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <DateWithWeekPicker value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <DateWithWeekPicker value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <FormItem className="flex flex-col">
-              <FormLabel className="mb-1.5">Start Week</FormLabel>
-              <FormControl>
-                <WeekPicker value={startWeek} onChange={setStartWeek} />
-              </FormControl>
-              <p className="text-xs text-muted-foreground mt-1">Starts: {computedStartDate}</p>
-            </FormItem>
-            <FormItem className="flex flex-col">
-              <FormLabel className="mb-1.5">End Week</FormLabel>
-              <FormControl>
-                <WeekPicker value={endWeek} onChange={setEndWeek} />
-              </FormControl>
-              <p className="text-xs text-muted-foreground mt-1">Ends: {computedEndDate}</p>
-            </FormItem>
-          </div>
-        )}
 
         {form.formState.errors.root && (
           <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>

@@ -1,11 +1,10 @@
-import { type NextRequest } from "next/server";
 import { apiOk, apiError } from "@/lib/api/response";
 import { requireAuth } from "@/lib/api/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const ctx = await requireAuth();
     const [user] = await db

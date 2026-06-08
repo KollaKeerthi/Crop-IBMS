@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  MapPin,
   Layers,
   Sprout,
   Database,
@@ -13,36 +12,50 @@ import {
   LayoutGrid,
   Boxes,
   Activity,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CropTable, CropTypesTable, CropVarietiesTable } from "@/features/crops";
 import { SeasonsTable } from "@/features/seasons";
 import { ActivitiesTable } from "@/features/activities";
-import { ProductionSitesList } from "@/features/production-sites";
 import { ProductionTypesList } from "@/features/production-types";
 import { DensityMasterTable } from "@/features/density-master";
 import { ActiveTimeTable } from "@/features/active-time";
 import { BlockMasterTable } from "@/features/block-master";
 import { VariabilityTable } from "@/features/variability";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const TAB_TRIGGER_CLASS =
   "shrink-0 flex-none text-sm font-medium gap-2 px-3 py-2 data-active:text-primary";
 
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-10 text-center shadow-sm">
-      <p className="text-h4 font-bold text-foreground">{title}</p>
-      <p className="text-small text-muted-foreground mt-2">
-        This master is not built yet. Backend scaffolding may already exist; ask Claude to wire up
-        the UI when you&apos;re ready.
-      </p>
-    </div>
-  );
-}
-
 export function CropInformationTabs() {
-  const [active, setActive] = useState("production-site");
+  const [active, setActive] = useState("production-type");
   const listRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  function checkScroll() {
+    const el = listRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }
+
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll);
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const list = listRef.current;
@@ -51,19 +64,38 @@ export function CropInformationTabs() {
     if (activeEl) {
       activeEl.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
     }
+    setTimeout(checkScroll, 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  function scrollTabs(dir: "left" | "right") {
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
+  }
 
   return (
     <Tabs value={active} onValueChange={setActive}>
-      <div className="relative">
+      <div className="relative flex items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-7 w-7 shrink-0 transition-opacity",
+            canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          onClick={() => scrollTabs("left")}
+          tabIndex={-1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
         <TabsList
           ref={listRef}
           variant="line"
-          className="flex h-auto w-full justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
+          className="flex h-auto flex-1 justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
-          <TabsTrigger value="production-site" className={TAB_TRIGGER_CLASS}>
-            <MapPin className="h-4 w-4" /> Production Site
-          </TabsTrigger>
           <TabsTrigger value="production-type" className={TAB_TRIGGER_CLASS}>
             <Layers className="h-4 w-4" /> Production Type
           </TabsTrigger>
@@ -95,13 +127,21 @@ export function CropInformationTabs() {
             <Activity className="h-4 w-4" /> Variability
           </TabsTrigger>
         </TabsList>
-        {/* right-edge fade hint for scrollable overflow */}
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-linear-to-l from-background to-transparent" />
-      </div>
 
-      <TabsContent value="production-site" className="mt-6">
-        <ProductionSitesList />
-      </TabsContent>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-7 w-7 shrink-0 transition-opacity",
+            canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          onClick={() => scrollTabs("right")}
+          tabIndex={-1}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
       <TabsContent value="production-type" className="mt-6">
         <ProductionTypesList />

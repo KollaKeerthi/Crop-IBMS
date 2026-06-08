@@ -1,5 +1,5 @@
 {
-  "id": "0ecb3d8b-b822-4ced-8bdb-752e879412b6",
+  "id": "917d686d-cf90-41ae-9cb3-9fdab6498b34",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -154,7 +154,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "active_time_activities_active_time_id_idx": {
+          "name": "active_time_activities_active_time_id_idx",
+          "columns": [
+            {
+              "expression": "active_time_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "active_time_activities_activity_id_idx": {
+          "name": "active_time_activities_activity_id_idx",
+          "columns": [
+            {
+              "expression": "activity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "active_time_activities_active_time_id_active_times_id_fk": {
           "name": "active_time_activities_active_time_id_active_times_id_fk",
@@ -236,6 +267,60 @@
           "primaryKey": false,
           "notNull": false
         },
+        "material_arrival": {
+          "name": "material_arrival",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sowing_male": {
+          "name": "sowing_male",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sowing_female": {
+          "name": "sowing_female",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planting_male": {
+          "name": "planting_male",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planting_female": {
+          "name": "planting_female",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pollination_start": {
+          "name": "pollination_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pollination_end": {
+          "name": "pollination_end",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvesting_start": {
+          "name": "harvesting_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvesting_end": {
+          "name": "harvesting_end",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "is_active": {
           "name": "is_active",
           "type": "boolean",
@@ -264,7 +349,53 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "active_times_farm_id_idx": {
+          "name": "active_times_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "active_times_crop_id_idx": {
+          "name": "active_times_crop_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "active_times_season_id_idx": {
+          "name": "active_times_season_id_idx",
+          "columns": [
+            {
+              "expression": "season_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "active_times_farm_id_farms_id_fk": {
           "name": "active_times_farm_id_farms_id_fk",
@@ -311,6 +442,19 @@
           "tableTo": "seasons",
           "columnsFrom": [
             "season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "active_times_production_type_id_production_types_id_fk": {
+          "name": "active_times_production_type_id_production_types_id_fk",
+          "tableFrom": "active_times",
+          "tableTo": "production_types",
+          "columnsFrom": [
+            "production_type_id"
           ],
           "columnsTo": [
             "id"
@@ -386,9 +530,32 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "activities_farm_id_idx": {
+          "name": "activities_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "activities_farm_id_farms_id_fk": {
           "name": "activities_farm_id_farms_id_fk",
@@ -421,6 +588,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "farm_id": {
+          "name": "farm_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "user_id": {
           "name": "user_id",
           "type": "uuid",
@@ -433,11 +606,35 @@
           "primaryKey": false,
           "notNull": true
         },
+        "resource_type": {
+          "name": "resource_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "resource": {
           "name": "resource",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "resource_name": {
+          "name": "resource_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "previous_data": {
+          "name": "previous_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "new_data": {
+          "name": "new_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "metadata": {
           "name": "metadata",
@@ -465,8 +662,97 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "audit_logs_farm_id_idx": {
+          "name": "audit_logs_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_logs_user_id_idx": {
+          "name": "audit_logs_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_logs_action_idx": {
+          "name": "audit_logs_action_idx",
+          "columns": [
+            {
+              "expression": "action",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_logs_resource_type_idx": {
+          "name": "audit_logs_resource_type_idx",
+          "columns": [
+            {
+              "expression": "resource_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_logs_created_at_idx": {
+          "name": "audit_logs_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
+        "audit_logs_farm_id_farms_id_fk": {
+          "name": "audit_logs_farm_id_farms_id_fk",
+          "tableFrom": "audit_logs",
+          "tableTo": "farms",
+          "columnsFrom": [
+            "farm_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
         "audit_logs_user_id_users_id_fk": {
           "name": "audit_logs_user_id_users_id_fk",
           "tableFrom": "audit_logs",
@@ -512,6 +798,12 @@
         },
         "greenhouse_id": {
           "name": "greenhouse_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sub_block_id": {
+          "name": "sub_block_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -586,7 +878,53 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "block_master_farm_id_idx": {
+          "name": "block_master_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "block_master_field_id_idx": {
+          "name": "block_master_field_id_idx",
+          "columns": [
+            {
+              "expression": "field_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "block_master_greenhouse_id_idx": {
+          "name": "block_master_greenhouse_id_idx",
+          "columns": [
+            {
+              "expression": "greenhouse_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "block_master_farm_id_farms_id_fk": {
           "name": "block_master_farm_id_farms_id_fk",
@@ -599,6 +937,45 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "block_master_field_id_fields_id_fk": {
+          "name": "block_master_field_id_fields_id_fk",
+          "tableFrom": "block_master",
+          "tableTo": "fields",
+          "columnsFrom": [
+            "field_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "block_master_greenhouse_id_greenhouses_id_fk": {
+          "name": "block_master_greenhouse_id_greenhouses_id_fk",
+          "tableFrom": "block_master",
+          "tableTo": "greenhouses",
+          "columnsFrom": [
+            "greenhouse_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "block_master_sub_block_id_sub_blocks_id_fk": {
+          "name": "block_master_sub_block_id_sub_blocks_id_fk",
+          "tableFrom": "block_master",
+          "tableTo": "sub_blocks",
+          "columnsFrom": [
+            "sub_block_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -668,9 +1045,47 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "blocks_farm_id_idx": {
+          "name": "blocks_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "blocks_parent_id_idx": {
+          "name": "blocks_parent_id_idx",
+          "columns": [
+            {
+              "expression": "parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "blocks_farm_id_farms_id_fk": {
           "name": "blocks_farm_id_farms_id_fk",
@@ -818,6 +1233,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "planting_id": {
+          "name": "planting_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_master_id": {
+          "name": "block_master_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "block": {
           "name": "block",
           "type": "text",
@@ -826,6 +1253,12 @@
         },
         "field_name": {
           "name": "field_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "field_code": {
+          "name": "field_code",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -843,11 +1276,30 @@
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
+        "header_no": {
+          "name": "header_no",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": false
+        },
+        "customer_code": {
+          "name": "customer_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_ref": {
+          "name": "contract_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "crop_data_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
           "default": "'active'"
         },
         "notes": {
@@ -871,7 +1323,68 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "crop_data_farm_id_idx": {
+          "name": "crop_data_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "crop_data_crop_id_idx": {
+          "name": "crop_data_crop_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "crop_data_season_id_idx": {
+          "name": "crop_data_season_id_idx",
+          "columns": [
+            {
+              "expression": "season_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "crop_data_status_idx": {
+          "name": "crop_data_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "crop_data_farm_id_farms_id_fk": {
           "name": "crop_data_farm_id_farms_id_fk",
@@ -937,6 +1450,32 @@
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
+        },
+        "crop_data_planting_id_plantings_id_fk": {
+          "name": "crop_data_planting_id_plantings_id_fk",
+          "tableFrom": "crop_data",
+          "tableTo": "plantings",
+          "columnsFrom": [
+            "planting_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "crop_data_block_master_id_block_master_id_fk": {
+          "name": "crop_data_block_master_id_block_master_id_fk",
+          "tableFrom": "crop_data",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_master_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -982,7 +1521,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "crop_data_modules_crop_data_id_idx": {
+          "name": "crop_data_modules_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "crop_data_modules_crop_data_id_crop_data_id_fk": {
           "name": "crop_data_modules_crop_data_id_crop_data_id_fk",
@@ -995,6 +1550,312 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.germination_test": {
+      "name": "germination_test",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sown_date": {
+          "name": "sown_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "final_count_date": {
+          "name": "final_count_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sown_on": {
+          "name": "sown_on",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "good": {
+          "name": "good",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "small": {
+          "name": "small",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "too_small": {
+          "name": "too_small",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abnormal": {
+          "name": "abnormal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rotting": {
+          "name": "rotting",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "no_ger": {
+          "name": "no_ger",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emp_name": {
+          "name": "emp_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "germination_test_crop_data_id_idx": {
+          "name": "germination_test_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "germination_test_crop_data_id_crop_data_id_fk": {
+          "name": "germination_test_crop_data_id_crop_data_id_fk",
+          "tableFrom": "germination_test",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.harvest_records": {
+      "name": "harvest_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "variety_id": {
+          "name": "variety_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_master_id": {
+          "name": "block_master_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvest_date": {
+          "name": "harvest_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_m2": {
+          "name": "row_m2",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_no": {
+          "name": "row_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emp_name": {
+          "name": "emp_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvest_code": {
+          "name": "harvest_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kg": {
+          "name": "kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germination_pct": {
+          "name": "germination_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "harvest_records_crop_data_id_idx": {
+          "name": "harvest_records_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "harvest_records_variety_id_idx": {
+          "name": "harvest_records_variety_id_idx",
+          "columns": [
+            {
+              "expression": "variety_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "harvest_records_crop_data_id_crop_data_id_fk": {
+          "name": "harvest_records_crop_data_id_crop_data_id_fk",
+          "tableFrom": "harvest_records",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "harvest_records_variety_id_crop_varieties_id_fk": {
+          "name": "harvest_records_variety_id_crop_varieties_id_fk",
+          "tableFrom": "harvest_records",
+          "tableTo": "crop_varieties",
+          "columnsFrom": [
+            "variety_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "harvest_records_block_master_id_block_master_id_fk": {
+          "name": "harvest_records_block_master_id_block_master_id_fk",
+          "tableFrom": "harvest_records",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_master_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -1039,6 +1900,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "teedy_document_id": {
+          "name": "teedy_document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "teedy_file_id": {
+          "name": "teedy_file_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -1071,7 +1944,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "media_attachments_entity_id_idx": {
+          "name": "media_attachments_entity_id_idx",
+          "columns": [
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "media_attachments_uploaded_by_users_id_fk": {
           "name": "media_attachments_uploaded_by_users_id_fk",
@@ -1110,27 +1999,105 @@
           "primaryKey": false,
           "notNull": true
         },
-        "start_date": {
-          "name": "start_date",
+        "male_actual_sowing_date": {
+          "name": "male_actual_sowing_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "end_date": {
-          "name": "end_date",
+        "female_actual_sowing_date": {
+          "name": "female_actual_sowing_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "seedlings_count": {
-          "name": "seedlings_count",
+        "male_germination_pct": {
+          "name": "male_germination_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_germination_pct": {
+          "name": "female_germination_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_actual_planting_date": {
+          "name": "male_actual_planting_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_actual_planting_date": {
+          "name": "female_actual_planting_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_planting_week": {
+          "name": "actual_planting_week",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "germination_rate": {
-          "name": "germination_rate",
+        "male_actual_plants_planted": {
+          "name": "male_actual_plants_planted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_actual_plants_planted": {
+          "name": "female_actual_plants_planted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_actual_plants_per_row": {
+          "name": "male_actual_plants_per_row",
           "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_actual_plants_per_row": {
+          "name": "female_actual_plants_per_row",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_actual_rows_planted": {
+          "name": "male_actual_rows_planted",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_actual_rows_planted": {
+          "name": "female_actual_rows_planted",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_actual_surface_area": {
+          "name": "male_actual_surface_area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_actual_surface_area": {
+          "name": "female_actual_surface_area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks_from_customer": {
+          "name": "remarks_from_customer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommendations": {
+          "name": "recommendations",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -1154,7 +2121,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "nursery_crop_data_id_idx": {
+          "name": "nursery_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "nursery_crop_data_id_crop_data_id_fk": {
           "name": "nursery_crop_data_id_crop_data_id_fk",
@@ -1199,9 +2182,33 @@
           "primaryKey": false,
           "notNull": false
         },
+        "activity_id": {
+          "name": "activity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "date": {
           "name": "date",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emp_name": {
+          "name": "emp_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activity": {
+          "name": "activity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_qty": {
+          "name": "output_qty",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
@@ -1223,9 +2230,47 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "performance_per_person_crop_data_id_idx": {
+          "name": "performance_per_person_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "performance_per_person_worker_id_idx": {
+          "name": "performance_per_person_worker_id_idx",
+          "columns": [
+            {
+              "expression": "worker_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "performance_per_person_crop_data_id_crop_data_id_fk": {
           "name": "performance_per_person_crop_data_id_crop_data_id_fk",
@@ -1252,6 +2297,481 @@
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
+        },
+        "performance_per_person_activity_id_activities_id_fk": {
+          "name": "performance_per_person_activity_id_activities_id_fk",
+          "tableFrom": "performance_per_person",
+          "tableTo": "activities",
+          "columnsFrom": [
+            "activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pollination": {
+      "name": "pollination",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pollination_start": {
+          "name": "pollination_start",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pollination_end": {
+          "name": "pollination_end",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supervisor": {
+          "name": "supervisor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_seeds_per_fruit": {
+          "name": "avg_seeds_per_fruit",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fruits_per_plant": {
+          "name": "fruits_per_plant",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seeds_per_gram": {
+          "name": "seeds_per_gram",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expected_harvest_date": {
+          "name": "expected_harvest_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_temp_during_pollination": {
+          "name": "avg_temp_during_pollination",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "light_during_pollination": {
+          "name": "light_during_pollination",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_humidity_during_pollination": {
+          "name": "avg_humidity_during_pollination",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommendations": {
+          "name": "recommendations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pollination_crop_data_id_idx": {
+          "name": "pollination_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pollination_crop_data_id_crop_data_id_fk": {
+          "name": "pollination_crop_data_id_crop_data_id_fk",
+          "tableFrom": "pollination",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.post_harvest": {
+      "name": "post_harvest",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harvest_start_date": {
+          "name": "harvest_start_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harvest_end_date": {
+          "name": "harvest_end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planned_shipping_date": {
+          "name": "planned_shipping_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_shipping_date": {
+          "name": "actual_shipping_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_no_of_harvests": {
+          "name": "total_no_of_harvests",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_kgs": {
+          "name": "total_kgs",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "net_crop_cycle_weeks": {
+          "name": "net_crop_cycle_weeks",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germination_pct": {
+          "name": "germination_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommendations": {
+          "name": "recommendations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "post_harvest_crop_data_id_idx": {
+          "name": "post_harvest_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_harvest_crop_data_id_crop_data_id_fk": {
+          "name": "post_harvest_crop_data_id_crop_data_id_fk",
+          "tableFrom": "post_harvest",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.post_harvest_summary": {
+      "name": "post_harvest_summary",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kgs": {
+          "name": "kgs",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germination_pct": {
+          "name": "germination_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "post_harvest_summary_crop_data_id_idx": {
+          "name": "post_harvest_summary_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_harvest_summary_crop_data_id_crop_data_id_fk": {
+          "name": "post_harvest_summary_crop_data_id_crop_data_id_fk",
+          "tableFrom": "post_harvest_summary",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.production": {
+      "name": "production",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "realized_plants": {
+          "name": "realized_plants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "realized_rows": {
+          "name": "realized_rows",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "realized_surface_area": {
+          "name": "realized_surface_area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "realized_plants_per_sqm": {
+          "name": "realized_plants_per_sqm",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_temperature": {
+          "name": "avg_temperature",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_radiation": {
+          "name": "avg_radiation",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avg_humidity": {
+          "name": "avg_humidity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommendations": {
+          "name": "recommendations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "production_crop_data_id_idx": {
+          "name": "production_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "production_crop_data_id_crop_data_id_fk": {
+          "name": "production_crop_data_id_crop_data_id_fk",
+          "tableFrom": "production",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1277,45 +2797,171 @@
           "primaryKey": false,
           "notNull": true
         },
-        "batch_no": {
-          "name": "batch_no",
+        "male_batch_no": {
+          "name": "male_batch_no",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "planting_date": {
-          "name": "planting_date",
+        "female_batch_no": {
+          "name": "female_batch_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_planned_sowing_date": {
+          "name": "male_planned_sowing_date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "male_plant_count": {
-          "name": "male_plant_count",
+        "female_planned_sowing_date": {
+          "name": "female_planned_sowing_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_planned_planting_date": {
+          "name": "male_planned_planting_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_planned_planting_date": {
+          "name": "female_planned_planting_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_planned_plants": {
+          "name": "male_planned_plants",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "female_plant_count": {
-          "name": "female_plant_count",
+        "female_planned_plants": {
+          "name": "female_planned_plants",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "surface_area_sqm": {
-          "name": "surface_area_sqm",
+        "male_planned_plants_per_row": {
+          "name": "male_planned_plants_per_row",
           "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "male_density": {
-          "name": "male_density",
+        "female_planned_plants_per_row": {
+          "name": "female_planned_plants_per_row",
           "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "female_density": {
-          "name": "female_density",
+        "male_planned_plants_per_sqm": {
+          "name": "male_planned_plants_per_sqm",
           "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_planned_plants_per_sqm": {
+          "name": "female_planned_plants_per_sqm",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planned_surface_area": {
+          "name": "planned_surface_area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planned_no_of_rows": {
+          "name": "planned_no_of_rows",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proposed_gram_per_plant": {
+          "name": "proposed_gram_per_plant",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agreed_gram_per_plant": {
+          "name": "agreed_gram_per_plant",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "base_yield_kg": {
+          "name": "base_yield_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grams_per_sqm": {
+          "name": "grams_per_sqm",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_arrival_date": {
+          "name": "material_arrival_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_prep_start_date": {
+          "name": "block_prep_start_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_prep_end_date": {
+          "name": "block_prep_end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "production_year": {
+          "name": "production_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_requested_quantity": {
+          "name": "male_requested_quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_requested_quantity": {
+          "name": "female_requested_quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agreed_order_from_customer_kg": {
+          "name": "agreed_order_from_customer_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_delivery_date": {
+          "name": "requested_delivery_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "archive_status": {
+          "name": "archive_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks_from_customer": {
+          "name": "remarks_from_customer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -1333,11 +2979,384 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "program_info_crop_data_id_idx": {
+          "name": "program_info_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "program_info_crop_data_id_crop_data_id_fk": {
           "name": "program_info_crop_data_id_crop_data_id_fk",
           "tableFrom": "program_info",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.revenue": {
+      "name": "revenue",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "male_total_weeks": {
+          "name": "male_total_weeks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_total_weeks": {
+          "name": "female_total_weeks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "male_agreed_unit_price": {
+          "name": "male_agreed_unit_price",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "female_agreed_unit_price": {
+          "name": "female_agreed_unit_price",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_revenue": {
+          "name": "additional_revenue",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planned_remarks": {
+          "name": "planned_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_remarks": {
+          "name": "actual_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "revenue_crop_data_id_idx": {
+          "name": "revenue_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "revenue_crop_data_id_crop_data_id_fk": {
+          "name": "revenue_crop_data_id_crop_data_id_fk",
+          "tableFrom": "revenue",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.seeds_quality": {
+      "name": "seeds_quality",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_seeds_sown": {
+          "name": "total_seeds_sown",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "good1": {
+          "name": "good1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "good2": {
+          "name": "good2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abnormal": {
+          "name": "abnormal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "too_small": {
+          "name": "too_small",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "non_germinated": {
+          "name": "non_germinated",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crop_assessment_score": {
+          "name": "crop_assessment_score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kg_customer_after_cleaning": {
+          "name": "kg_customer_after_cleaning",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "seeds_quality_crop_data_id_idx": {
+          "name": "seeds_quality_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "seeds_quality_crop_data_id_crop_data_id_fk": {
+          "name": "seeds_quality_crop_data_id_crop_data_id_fk",
+          "tableFrom": "seeds_quality",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sq_breakdown": {
+      "name": "sq_breakdown",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "germ_good_kg": {
+          "name": "germ_good_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_good_pct": {
+          "name": "germ_good_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_low_kg": {
+          "name": "germ_low_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_low_pct": {
+          "name": "germ_low_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_customer_good_kg": {
+          "name": "germ_customer_good_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_customer_good_pct": {
+          "name": "germ_customer_good_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_customer_low_kg": {
+          "name": "germ_customer_low_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_customer_low_pct": {
+          "name": "germ_customer_low_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "germ_low_export_date": {
+          "name": "germ_low_export_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inbred_pct": {
+          "name": "inbred_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "off_type": {
+          "name": "off_type",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recommendations": {
+          "name": "recommendations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "sq_breakdown_crop_data_id_idx": {
+          "name": "sq_breakdown_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sq_breakdown_crop_data_id_crop_data_id_fk": {
+          "name": "sq_breakdown_crop_data_id_crop_data_id_fk",
+          "tableFrom": "sq_breakdown",
           "tableTo": "crop_data",
           "columnsFrom": [
             "crop_data_id"
@@ -1378,6 +3397,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "colour": {
+          "name": "colour",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1386,7 +3417,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "crop_types_crop_id_id_idx": {
+          "name": "crop_types_crop_id_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "crop_types_crop_id_crops_id_fk": {
           "name": "crop_types_crop_id_crops_id_fk",
@@ -1431,8 +3484,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "code": {
-          "name": "code",
+        "gender": {
+          "name": "gender",
+          "type": "crop_variety_gender",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colour_description": {
+          "name": "colour_description",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1445,7 +3505,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "crop_varieties_crop_id_id_idx": {
+          "name": "crop_varieties_crop_id_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "crop_varieties_crop_id_crops_id_fk": {
           "name": "crop_varieties_crop_id_crops_id_fk",
@@ -1601,6 +3683,20 @@
           "type": "real",
           "primaryKey": false,
           "notNull": false
+        },
+        "valid_from": {
+          "name": "valid_from",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "valid_to": {
+          "name": "valid_to",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 52
         },
         "notes": {
           "name": "notes",
@@ -1844,7 +3940,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "events_farm_id_idx": {
+          "name": "events_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "events_user_id_idx": {
+          "name": "events_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "events_farm_id_farms_id_fk": {
           "name": "events_farm_id_farms_id_fk",
@@ -2600,9 +4727,32 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "sub_blocks_block_id_idx": {
+          "name": "sub_blocks_block_id_idx",
+          "columns": [
+            {
+              "expression": "block_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "sub_blocks_block_id_blocks_id_fk": {
           "name": "sub_blocks_block_id_blocks_id_fk",
@@ -2671,9 +4821,47 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "seasons_farm_id_idx": {
+          "name": "seasons_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "seasons_year_idx": {
+          "name": "seasons_year_idx",
+          "columns": [
+            {
+              "expression": "year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "seasons_farm_id_farms_id_fk": {
           "name": "seasons_farm_id_farms_id_fk",
@@ -2706,11 +4894,17 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
+        "code": {
+          "name": "code",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -2724,11 +4918,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "production_sites_name_unique": {
-          "name": "production_sites_name_unique",
+        "production_sites_code_unique": {
+          "name": "production_sites_code_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "name"
+            "code"
           ]
         }
       },
@@ -2747,11 +4941,17 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "name": {
-          "name": "name",
+        "code": {
+          "name": "code",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -2765,14 +4965,94 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "production_types_name_unique": {
-          "name": "production_types_name_unique",
+        "production_types_code_unique": {
+          "name": "production_types_code_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "name"
+            "code"
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.variability": {
+      "name": "variability",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "farm_id": {
+          "name": "farm_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "production_type_id": {
+          "name": "production_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "variability": {
+          "name": "variability",
+          "type": "variability_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "variability_farm_id_farms_id_fk": {
+          "name": "variability_farm_id_farms_id_fk",
+          "tableFrom": "variability",
+          "tableTo": "farms",
+          "columnsFrom": [
+            "farm_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "variability_production_type_id_production_types_id_fk": {
+          "name": "variability_production_type_id_production_types_id_fk",
+          "tableFrom": "variability",
+          "tableTo": "production_types",
+          "columnsFrom": [
+            "production_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -2908,7 +5188,83 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "plantings_farm_id_idx": {
+          "name": "plantings_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "plantings_crop_id_idx": {
+          "name": "plantings_crop_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "plantings_season_id_idx": {
+          "name": "plantings_season_id_idx",
+          "columns": [
+            {
+              "expression": "season_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "plantings_block_master_id_idx": {
+          "name": "plantings_block_master_id_idx",
+          "columns": [
+            {
+              "expression": "block_master_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "plantings_status_idx": {
+          "name": "plantings_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "plantings_farm_id_farms_id_fk": {
           "name": "plantings_farm_id_farms_id_fk",
@@ -2955,6 +5311,32 @@
           "tableTo": "seasons",
           "columnsFrom": [
             "season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "plantings_block_master_id_block_master_id_fk": {
+          "name": "plantings_block_master_id_block_master_id_fk",
+          "tableFrom": "plantings",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_master_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "plantings_sub_block_id_sub_blocks_id_fk": {
+          "name": "plantings_sub_block_id_sub_blocks_id_fk",
+          "tableFrom": "plantings",
+          "tableTo": "sub_blocks",
+          "columnsFrom": [
+            "sub_block_id"
           ],
           "columnsTo": [
             "id"
@@ -3016,6 +5398,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "crop_data_id": {
+          "name": "crop_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_time_activity_id": {
+          "name": "active_time_activity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "associated_to": {
+          "name": "associated_to",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "assigned_to": {
           "name": "assigned_to",
           "type": "uuid",
@@ -3047,6 +5447,12 @@
         "start_date": {
           "name": "start_date",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repeat_rule": {
+          "name": "repeat_rule",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -3089,7 +5495,83 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "tasks_farm_id_idx": {
+          "name": "tasks_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tasks_crop_id_idx": {
+          "name": "tasks_crop_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tasks_crop_data_id_idx": {
+          "name": "tasks_crop_data_id_idx",
+          "columns": [
+            {
+              "expression": "crop_data_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tasks_assigned_to_idx": {
+          "name": "tasks_assigned_to_idx",
+          "columns": [
+            {
+              "expression": "assigned_to",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tasks_status_idx": {
+          "name": "tasks_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "tasks_farm_id_farms_id_fk": {
           "name": "tasks_farm_id_farms_id_fk",
@@ -3104,12 +5586,51 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
+        "tasks_block_master_id_block_master_id_fk": {
+          "name": "tasks_block_master_id_block_master_id_fk",
+          "tableFrom": "tasks",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_master_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
         "tasks_crop_id_crops_id_fk": {
           "name": "tasks_crop_id_crops_id_fk",
           "tableFrom": "tasks",
           "tableTo": "crops",
           "columnsFrom": [
             "crop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tasks_crop_data_id_crop_data_id_fk": {
+          "name": "tasks_crop_data_id_crop_data_id_fk",
+          "tableFrom": "tasks",
+          "tableTo": "crop_data",
+          "columnsFrom": [
+            "crop_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tasks_active_time_activity_id_active_time_activities_id_fk": {
+          "name": "tasks_active_time_activity_id_active_time_activities_id_fk",
+          "tableFrom": "tasks",
+          "tableTo": "active_time_activities",
+          "columnsFrom": [
+            "active_time_activity_id"
           ],
           "columnsTo": [
             "id"
@@ -3356,182 +5877,6 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-    },
-    "public.screens": {
-      "name": "screens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "screens_key_unique": {
-          "name": "screens_key_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.user_permissions": {
-      "name": "user_permissions",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "screen_id": {
-          "name": "screen_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "can_view": {
-          "name": "can_view",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_new": {
-          "name": "can_new",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_modify": {
-          "name": "can_modify",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_delete": {
-          "name": "can_delete",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_approve": {
-          "name": "can_approve",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_cancel": {
-          "name": "can_cancel",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_print": {
-          "name": "can_print",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "can_process": {
-          "name": "can_process",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_permissions_user_id_users_id_fk": {
-          "name": "user_permissions_user_id_users_id_fk",
-          "tableFrom": "user_permissions",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_permissions_screen_id_screens_id_fk": {
-          "name": "user_permissions_screen_id_screens_id_fk",
-          "tableFrom": "user_permissions",
-          "tableTo": "screens",
-          "columnsFrom": [
-            "screen_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "user_permissions_user_id_screen_id_pk": {
-          "name": "user_permissions_user_id_screen_id_pk",
-          "columns": [
-            "user_id",
-            "screen_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -3551,13 +5896,35 @@
         "outlook"
       ]
     },
+    "public.crop_data_status": {
+      "name": "crop_data_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "archived"
+      ]
+    },
     "public.sex_expression": {
       "name": "sex_expression",
       "schema": "public",
       "values": [
         "Male",
         "Female",
-        "Bisexual"
+        "Bisexual",
+        "Gynoecious",
+        "Monoecious",
+        "Andromonoecious",
+        "Semi-gynoecious",
+        "2n",
+        "4n"
+      ]
+    },
+    "public.crop_variety_gender": {
+      "name": "crop_variety_gender",
+      "schema": "public",
+      "values": [
+        "Male",
+        "Female"
       ]
     },
     "public.recurrence_type": {
@@ -3596,6 +5963,14 @@
         "OWNER",
         "MANAGER",
         "WORKER"
+      ]
+    },
+    "public.variability_kind": {
+      "name": "variability_kind",
+      "schema": "public",
+      "values": [
+        "Fixed",
+        "Flexible"
       ]
     },
     "public.planting_method": {

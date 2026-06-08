@@ -45,7 +45,7 @@ export async function createCropHandler(ctx: ApiContext, input: CreateCropInput)
     userId: ctx.userId,
     action: "crop.created",
     resource: crop.id,
-    metadata: { name: input.name },
+    resourceName: crop.name,
   });
 
   return crop;
@@ -63,7 +63,17 @@ export async function updateCropHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update crop.");
 
   log.info({ userId: ctx.userId, cropId }, "crops.updated");
-  await logAudit({ userId: ctx.userId, action: "crop.updated", resource: cropId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop.updated",
+    resource: cropId,
+    resourceName: existing.name,
+    previousData: { name: existing.name, description: existing.description } as Record<
+      string,
+      unknown
+    >,
+    newData: { name: updated.name, description: updated.description } as Record<string, unknown>,
+  });
 
   return updated;
 }
@@ -75,7 +85,12 @@ export async function deleteCropHandler(ctx: ApiContext, cropId: string): Promis
   await deleteCrop(cropId);
 
   log.info({ userId: ctx.userId, cropId }, "crops.deleted");
-  await logAudit({ userId: ctx.userId, action: "crop.deleted", resource: cropId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop.deleted",
+    resource: cropId,
+    resourceName: existing.name,
+  });
 }
 
 export async function createCropTypeHandler(
@@ -90,6 +105,13 @@ export async function createCropTypeHandler(
   if (!type) throw new ApiError(500, "internal_error", "Could not create crop type.");
 
   log.info({ userId: ctx.userId, cropId, typeId: type.id }, "crop_types.created");
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_type.created",
+    resource: type.id,
+    resourceName: type.name,
+    metadata: { cropId, cropName: crop.name },
+  });
   return type;
 }
 
@@ -106,7 +128,13 @@ export async function updateCropTypeHandler(
   if (!type) throw new ApiError(404, "not_found", "Crop type not found.");
 
   log.info({ userId: ctx.userId, cropId, typeId }, "crop_types.updated");
-  await logAudit({ userId: ctx.userId, action: "crop.updated", resource: typeId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_type.updated",
+    resource: typeId,
+    resourceName: type.name,
+    metadata: { cropId, cropName: crop.name },
+  });
   return type;
 }
 
@@ -120,6 +148,12 @@ export async function deleteCropTypeHandler(
 
   await deleteCropType(cropId, typeId);
   log.info({ userId: ctx.userId, typeId }, "crop_types.deleted");
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_type.deleted",
+    resource: typeId,
+    metadata: { cropId, cropName: crop.name },
+  });
 }
 
 export async function createCropVarietyHandler(
@@ -134,6 +168,13 @@ export async function createCropVarietyHandler(
   if (!variety) throw new ApiError(500, "internal_error", "Could not create crop variety.");
 
   log.info({ userId: ctx.userId, cropId, varietyId: variety.id }, "crop_varieties.created");
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_variety.created",
+    resource: variety.id,
+    resourceName: variety.name,
+    metadata: { cropId, cropName: crop.name },
+  });
   return variety;
 }
 
@@ -150,7 +191,13 @@ export async function updateCropVarietyHandler(
   if (!variety) throw new ApiError(404, "not_found", "Crop variety not found.");
 
   log.info({ userId: ctx.userId, cropId, varietyId }, "crop_varieties.updated");
-  await logAudit({ userId: ctx.userId, action: "crop.updated", resource: varietyId });
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_variety.updated",
+    resource: varietyId,
+    resourceName: variety.name,
+    metadata: { cropId, cropName: crop.name },
+  });
   return variety;
 }
 
@@ -164,4 +211,10 @@ export async function deleteCropVarietyHandler(
 
   await deleteCropVariety(cropId, varietyId);
   log.info({ userId: ctx.userId, varietyId }, "crop_varieties.deleted");
+  await logAudit({
+    userId: ctx.userId,
+    action: "crop_variety.deleted",
+    resource: varietyId,
+    metadata: { cropId, cropName: crop.name },
+  });
 }

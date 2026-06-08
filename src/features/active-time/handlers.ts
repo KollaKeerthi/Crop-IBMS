@@ -46,9 +46,9 @@ export async function createActiveTimeHandler(
   log.info({ userId: ctx.userId, farmId, activeTimeId: activeTime.id }, "active_time.created");
   await logAudit({
     userId: ctx.userId,
+    farmId,
     action: "active_time.created",
     resource: activeTime.id,
-    metadata: { farmId },
   });
 
   return activeTime;
@@ -69,7 +69,14 @@ export async function updateActiveTimeHandler(
   if (!updated) throw new ApiError(500, "internal_error", "Could not update lead time.");
 
   log.info({ userId: ctx.userId, activeTimeId: id }, "active_time.updated");
-  await logAudit({ userId: ctx.userId, action: "active_time.updated", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "active_time.updated",
+    resource: id,
+    previousData: existing as unknown as Record<string, unknown>,
+    newData: updated as unknown as Record<string, unknown>,
+  });
 
   return updated;
 }
@@ -85,7 +92,13 @@ export async function deleteActiveTimeHandler(
   await deleteActiveTime(id);
 
   log.info({ userId: ctx.userId, activeTimeId: id }, "active_time.deleted");
-  await logAudit({ userId: ctx.userId, action: "active_time.deleted", resource: id });
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "active_time.deleted",
+    resource: id,
+    previousData: existing as unknown as Record<string, unknown>,
+  });
 }
 
 export async function addActivityToActiveTimeHandler(
@@ -104,6 +117,13 @@ export async function addActivityToActiveTimeHandler(
     { userId: ctx.userId, activeTimeId, activityId: activity.id },
     "active_time.activity_added"
   );
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "active_time_activity.added",
+    resource: activity.id,
+    metadata: { activeTimeId, activityId: input.activityId, weekNumber: input.weekNumber },
+  });
 
   return activity;
 }
@@ -120,4 +140,11 @@ export async function removeActivityFromActiveTimeHandler(
   await removeActivityFromActiveTime(activityId);
 
   log.info({ userId: ctx.userId, activeTimeId, activityId }, "active_time.activity_removed");
+  await logAudit({
+    userId: ctx.userId,
+    farmId,
+    action: "active_time_activity.removed",
+    resource: activityId,
+    metadata: { activeTimeId },
+  });
 }

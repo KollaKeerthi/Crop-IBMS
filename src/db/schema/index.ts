@@ -42,7 +42,3 @@ export * from "./calendar-integrations";
 
 // Crop data (production tracking)
 export * from "./crop-data";
-
-// Team & permissions
-export * from "./screens";
-export * from "./user-permissions";

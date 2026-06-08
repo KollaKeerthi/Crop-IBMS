@@ -67,49 +67,51 @@ export function SeasonsTable() {
           ))}
         </div>
       ) : seasons && seasons.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Year</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {seasons.map((season) => (
-              <TableRow key={season.id}>
-                <TableCell className="font-semibold text-foreground">{season.name}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{season.year}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{season.startDate ?? "-"}</TableCell>
-                <TableCell className="text-muted-foreground">{season.endDate ?? "-"}</TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditSeason(season)}
-                      aria-label="Edit season"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeletingId(season.id)}
-                      aria-label="Delete season"
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
+        <div className="overflow-auto rounded-md border max-h-[calc(100vh-280px)]">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-background">
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>End Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {seasons.map((season) => (
+                <TableRow key={season.id}>
+                  <TableCell className="font-semibold text-foreground">{season.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{season.year}</Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{season.startDate ?? "-"}</TableCell>
+                  <TableCell className="text-muted-foreground">{season.endDate ?? "-"}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditSeason(season)}
+                        aria-label="Edit season"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeletingId(season.id)}
+                        aria-label="Delete season"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       ) : (
         <EmptyState
           icon={CalendarDays}

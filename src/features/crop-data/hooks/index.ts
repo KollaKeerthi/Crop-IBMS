@@ -37,10 +37,19 @@ export function useCreateCropData() {
 export function useUpdateCropData() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateCropDataInput }) =>
-      api.updateCropData(id, input),
-    onSuccess: (_data, variables) =>
-      qc.invalidateQueries({ queryKey: ["crop-data", variables.id] }),
+    mutationFn: ({
+      id,
+      farmId,
+      input,
+    }: {
+      id: string;
+      farmId: string;
+      input: UpdateCropDataInput;
+    }) => api.updateCropData(id, farmId, input),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["crop-data", variables.id] });
+      qc.invalidateQueries({ queryKey: ["crop-data"] });
+    },
   });
 }
 
