@@ -169,9 +169,18 @@ export async function updatePlanting(id: string, input: UpdatePlantingInput): Pr
 
   const current = existing[0];
 
+  const rawMethod = input.plantingMethod ?? current.plantingMethod;
+  const method =
+    rawMethod === "Direct" ||
+    rawMethod === "Transplant" ||
+    rawMethod === "Cutting" ||
+    rawMethod === "Seed"
+      ? rawMethod
+      : "Direct";
+
   // Re-run calculations if dates or methods changed during dragging/editing
   const calculated = calculatePlantingDates({
-    plantingMethod: ((input.plantingMethod ?? current.plantingMethod) as any) || "Direct",
+    plantingMethod: method,
     nurseryStartDate:
       input.nurseryStartDate !== undefined
         ? input.nurseryStartDate

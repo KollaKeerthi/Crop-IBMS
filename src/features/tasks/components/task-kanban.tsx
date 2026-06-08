@@ -30,7 +30,9 @@ function BoardTaskCard({ task, farmId }: { task: Task; farmId: string }) {
   const member = members.find((m) => m.userId === task.assignedTo);
   const assigneeDisplay = member
     ? (member.name ?? member.email)
-    : (task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "unassigned");
+    : task.assignedTo
+      ? `${task.assignedTo.slice(0, 8)}...`
+      : "unassigned";
 
   return (
     <>
@@ -52,9 +54,7 @@ function BoardTaskCard({ task, farmId }: { task: Task; farmId: string }) {
             <span>Due: {formatDateDisplay(task.dueDate)}</span>
           </div>
         )}
-        <div className="border-t pt-3 text-sm italic text-muted-foreground">
-          {assigneeDisplay}
-        </div>
+        <div className="border-t pt-3 text-sm italic text-muted-foreground">{assigneeDisplay}</div>
       </button>
 
       {detailOpen && (

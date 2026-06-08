@@ -184,8 +184,7 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
                     <SelectTrigger>
                       <SelectValue placeholder="Select crop">
                         {(value) =>
-                          crops.find((c) => c.id === value)?.name ??
-                          (value ? "Select crop" : null)
+                          crops.find((c) => c.id === value)?.name ?? (value ? "Select crop" : null)
                         }
                       </SelectValue>
                     </SelectTrigger>
@@ -255,7 +254,7 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
                     <SelectValue placeholder="Select season">
                       {(value) => {
                         const s = seasons.find((s) => s.id === value);
-                        return s ? `${s.name} (${s.year})` : (value ? "Select season" : null);
+                        return s ? `${s.name} (${s.year})` : value ? "Select season" : null;
                       }}
                     </SelectValue>
                   </SelectTrigger>

@@ -164,13 +164,7 @@ function DateWithWeekPicker({
   );
 }
 
-function WeekPicker({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-}) {
+function WeekPicker({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   const [monthDate, setMonthDate] = useState(() => {
     // If week number is set, default the calendar view to that week's date in current year
     const year = new Date().getFullYear();
@@ -289,9 +283,11 @@ export function SeasonForm({ farmId, season, onSuccess }: Props) {
     const eDate = parseDate(season.endDate);
     if (!sDate || !eDate) return false;
     const startOfYearS = new Date(sDate.getFullYear(), 0, 1);
-    const dayOfYearS = Math.floor((sDate.getTime() - startOfYearS.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    const dayOfYearS =
+      Math.floor((sDate.getTime() - startOfYearS.getTime()) / (24 * 60 * 60 * 1000)) + 1;
     const startOfYearE = new Date(eDate.getFullYear(), 0, 1);
-    const dayOfYearE = Math.floor((eDate.getTime() - startOfYearE.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    const dayOfYearE =
+      Math.floor((eDate.getTime() - startOfYearE.getTime()) / (24 * 60 * 60 * 1000)) + 1;
     return (dayOfYearS - 1) % 7 === 0 && dayOfYearE % 7 === 0;
   }, [season]);
 

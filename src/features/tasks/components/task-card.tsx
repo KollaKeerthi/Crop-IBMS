@@ -27,7 +27,9 @@ export function TaskCard({ task, farmId }: Props) {
   const member = members.find((m) => m.userId === task.assignedTo);
   const assigneeDisplay = member
     ? (member.name ?? member.email)
-    : (task.assignedTo ? `${task.assignedTo.slice(0, 8)}...` : "");
+    : task.assignedTo
+      ? `${task.assignedTo.slice(0, 8)}...`
+      : "";
 
   const completedCount = task.checklistItems.filter((c) => c.completed).length;
   const totalCount = task.checklistItems.length;
