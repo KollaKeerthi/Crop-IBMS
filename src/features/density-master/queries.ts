@@ -10,7 +10,6 @@ function toDensity(row: DensityRow): DensityMaster {
     id: row.id,
     farmId: row.farmId,
     cropId: row.cropId ?? null,
-    productionSiteId: row.productionSiteId ?? null,
     maleDensity: row.maleDensity ?? null,
     femaleDensity: row.femaleDensity ?? null,
     spacingM: row.spacingM ?? null,

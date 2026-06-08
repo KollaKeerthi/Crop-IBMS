@@ -8,7 +8,6 @@ export const densityMaster = pgTable("density_master", {
     .notNull()
     .references(() => farms.id, { onDelete: "cascade" }),
   cropId: uuid("crop_id").references(() => crops.id, { onDelete: "set null" }),
-  productionSiteId: uuid("production_site_id"),
   maleDensity: real("male_density"),
   femaleDensity: real("female_density"),
   spacingM: real("spacing_m"),

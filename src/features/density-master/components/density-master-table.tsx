@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useDensityMaster, useDeleteDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
-import { useProductionSites } from "@/features/production-sites";
 import type { DensityMaster } from "../schema";
 import { DensityForm } from "./density-form";
 import { Button } from "@/components/ui/button";
@@ -21,14 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Boxes } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function DensityMasterTable() {
   const { selectedFarmId } = useFarm();
   const { data: densities, isLoading } = useDensityMaster(selectedFarmId);
   const { data: crops } = useCrops();
-  const { data: sites } = useProductionSites();
   const deleteMutation = useDeleteDensityMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editDensity, setEditDensity] = useState<DensityMaster | null>(null);
@@ -39,7 +36,6 @@ export function DensityMasterTable() {
   }
 
   const cropName = (id: string | null) => crops?.find((c) => c.id === id)?.name ?? id ?? "-";
-  const siteName = (id: string | null) => sites?.find((s) => s.id === id)?.code ?? id ?? "-";
 
   async function handleDelete(id: string) {
     try {
@@ -55,7 +51,7 @@ export function DensityMasterTable() {
     <div className="space-y-6">
       <SectionHeader
         title="Density"
-        description="Planting density and spacing reference values for each crop × site combination."
+        description="Planting density and spacing reference values for each crop."
         count={densities?.length ?? 0}
         countUnit="records"
         action={
@@ -77,7 +73,6 @@ export function DensityMasterTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Crop</TableHead>
-              <TableHead>Production Site</TableHead>
               <TableHead>Male Density</TableHead>
               <TableHead>Female Density</TableHead>
               <TableHead>Spacing (m)</TableHead>
@@ -92,13 +87,12 @@ export function DensityMasterTable() {
                 <TableCell className="font-semibold text-foreground">
                   {cropName(d.cropId)}
                 </TableCell>
-                <TableCell>{siteName(d.productionSiteId)}</TableCell>
                 <TableCell>{d.maleDensity ?? "-"}</TableCell>
                 <TableCell>{d.femaleDensity ?? "-"}</TableCell>
                 <TableCell>{d.spacingM ?? "-"}</TableCell>
                 <TableCell>{d.rowSpacingM ?? "-"}</TableCell>
                 <TableCell className="font-mono text-xs text-primary">
-                  W{String(d.validFrom).padStart(2, "0")} – W{String(d.validTo).padStart(2, "0")}
+                  W{String(d.validFrom).padStart(2, "0")} - W{String(d.validTo).padStart(2, "0")}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
@@ -118,7 +112,7 @@ export function DensityMasterTable() {
         <EmptyState
           icon={Boxes}
           title="No density records yet"
-          description="Planting density and spacing reference for each crop × production site combination."
+          description="Planting density and spacing reference for each crop."
           action={
             <Button onClick={() => setCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />

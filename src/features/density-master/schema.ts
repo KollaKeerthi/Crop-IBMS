@@ -9,7 +9,6 @@ const weekNumber = z.coerce
 export const CreateDensityMasterInputSchema = z
   .object({
     cropId: z.string().uuid({ message: "Select a crop" }).optional(),
-    productionSiteId: z.string().uuid({ message: "Select a production site" }).optional(),
     maleDensity: z.number().positive().optional(),
     femaleDensity: z.number().positive().optional(),
     spacingM: z.number().positive().optional(),
@@ -25,7 +24,6 @@ export const CreateDensityMasterInputSchema = z
 
 export const UpdateDensityMasterInputSchema = z.object({
   cropId: z.string().uuid().optional().nullable(),
-  productionSiteId: z.string().uuid().optional().nullable(),
   maleDensity: z.number().positive().optional().nullable(),
   femaleDensity: z.number().positive().optional().nullable(),
   spacingM: z.number().positive().optional().nullable(),
@@ -39,7 +37,6 @@ export const DensityMasterSchema = z.object({
   id: z.string().uuid(),
   farmId: z.string().uuid(),
   cropId: z.string().uuid().nullable(),
-  productionSiteId: z.string().uuid().nullable(),
   maleDensity: z.number().nullable(),
   femaleDensity: z.number().nullable(),
   spacingM: z.number().nullable(),

@@ -12,7 +12,6 @@ import {
 } from "../schema";
 import { useCreateDensityMaster, useUpdateDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
-import { useProductionSites } from "@/features/production-sites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,13 +42,11 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
   const schema = isEdit ? UpdateDensityMasterInputSchema : CreateDensityMasterInputSchema;
 
   const { data: crops } = useCrops();
-  const { data: productionSites } = useProductionSites();
 
   const form = useForm<CreateDensityMasterInput>({
     resolver: zodResolver(schema) as Resolver<CreateDensityMasterInput>,
     defaultValues: {
       cropId: density?.cropId ?? undefined,
-      productionSiteId: density?.productionSiteId ?? undefined,
       maleDensity: density?.maleDensity ?? undefined,
       femaleDensity: density?.femaleDensity ?? undefined,
       spacingM: density?.spacingM ?? undefined,
@@ -157,36 +154,6 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
                   {crops?.map((crop) => (
                     <SelectItem key={crop.id} value={crop.id}>
                       {crop.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="productionSiteId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Production Site</FormLabel>
-              <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a production site">
-                      {(value) =>
-                        productionSites?.find((s) => s.id === value)?.code ??
-                        (value ? "Select a production site" : null)
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {productionSites?.map((site) => (
-                    <SelectItem key={site.id} value={site.id}>
-                      {site.code}
                     </SelectItem>
                   ))}
                 </SelectContent>

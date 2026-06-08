@@ -11,6 +11,8 @@ function toSeason(row: SeasonRow): Season {
     farmId: row.farmId,
     name: row.name,
     year: row.year,
+    startWeek: row.startWeek ?? null,
+    endWeek: row.endWeek ?? null,
     startDate: row.startDate
       ? row.startDate instanceof Date
         ? row.startDate.toISOString().split("T")[0]!

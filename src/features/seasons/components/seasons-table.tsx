@@ -22,6 +22,11 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CalendarDays } from "lucide-react";
+import { formatDateDisplay } from "@/lib/week-calendar";
+
+function weekLabel(value: number | null) {
+  return value ? `W${String(value).padStart(2, "0")}` : "-";
+}
 
 export function SeasonsTable() {
   const { selectedFarmId } = useFarm();
@@ -72,8 +77,9 @@ export function SeasonsTable() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Year</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
+              <TableHead>Start Week</TableHead>
+              <TableHead>End Week</TableHead>
+              <TableHead>Calculated Dates</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -84,8 +90,15 @@ export function SeasonsTable() {
                 <TableCell>
                   <Badge variant="secondary">{season.year}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{season.startDate ?? "-"}</TableCell>
-                <TableCell className="text-muted-foreground">{season.endDate ?? "-"}</TableCell>
+                <TableCell className="font-mono text-primary">
+                  {weekLabel(season.startWeek)}
+                </TableCell>
+                <TableCell className="font-mono text-primary">
+                  {weekLabel(season.endWeek)}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDateDisplay(season.startDate)} - {formatDateDisplay(season.endDate)}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
                     <Button

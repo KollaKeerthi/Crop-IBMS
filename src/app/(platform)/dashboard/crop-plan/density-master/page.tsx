@@ -6,7 +6,7 @@ export default function DensityMasterPage() {
       <div>
         <h1 className="text-2xl font-semibold">Density Master</h1>
         <p className="text-sm text-muted-foreground">
-          Configure planting density parameters per crop and production site.
+          Configure planting density parameters per crop.
         </p>
       </div>
       <DensityMasterTable />

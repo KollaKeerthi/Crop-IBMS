@@ -13,7 +13,6 @@ export async function insertDensity(
     .values({
       farmId,
       cropId: input.cropId ?? null,
-      productionSiteId: input.productionSiteId ?? null,
       maleDensity: input.maleDensity ?? null,
       femaleDensity: input.femaleDensity ?? null,
       spacingM: input.spacingM ?? null,
@@ -37,7 +36,6 @@ export async function updateDensity(
     .update(densityMaster)
     .set({
       ...(input.cropId !== undefined && { cropId: input.cropId }),
-      ...(input.productionSiteId !== undefined && { productionSiteId: input.productionSiteId }),
       ...(input.maleDensity !== undefined && { maleDensity: input.maleDensity }),
       ...(input.femaleDensity !== undefined && { femaleDensity: input.femaleDensity }),
       ...(input.spacingM !== undefined && { spacingM: input.spacingM }),

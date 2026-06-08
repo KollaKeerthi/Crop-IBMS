@@ -8,6 +8,8 @@ export const seasons = pgTable("seasons", {
     .references(() => farms.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   year: integer("year").notNull(),
+  startWeek: integer("start_week"),
+  endWeek: integer("end_week"),
   startDate: timestamp("start_date", { mode: "date" }),
   endDate: timestamp("end_date", { mode: "date" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),

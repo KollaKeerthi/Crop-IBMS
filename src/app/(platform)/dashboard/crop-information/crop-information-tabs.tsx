@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  MapPin,
   Layers,
   Sprout,
   Database,
@@ -18,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CropTable, CropTypesTable, CropVarietiesTable } from "@/features/crops";
 import { SeasonsTable } from "@/features/seasons";
 import { ActivitiesTable } from "@/features/activities";
-import { ProductionSitesList } from "@/features/production-sites";
 import { ProductionTypesList } from "@/features/production-types";
 import { DensityMasterTable } from "@/features/density-master";
 import { ActiveTimeTable } from "@/features/active-time";
@@ -28,20 +26,8 @@ import { VariabilityTable } from "@/features/variability";
 const TAB_TRIGGER_CLASS =
   "shrink-0 flex-none text-sm font-medium gap-2 px-3 py-2 data-active:text-primary";
 
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-10 text-center shadow-sm">
-      <p className="text-h4 font-bold text-foreground">{title}</p>
-      <p className="text-small text-muted-foreground mt-2">
-        This master is not built yet. Backend scaffolding may already exist; ask Claude to wire up
-        the UI when you&apos;re ready.
-      </p>
-    </div>
-  );
-}
-
 export function CropInformationTabs() {
-  const [active, setActive] = useState("production-site");
+  const [active, setActive] = useState("production-type");
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,9 +47,6 @@ export function CropInformationTabs() {
           variant="line"
           className="flex h-auto w-full justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
-          <TabsTrigger value="production-site" className={TAB_TRIGGER_CLASS}>
-            <MapPin className="h-4 w-4" /> Production Site
-          </TabsTrigger>
           <TabsTrigger value="production-type" className={TAB_TRIGGER_CLASS}>
             <Layers className="h-4 w-4" /> Production Type
           </TabsTrigger>
@@ -98,10 +81,6 @@ export function CropInformationTabs() {
         {/* right-edge fade hint for scrollable overflow */}
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-linear-to-l from-background to-transparent" />
       </div>
-
-      <TabsContent value="production-site" className="mt-6">
-        <ProductionSitesList />
-      </TabsContent>
 
       <TabsContent value="production-type" className="mt-6">
         <ProductionTypesList />
