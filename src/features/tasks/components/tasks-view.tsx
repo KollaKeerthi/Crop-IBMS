@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -15,6 +15,8 @@ import {
   subMonths,
 } from "date-fns";
 import {
+  AlertTriangle,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -24,6 +26,7 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { apiFetch } from "@/lib/api/client";
 import { useFarm } from "@/lib/farm-context";
 import { formatDateDisplay } from "@/lib/format";
 import { useEvents } from "@/features/events/hooks";
@@ -213,6 +217,24 @@ export function TasksView() {
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [integrations, setIntegrations] = useState<{ provider: string; connectedAt: string }[]>([]);
+  const [loadingIntegrations, setLoadingIntegrations] = useState(true);
+
+  useEffect(() => {
+    async function loadIntegrations() {
+      try {
+        const data = await apiFetch<{ provider: string; connectedAt: string }[]>(
+          "/api/v1/integrations/calendar/status"
+        );
+        setIntegrations(data ?? []);
+      } catch (err) {
+        console.error("Failed to load integrations status", err);
+      } finally {
+        setLoadingIntegrations(false);
+      }
+    }
+    loadIntegrations();
+  }, []);
 
   const {
     data: tasks,
@@ -277,7 +299,52 @@ export function TasksView() {
   return (
     <div className="bg-background">
       <div className="border-b px-12 py-10">
-        <h1 className="mb-7 text-3xl font-bold tracking-tight">Tasks</h1>
+        <h1 className="mb-5 text-3xl font-bold tracking-tight">Tasks</h1>
+
+        {!loadingIntegrations && (
+          <div className="mb-7 rounded-2xl border border-border/50 bg-linear-to-r from-card via-card to-muted/20 p-4 shadow-sm relative overflow-hidden transition-all duration-200">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    integrations.length > 0
+                      ? "bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20 animate-pulse"
+                  }`}
+                >
+                  {integrations.length > 0 ? (
+                    <CheckCircle className="h-5 w-5" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground/90">
+                    {integrations.length > 0
+                      ? `Live Calendar Sync Enabled (${integrations.map((i) => (i.provider === "google" ? "Google" : "Outlook")).join(" & ")})`
+                      : "Automatic Calendar Synchronization is Offline"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 max-w-xl truncate sm:whitespace-normal">
+                    {integrations.length > 0
+                      ? "Your tasks and events are automatically replicating to your connected cloud schedules."
+                      : "Connect Google Calendar or Outlook to sync your tasks and events to your mobile device in real-time."}
+                  </p>
+                </div>
+              </div>
+              {integrations.length === 0 && (
+                <Link href="/dashboard/settings/integrations">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="border-amber-500/20 text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/40 text-xs shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    Connect Services
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-9 border-b">
           {TASK_TABS.map((tab) => (
@@ -458,7 +525,7 @@ export function TasksView() {
           if (!open) setCreateOpen(false);
         }}
       >
-        <DialogContent className="!max-w-[1100px] !w-[96vw] max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-275! w-[96vw]! max-h-[90vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle className="px-5 pt-5">New task</DialogTitle>
           </DialogHeader>

@@ -10,8 +10,6 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
-  CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
@@ -31,9 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { apiFetch } from "@/lib/api/client";
 import { formatDateDisplay } from "@/lib/format";
-import Link from "next/link";
 
 const STATUS_VARIANT: Record<PlantingStatus, "default" | "secondary" | "outline" | "destructive"> =
   {
@@ -222,9 +218,6 @@ export function PlantingsList() {
   // Calendar states
   const [calDate, setCalDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [integrations, setIntegrations] = useState<{ provider: string; connectedAt: string }[]>([]);
-  const [loadingIntegrations, setLoadingIntegrations] = useState(true);
-
   const { data: allPlantings, isLoading } = usePlantings(
     selectedFarmId,
     filters.seasonId ?? undefined
@@ -235,23 +228,6 @@ export function PlantingsList() {
   const { data: taskList = [] } = useTasks(selectedFarmId);
   const { data: blocks = [] } = useBlockMaster(selectedFarmId);
   const deleteMutation = useDeletePlanting(selectedFarmId ?? "");
-
-  // Load calendar integrations status
-  useEffect(() => {
-    async function loadIntegrations() {
-      try {
-        const data = await apiFetch<{ provider: string; connectedAt: string }[]>(
-          "/api/v1/integrations/calendar/status"
-        );
-        setIntegrations(data ?? []);
-      } catch (err) {
-        console.error("Failed to load integrations status", err);
-      } finally {
-        setLoadingIntegrations(false);
-      }
-    }
-    loadIntegrations();
-  }, []);
 
   if (!selectedFarmId) {
     return <p className="text-sm text-muted-foreground">Select a farm to manage plantings.</p>;
@@ -362,52 +338,6 @@ export function PlantingsList() {
 
   return (
     <div className="space-y-6">
-      {/* 🔌 Production-Grade Calendar Sync Warning Banner */}
-      {!loadingIntegrations && (
-        <div className="rounded-2xl border border-border/50 bg-linear-to-r from-card via-card to-muted/20 p-4 shadow-sm relative overflow-hidden transition-all duration-200">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  integrations.length > 0
-                    ? "bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20"
-                    : "bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20 animate-pulse"
-                }`}
-              >
-                {integrations.length > 0 ? (
-                  <CheckCircle className="h-5 w-5" />
-                ) : (
-                  <AlertTriangle className="h-5 w-5" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground/90">
-                  {integrations.length > 0
-                    ? `Live Calendar Sync Enabled (${integrations.map((i) => (i.provider === "google" ? "Google" : "Outlook")).join(" & ")})`
-                    : "Automatic Calendar Synchronization is Offline"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl truncate sm:whitespace-normal">
-                  {integrations.length > 0
-                    ? "Your crop plantings, nursery cycles, and harvest events are automatically replicating to your connected cloud schedules."
-                    : "Connect Google Calendar or Outlook to sync your crop nursery and harvest dates to your mobile device in real-time."}
-                </p>
-              </div>
-            </div>
-            {integrations.length === 0 && (
-              <Link href="/dashboard/settings/integrations">
-                <Button
-                  size="xs"
-                  variant="outline"
-                  className="border-amber-500/20 text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/40 text-xs shrink-0 cursor-pointer shadow-3xs"
-                >
-                  Connect Services
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">

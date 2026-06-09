@@ -93,7 +93,17 @@ export type AuditAction =
   | "variability.updated"
   | "variability.deleted"
   | "calendar_integration.connected"
-  | "calendar_integration.disconnected";
+  | "calendar_integration.disconnected"
+  | "reservation.created"
+  | "reservation.updated"
+  | "reservation.deleted"
+  | "reservation.status_changed"
+  | "contract.created"
+  | "contract.updated"
+  | "contract.deleted"
+  | "contract.allocated"
+  | "contract.unallocated"
+  | "contract.status_changed";
 
 type LogAuditParams = {
   userId: string | null;
