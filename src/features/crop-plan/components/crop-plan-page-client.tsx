@@ -301,6 +301,7 @@ export function CropPlanPageClient() {
               setMainTab("reservation");
               setResSubTab("manual");
               setManualSubTab("normal");
+              setOpenSelector(null);
               clearSelection();
             }}
           >
@@ -313,6 +314,7 @@ export function CropPlanPageClient() {
             onClick={() => {
               setMainTab("contract");
               setContractSubTab("manual");
+              setOpenSelector(null);
               clearSelection();
             }}
           >
@@ -489,24 +491,6 @@ export function CropPlanPageClient() {
               </div>
             )}
           </div>
-
-          {/* Sub-tabs */}
-
-          {/* Normal / Empty toggle (Reservation Manual only) */}
-
-          {/* Contract manual edit indicator */}
-          {false && (
-            <div className="flex items-center justify-between border-b border-border px-3 py-1.5 bg-primary/[0.04]">
-              <span className="text-[10px] font-semibold text-primary">Editing contract</span>
-              <button
-                type="button"
-                onClick={clearSelection}
-                className="text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                ✕ New
-              </button>
-            </div>
-          )}
 
           {/* ── Form content ── */}
           <div className="flex-1 overflow-y-auto p-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CalendarDays, LayoutGrid, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reservation, UpdateReservationInput } from "@/features/reservations/schema";
 import type { Contract, UpdateContractInput } from "@/features/contracts/schema";
@@ -22,6 +23,8 @@ const MIN_YEAR = CURRENT_YEAR - YEAR_SPAN;
 const MAX_YEAR = CURRENT_YEAR + YEAR_SPAN;
 const YEAR_RANGE = Array.from({ length: YEAR_SPAN * 2 + 1 }, (_, i) => MIN_YEAR + i);
 const TOTAL_WEEKS = YEAR_RANGE.length * WEEKS_PER_YEAR;
+
+type ViewMode = "block" | "crop" | "date";
 
 type CalendarItem =
   | { kind: "reservation"; data: Reservation }
@@ -58,6 +61,16 @@ interface BarColors {
   ring: string;
   text: string;
   handle: string;
+}
+
+interface RowConfig {
+  key: string;
+  bars: CalendarBar[];
+  primaryText: string;
+  secondaryText?: string;
+  accentText?: string;
+  badgeCount?: number;
+  isActive?: boolean;
 }
 
 const MONTH_RAW: { label: string; weeks: number }[] = [
@@ -349,6 +362,7 @@ export function PlanningCalendar({
   const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
   const [errorIds, setErrorIds] = useState<Record<string, boolean>>({});
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("block");
   const dragStateRef = useRef<DragState | null>(null);
   const suppressClickId = useRef<string | null>(null);
 
@@ -387,6 +401,103 @@ export function PlanningCalendar({
     }
     return map;
   }, [itemsByBlock, optimisticRanges]);
+
+  const cropRows = useMemo(() => {
+    const seen = new Map<string, string | null>();
+    for (const r of reservations) {
+      const name = r.cropName ?? "Unknown";
+      if (!seen.has(name)) seen.set(name, r.cropTypeName ?? null);
+    }
+    for (const c of contracts) {
+      const name = c.cropName ?? "Unknown";
+      if (!seen.has(name)) seen.set(name, c.cropTypeName ?? null);
+    }
+    return Array.from(seen.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cropName, cropTypeName]) => ({ cropName, cropTypeName }));
+  }, [reservations, contracts]);
+
+  const stackedByCrop = useMemo(() => {
+    const map = new Map<string, CalendarBar[]>();
+    for (const { cropName } of cropRows) {
+      const items: CalendarItem[] = [
+        ...reservations
+          .filter((r) => (r.cropName ?? "Unknown") === cropName)
+          .map((r) => ({ kind: "reservation" as const, data: r })),
+        ...contracts
+          .filter((c) => (c.cropName ?? "Unknown") === cropName)
+          .map((c) => ({ kind: "contract" as const, data: c })),
+      ];
+      map.set(cropName, stackBars(items, optimisticRanges));
+    }
+    return map;
+  }, [cropRows, reservations, contracts, optimisticRanges]);
+
+  const monthRows = useMemo(() => {
+    const offset = getYearOffset(year) ?? 0;
+    return MONTH_STARTS.map((m, idx) => ({
+      label: m.label,
+      idx,
+      startGlobal: offset + m.start,
+      endGlobal: offset + m.end,
+    }));
+  }, [year]);
+
+  const stackedByMonth = useMemo(() => {
+    const map = new Map<string, CalendarBar[]>();
+    const allItems: CalendarItem[] = [
+      ...reservations.map((r) => ({ kind: "reservation" as const, data: r })),
+      ...contracts.map((c) => ({ kind: "contract" as const, data: c })),
+    ];
+    for (const { label, startGlobal, endGlobal } of monthRows) {
+      const items = allItems.filter((item) => {
+        const range = getBarRange(item, optimisticRanges);
+        if (!range) return false;
+        return range.end >= startGlobal && range.start <= endGlobal;
+      });
+      map.set(label, stackBars(items, optimisticRanges));
+    }
+    return map;
+  }, [monthRows, reservations, contracts, optimisticRanges]);
+
+  const rows = useMemo<RowConfig[]>(() => {
+    if (viewMode === "block") {
+      return blocks.map((b) => {
+        const bars = stackedByBlock.get(b.id) ?? [];
+        return {
+          key: b.id,
+          bars,
+          primaryText: b.blockName,
+          secondaryText: b.subBlockName ?? undefined,
+          accentText: b.areaSqm != null ? `${Number(b.areaSqm).toLocaleString()} m²` : undefined,
+          badgeCount: bars.length > 0 ? bars.length : undefined,
+        };
+      });
+    }
+    if (viewMode === "crop") {
+      return cropRows.map(({ cropName, cropTypeName }) => {
+        const bars = stackedByCrop.get(cropName) ?? [];
+        return {
+          key: cropName,
+          bars,
+          primaryText: cropName,
+          secondaryText: cropTypeName ?? undefined,
+          badgeCount: bars.length > 0 ? bars.length : undefined,
+        };
+      });
+    }
+    const currentMonth = new Date().getMonth();
+    return monthRows.map(({ label, idx }) => {
+      const bars = stackedByMonth.get(label) ?? [];
+      return {
+        key: label,
+        bars,
+        primaryText: `${label} ${year}`,
+        badgeCount: bars.length > 0 ? bars.length : undefined,
+        isActive: idx === currentMonth && year === CURRENT_YEAR,
+      };
+    });
+  }, [viewMode, blocks, year, cropRows, monthRows, stackedByBlock, stackedByCrop, stackedByMonth]);
 
   const commitDrag = useCallback(
     async (current: DragState) => {
@@ -503,13 +614,6 @@ export function PlanningCalendar({
     };
   }, [commitDrag, dragState]);
 
-  function getRowHeight(blockId: string): number {
-    const bars = stackedByBlock.get(blockId) ?? [];
-    if (bars.length === 0) return MIN_ROW_H;
-    const maxRow = Math.max(...bars.map((b) => b.row));
-    return ROW_PAD * 2 + (maxRow + 1) * (BAR_H + BAR_GAP) - BAR_GAP;
-  }
-
   function startDrag(event: React.PointerEvent, bar: CalendarBar, mode: DragState["mode"]) {
     if (!bar.editable || savingIds[bar.item.data.id]) return;
     const bounds = getScheduleBounds(bar.item);
@@ -545,10 +649,49 @@ export function PlanningCalendar({
     return { start: bar.start, end: bar.end };
   }
 
+  function getViewBarLabel(item: CalendarItem): string {
+    if (viewMode === "block") return getBarLabel(item);
+    if (viewMode === "crop") return item.data.blockName ?? "Unallocated";
+    return (
+      [item.data.cropName, item.data.blockName].filter(Boolean).join(" · ") ||
+      (item.kind === "contract" ? "Contract" : "Reservation")
+    );
+  }
+
+  const headerLabel = viewMode === "block" ? "Block" : viewMode === "crop" ? "Crop" : "Month";
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-card">
+      {/* View mode toggle */}
+      <div className="flex shrink-0 items-center gap-1.5 border-b border-border bg-card/50 px-4 py-2">
+        <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          View
+        </span>
+        {[
+          { mode: "block" as const, Icon: LayoutGrid, label: "By Block" },
+          { mode: "crop" as const, Icon: Sprout, label: "By Crop" },
+          { mode: "date" as const, Icon: CalendarDays, label: "By Date" },
+        ].map(({ mode, Icon, label }) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => setViewMode(mode)}
+            className={cn(
+              "flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-medium transition-colors",
+              viewMode === mode
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Icon className="size-3" />
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div ref={scrollRef} className="flex-1 overflow-auto">
         <div style={{ minWidth: LABEL_WIDTH + gridWidth }}>
+          {/* Sticky header */}
           <div
             className="sticky top-0 z-20 flex border-b border-border"
             style={{ height: HEADER_H }}
@@ -558,7 +701,7 @@ export function PlanningCalendar({
               style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH, height: HEADER_H }}
             >
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Block
+                {headerLabel}
               </span>
             </div>
 
@@ -615,28 +758,44 @@ export function PlanningCalendar({
             </div>
           </div>
 
-          {blocks.length === 0 ? (
+          {rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 py-32 text-muted-foreground">
               <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted text-2xl">
                 #
               </div>
-              <p className="text-sm font-semibold">No blocks configured</p>
+              <p className="text-sm font-semibold">
+                {viewMode === "block" ? "No blocks configured" : "No crops planned"}
+              </p>
               <p className="text-xs opacity-60">
-                Add blocks in Block Master to use the Gantt calendar
+                {viewMode === "block"
+                  ? "Add blocks in Block Master to use the Gantt calendar"
+                  : "Create a reservation or contract to see crops here"}
               </p>
             </div>
           ) : (
-            blocks.map((block, blockIdx) => {
-              const rowH = Math.max(getRowHeight(block.id), MIN_ROW_H);
-              const bars = stackedByBlock.get(block.id) ?? [];
-              const isEven = blockIdx % 2 === 0;
+            rows.map((row, rowIdx) => {
+              const rowH = Math.max(
+                row.bars.length > 0
+                  ? ROW_PAD * 2 +
+                      (Math.max(...row.bars.map((b) => b.row)) + 1) * (BAR_H + BAR_GAP) -
+                      BAR_GAP
+                  : MIN_ROW_H,
+                MIN_ROW_H
+              );
+              const isEven = rowIdx % 2 === 0;
+              const accentColor = row.bars.some((b) => b.item.kind === "contract")
+                ? "bg-accent-foreground/70"
+                : row.bars.length > 0
+                  ? "bg-primary"
+                  : "bg-muted-foreground/30";
 
               return (
                 <div
-                  key={block.id}
+                  key={row.key}
                   className={cn(
                     "group/row flex border-b border-border/20 transition-colors duration-100 hover:bg-primary/[0.015]",
-                    isEven ? "bg-card" : "bg-muted/5"
+                    isEven ? "bg-card" : "bg-muted/5",
+                    row.isActive && "bg-primary/[0.03]"
                   )}
                   style={{ height: rowH }}
                 >
@@ -650,37 +809,30 @@ export function PlanningCalendar({
                     style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
                   >
                     <div className="flex items-start gap-2.5">
-                      <div
-                        className={cn(
-                          "mt-0.5 h-3 w-1 shrink-0 rounded-full",
-                          bars.some((b) => b.item.kind === "contract")
-                            ? "bg-accent-foreground/70"
-                            : bars.length > 0
-                              ? "bg-primary"
-                              : "bg-muted-foreground/30"
-                        )}
-                      />
+                      <div className={cn("mt-0.5 h-3 w-1 shrink-0 rounded-full", accentColor)} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-semibold text-foreground">
-                          {block.blockName}
+                          {row.primaryText}
                         </p>
-                        {block.subBlockName && (
+                        {row.secondaryText && (
                           <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                            {block.subBlockName}
+                            {row.secondaryText}
                           </p>
                         )}
-                        <div className="mt-1 flex items-center gap-2">
-                          {block.areaSqm != null && (
-                            <span className="text-[9px] text-muted-foreground/50">
-                              {Number(block.areaSqm).toLocaleString()} m2
-                            </span>
-                          )}
-                          {bars.length > 0 && (
-                            <span className="rounded bg-muted/60 px-1 text-[9px] font-medium text-muted-foreground/60">
-                              {bars.length}
-                            </span>
-                          )}
-                        </div>
+                        {(row.accentText != null || row.badgeCount != null) && (
+                          <div className="mt-1 flex items-center gap-2">
+                            {row.accentText != null && (
+                              <span className="text-[9px] text-muted-foreground/50">
+                                {row.accentText}
+                              </span>
+                            )}
+                            {row.badgeCount != null && (
+                              <span className="rounded bg-muted/60 px-1 text-[9px] font-medium text-muted-foreground/60">
+                                {row.badgeCount}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -719,7 +871,7 @@ export function PlanningCalendar({
                       style={{ left: (currentYearOffset + currentWeek - 0.5) * WEEK_WIDTH - 1 }}
                     />
 
-                    {bars.map((bar) => {
+                    {row.bars.map((bar) => {
                       const renderedRange = getRenderedRange(bar);
                       const left = (renderedRange.start - 1) * WEEK_WIDTH + 2;
                       const width = Math.max(
@@ -728,7 +880,7 @@ export function PlanningCalendar({
                       );
                       const top = ROW_PAD + bar.row * (BAR_H + BAR_GAP);
                       const { bg, ring, text, handle } = getBarColors(bar.item);
-                      const label = getBarLabel(bar.item);
+                      const label = getViewBarLabel(bar.item);
                       const isSelected = bar.item.data.id === selectedId;
                       const isSaving = savingIds[bar.item.data.id];
                       const hasError = errorIds[bar.item.data.id];
@@ -832,7 +984,7 @@ export function PlanningCalendar({
                       );
                     })}
 
-                    {bars.length === 0 && (
+                    {row.bars.length === 0 && viewMode === "block" && (
                       <div className="pointer-events-none absolute inset-0 flex items-center opacity-0 transition-opacity group-hover/row:opacity-100">
                         <span className="ml-3 text-[9px] italic text-muted-foreground/35">
                           No entries - use the left panel to add a reservation or contract
