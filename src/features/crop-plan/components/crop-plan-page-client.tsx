@@ -28,6 +28,8 @@ type CalendarItem =
   | { kind: "contract"; data: Contract };
 
 const CURRENT_YEAR = new Date().getFullYear();
+const MIN_YEAR = CURRENT_YEAR - 3;
+const MAX_YEAR = CURRENT_YEAR + 3;
 
 // ─── Tab pill component ───────────────────────────────────────────────────────
 function TabPill({
@@ -116,6 +118,8 @@ export function CropPlanPageClient() {
   const { data: blocks = [] } = useBlockMaster(farmId || null);
   const { data: reservations = [] } = useReservations(farmId || null, year);
   const { data: contracts = [] } = useContracts(farmId || null, year);
+  const { data: allReservations = [] } = useReservations(farmId || null);
+  const { data: allContracts = [] } = useContracts(farmId || null);
 
   const unallocRes = reservations.filter((r) => !r.blockId);
   const unallocCon = contracts.filter((c) => !c.blockId);
@@ -183,8 +187,9 @@ export function CropPlanPageClient() {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => setYear((y) => y - 1)}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer"
+            onClick={() => setYear((y) => Math.max(MIN_YEAR, y - 1))}
+            disabled={year <= MIN_YEAR}
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft className="size-3.5" />
           </button>
@@ -193,8 +198,9 @@ export function CropPlanPageClient() {
           </span>
           <button
             type="button"
-            onClick={() => setYear((y) => y + 1)}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer"
+            onClick={() => setYear((y) => Math.min(MAX_YEAR, y + 1))}
+            disabled={year >= MAX_YEAR}
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronRight className="size-3.5" />
           </button>
@@ -509,8 +515,8 @@ export function CropPlanPageClient() {
         <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
           <PlanningCalendar
             blocks={blocks}
-            reservations={reservations}
-            contracts={contracts}
+            reservations={allReservations}
+            contracts={allContracts}
             year={year}
             onItemClick={handleCalendarItemClick}
             selectedId={selectedItem?.data.id ?? null}

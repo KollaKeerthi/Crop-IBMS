@@ -16,7 +16,13 @@ const BAR_H = 22;
 const BAR_GAP = 3;
 const ROW_PAD = 7;
 const MIN_ROW_H = 48;
-const TOTAL_WEEKS = 52;
+const WEEKS_PER_YEAR = 52;
+const YEAR_SPAN = 3;
+const CURRENT_YEAR = new Date().getFullYear();
+const MIN_YEAR = CURRENT_YEAR - YEAR_SPAN;
+const MAX_YEAR = CURRENT_YEAR + YEAR_SPAN;
+const YEAR_RANGE = Array.from({ length: YEAR_SPAN * 2 + 1 }, (_, i) => MIN_YEAR + i);
+const TOTAL_WEEKS = YEAR_RANGE.length * WEEKS_PER_YEAR;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type CalendarItem =
@@ -62,19 +68,33 @@ function getCurrentWeek(): number {
   return Math.ceil(((now.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
 }
 
+function getYearOffset(year: number): number | null {
+  if (year < MIN_YEAR || year > MAX_YEAR) return null;
+  return (year - MIN_YEAR) * WEEKS_PER_YEAR;
+}
+
 function getBarRange(item: CalendarItem): { start: number; end: number } | null {
+  const offset = getYearOffset(item.data.year);
+  if (offset == null) return null;
+
   if (item.kind === "reservation") {
     const r = item.data;
     if (r.type === "empty") {
-      if (r.startWeek != null && r.endWeek != null) return { start: r.startWeek, end: r.endWeek };
+      if (r.startWeek != null && r.endWeek != null) {
+        return { start: offset + r.startWeek, end: offset + Math.min(r.endWeek, WEEKS_PER_YEAR) };
+      }
     } else {
       const start = r.plantingWeek ?? r.pollinationStartWeek;
-      if (start != null && r.endWeek != null) return { start, end: r.endWeek };
+      if (start != null && r.endWeek != null) {
+        return { start: offset + start, end: offset + Math.min(r.endWeek, WEEKS_PER_YEAR) };
+      }
     }
   } else {
     const c = item.data;
     const start = c.plantingWeek ?? c.pollinationStartWeek;
-    if (start != null && c.endWeek != null) return { start, end: c.endWeek };
+    if (start != null && c.endWeek != null) {
+      return { start: offset + start, end: offset + Math.min(c.endWeek, WEEKS_PER_YEAR) };
+    }
   }
   return null;
 }
@@ -177,17 +197,16 @@ export function PlanningCalendar({
 }: PlanningCalendarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentWeek = useMemo(() => getCurrentWeek(), []);
-  const isCurrentYear = new Date().getFullYear() === year;
+  const currentYearOffset = getYearOffset(CURRENT_YEAR) ?? 0;
   const gridWidth = TOTAL_WEEKS * WEEK_WIDTH;
 
   useEffect(() => {
     if (!scrollRef.current) return;
-    if (isCurrentYear) {
-      scrollRef.current.scrollLeft = Math.max(0, (currentWeek - 3) * WEEK_WIDTH - 60);
-    } else {
-      scrollRef.current.scrollLeft = 0;
-    }
-  }, [currentWeek, isCurrentYear, year]);
+    const selectedYearOffset = getYearOffset(year) ?? currentYearOffset;
+    const targetWeek =
+      year === CURRENT_YEAR ? selectedYearOffset + currentWeek : selectedYearOffset + 1;
+    scrollRef.current.scrollLeft = Math.max(0, (targetWeek - 3) * WEEK_WIDTH - 60);
+  }, [currentWeek, currentYearOffset, year]);
 
   const itemsByBlock = useMemo(() => {
     const map = new Map<string, CalendarItem[]>();
@@ -237,40 +256,49 @@ export function PlanningCalendar({
             <div className="flex flex-col" style={{ width: gridWidth }}>
               {/* Month row */}
               <div className="flex border-b border-border/40" style={{ height: MONTH_ROW_H }}>
-                {MONTH_STARTS.map((m) => {
-                  const w = m.weeks * WEEK_WIDTH;
-                  return (
-                    <div
-                      key={m.label}
-                      className="flex items-center justify-center border-r border-border/30 bg-muted/70 backdrop-blur-sm shrink-0"
-                      style={{ width: w, minWidth: w }}
-                    >
-                      <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                        {m.label}
-                      </span>
-                    </div>
-                  );
-                })}
+                {YEAR_RANGE.flatMap((rangeYear) =>
+                  MONTH_STARTS.map((m) => {
+                    const w = m.weeks * WEEK_WIDTH;
+                    return (
+                      <div
+                        key={`${rangeYear}-${m.label}`}
+                        className={cn(
+                          "flex items-center justify-center border-r border-border/30 bg-muted/70 backdrop-blur-sm shrink-0",
+                          rangeYear === year && "bg-primary/10"
+                        )}
+                        style={{ width: w, minWidth: w }}
+                      >
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+                          {m.label} {rangeYear}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               {/* Week number row */}
               <div className="flex bg-muted/50 backdrop-blur-sm" style={{ height: WEEK_ROW_H }}>
                 {Array.from({ length: TOTAL_WEEKS }, (_, i) => {
-                  const week = i + 1;
-                  const isCurrent = isCurrentYear && week === currentWeek;
+                  const rangeYear = MIN_YEAR + Math.floor(i / WEEKS_PER_YEAR);
+                  const week = (i % WEEKS_PER_YEAR) + 1;
+                  const isCurrent = rangeYear === CURRENT_YEAR && week === currentWeek;
                   const isMonthBoundary = MONTH_STARTS.some((m) => m.start === week && week > 1);
                   return (
                     <div
-                      key={week}
+                      key={`${rangeYear}-${week}`}
                       className={cn(
                         "flex items-center justify-center shrink-0 border-r text-[10px] font-medium",
                         isCurrent
                           ? "bg-primary text-primary-foreground font-bold border-primary/50"
-                          : isMonthBoundary
-                            ? "bg-muted/80 text-muted-foreground border-border/50 font-semibold"
-                            : "text-muted-foreground/50 border-border/15"
+                          : rangeYear === year
+                            ? "bg-primary/5 text-foreground border-primary/10"
+                            : isMonthBoundary
+                              ? "bg-muted/80 text-muted-foreground border-border/50 font-semibold"
+                              : "text-muted-foreground/50 border-border/15"
                       )}
                       style={{ width: WEEK_WIDTH, minWidth: WEEK_WIDTH }}
+                      title={`${rangeYear} week ${week}`}
                     >
                       {week}
                     </div>
@@ -361,8 +389,9 @@ export function PlanningCalendar({
                     {/* Grid column lines */}
                     <div className="absolute inset-0 flex pointer-events-none">
                       {Array.from({ length: TOTAL_WEEKS }, (_, i) => {
-                        const week = i + 1;
-                        const isCurrent = isCurrentYear && week === currentWeek;
+                        const rangeYear = MIN_YEAR + Math.floor(i / WEEKS_PER_YEAR);
+                        const week = (i % WEEKS_PER_YEAR) + 1;
+                        const isCurrent = rangeYear === CURRENT_YEAR && week === currentWeek;
                         const isMonthBoundary = MONTH_STARTS.some(
                           (m) => m.start === week && week > 1
                         );
@@ -384,11 +413,11 @@ export function PlanningCalendar({
                     </div>
 
                     {/* Current week line */}
-                    {isCurrentYear && currentWeek >= 1 && currentWeek <= TOTAL_WEEKS && (
+                    {currentWeek >= 1 && currentWeek <= WEEKS_PER_YEAR && (
                       <div
                         className="absolute top-0 bottom-0 z-5 pointer-events-none"
                         style={{
-                          left: (currentWeek - 0.5) * WEEK_WIDTH - 1,
+                          left: (currentYearOffset + currentWeek - 0.5) * WEEK_WIDTH - 1,
                           width: 2,
                           background:
                             "linear-gradient(to bottom, hsl(var(--primary)/0.5) 0%, hsl(var(--primary)/0.1) 100%)",
@@ -403,6 +432,8 @@ export function PlanningCalendar({
                       const top = ROW_PAD + bar.row * (BAR_H + BAR_GAP);
                       const { bg, ring, text } = getBarColors(bar.item);
                       const label = getBarLabel(bar.item);
+                      const displayStart = ((bar.start - 1) % WEEKS_PER_YEAR) + 1;
+                      const displayEnd = ((bar.end - 1) % WEEKS_PER_YEAR) + 1;
                       const isSelected = bar.item.data.id === selectedId;
                       const isEmpty =
                         bar.item.kind === "reservation" &&
@@ -422,7 +453,7 @@ export function PlanningCalendar({
                             isSelected && `ring-2 ${ring} ring-offset-1 shadow-md`
                           )}
                           style={{ left, width, top, height: BAR_H }}
-                          title={`${label} | W${bar.start}–W${bar.end}`}
+                          title={`${label} | ${bar.item.data.year} W${displayStart}-${displayEnd}`}
                         >
                           {isEmpty && <span className="shrink-0 text-[10px]">◻</span>}
                           {width > 40 && (
@@ -432,7 +463,7 @@ export function PlanningCalendar({
                           )}
                           {width > 90 && (
                             <span className="ml-auto shrink-0 text-[9px] opacity-60 font-normal">
-                              W{bar.start}–{bar.end}
+                              {bar.item.data.year} W{displayStart}-{displayEnd}
                             </span>
                           )}
                         </button>
@@ -473,12 +504,12 @@ export function PlanningCalendar({
             <span className="text-[10px] text-muted-foreground">{label}</span>
           </div>
         ))}
-        {isCurrentYear && (
-          <div className="ml-auto flex items-center gap-1.5">
-            <span className="h-3 w-0.5 rounded-full bg-primary/50" />
-            <span className="text-[10px] text-muted-foreground">W{currentWeek} (now)</span>
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          <span className="h-3 w-0.5 rounded-full bg-primary/50" />
+          <span className="text-[10px] text-muted-foreground">
+            {MIN_YEAR}-{MAX_YEAR} · W{currentWeek} (now)
+          </span>
+        </div>
       </div>
     </div>
   );
