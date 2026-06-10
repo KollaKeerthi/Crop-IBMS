@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFarm } from "@/lib/farm-context";
 import { useBlockMaster } from "@/features/block-master/hooks";
-import { useReservations } from "@/features/reservations/hooks";
-import { useContracts } from "@/features/contracts/hooks";
-import type { Reservation } from "@/features/reservations/schema";
-import type { Contract } from "@/features/contracts/schema";
+import { useReservations, useUpdateReservation } from "@/features/reservations/hooks";
+import { useContracts, useUpdateContract } from "@/features/contracts/hooks";
+import type { Reservation, UpdateReservationInput } from "@/features/reservations/schema";
+import type { Contract, UpdateContractInput } from "@/features/contracts/schema";
 import { PlanningCalendar } from "./planning-calendar";
 import { ReservationNormalForm } from "./reservation-normal-form";
 import { ReservationEmptyForm } from "./reservation-empty-form";
@@ -120,6 +120,8 @@ export function CropPlanPageClient() {
   const { data: contracts = [] } = useContracts(farmId || null, year);
   const { data: allReservations = [] } = useReservations(farmId || null);
   const { data: allContracts = [] } = useContracts(farmId || null);
+  const updateReservation = useUpdateReservation(farmId);
+  const updateContract = useUpdateContract(farmId);
 
   const unallocRes = reservations.filter((r) => !r.blockId);
   const unallocCon = contracts.filter((c) => !c.blockId);
@@ -156,6 +158,20 @@ export function CropPlanPageClient() {
   function handleSavedContract(c: Contract) {
     setSelectedItem({ kind: "contract", data: c });
     setPanelMode("edit");
+  }
+
+  async function handleReservationScheduleChange(id: string, input: UpdateReservationInput) {
+    const updated = await updateReservation.mutateAsync({ id, input });
+    if (selectedItem?.kind === "reservation" && selectedItem.data.id === id) {
+      setSelectedItem({ kind: "reservation", data: updated });
+    }
+  }
+
+  async function handleContractScheduleChange(id: string, input: UpdateContractInput) {
+    const updated = await updateContract.mutateAsync({ id, input });
+    if (selectedItem?.kind === "contract" && selectedItem.data.id === id) {
+      setSelectedItem({ kind: "contract", data: updated });
+    }
   }
 
   // ── Stats ──
@@ -519,6 +535,8 @@ export function CropPlanPageClient() {
             contracts={allContracts}
             year={year}
             onItemClick={handleCalendarItemClick}
+            onReservationScheduleChange={handleReservationScheduleChange}
+            onContractScheduleChange={handleContractScheduleChange}
             selectedId={selectedItem?.data.id ?? null}
           />
         </div>
