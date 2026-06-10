@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   Boxes,
   Activity,
+  Users,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { SeasonsTable } from "@/features/seasons";
 import { ActivitiesTable } from "@/features/activities";
 import { ProductionTypesList } from "@/features/production-types";
 import { DensityMasterTable } from "@/features/density-master";
+import { StakeholderMasterTable } from "@/features/stakeholder-master";
 import { ActiveTimeTable } from "@/features/active-time";
 import { BlockMasterTable } from "@/features/block-master";
 import { VariabilityTable } from "@/features/variability";
@@ -99,6 +101,9 @@ export function CropInformationTabs() {
           variant="line"
           className="flex h-auto flex-1 justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
+          <TabsTrigger value="stakeholder-master" className={TAB_TRIGGER_CLASS}>
+            <Users className="h-4 w-4" /> Stakeholder Master
+          </TabsTrigger>
           <TabsTrigger value="production-type" className={TAB_TRIGGER_CLASS}>
             <Layers className="h-4 w-4" /> Production Type
           </TabsTrigger>
@@ -145,6 +150,10 @@ export function CropInformationTabs() {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      <TabsContent value="stakeholder-master" className="mt-6">
+        <StakeholderMasterTable />
+      </TabsContent>
 
       <TabsContent value="production-type" className="mt-6">
         <ProductionTypesList />

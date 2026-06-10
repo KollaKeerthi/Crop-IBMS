@@ -1,5 +1,6 @@
 import { pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { crops } from "./crops";
+import { stakeholderMaster } from "./stakeholder-master";
 
 export const cropVarietyGenderEnum = pgEnum("crop_variety_gender", ["Male", "Female"]);
 
@@ -13,6 +14,9 @@ export const cropVarieties = pgTable(
     name: text("name").notNull(),
     gender: cropVarietyGenderEnum("gender"),
     colourDescription: text("colour_description"),
+    stakeholderId: uuid("stakeholder_id").references(() => stakeholderMaster.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [

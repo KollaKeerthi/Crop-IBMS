@@ -120,6 +120,7 @@ export async function insertCropVariety(
       name: input.name,
       gender: input.gender ?? null,
       colourDescription: input.colourDescription ?? null,
+      stakeholderId: input.stakeholderId ?? null,
     })
     .returning();
 
@@ -130,6 +131,7 @@ export async function insertCropVariety(
     name: row.name,
     gender: (row.gender as "Male" | "Female") ?? null,
     colourDescription: row.colourDescription ?? null,
+    stakeholderId: row.stakeholderId ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -145,6 +147,7 @@ export async function updateCropVariety(
       ...(input.name !== undefined && { name: input.name }),
       ...(input.gender !== undefined && { gender: input.gender }),
       ...(input.colourDescription !== undefined && { colourDescription: input.colourDescription }),
+      ...(input.stakeholderId !== undefined && { stakeholderId: input.stakeholderId }),
     })
     .where(and(eq(cropVarieties.id, varietyId), eq(cropVarieties.cropId, cropId)))
     .returning();
@@ -156,6 +159,7 @@ export async function updateCropVariety(
     name: row.name,
     gender: (row.gender as "Male" | "Female") ?? null,
     colourDescription: row.colourDescription ?? null,
+    stakeholderId: row.stakeholderId ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

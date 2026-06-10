@@ -3,40 +3,21 @@ import { db } from "@/db";
 import { seasons } from "@/db/schema";
 import type { CreateSeasonInput, UpdateSeasonInput, Season } from "./schema";
 import { getSeasonById } from "./queries";
-import { formatDateInput, getWeekEndDate, getWeekStartDate } from "@/lib/week-calendar";
-
-function deriveSeasonDates(input: {
-  year: number;
-  startWeek?: number | null;
-  endWeek?: number | null;
-}) {
-  return {
-    startDate:
-      input.startWeek && input.year
-        ? formatDateInput(getWeekStartDate(input.year, input.startWeek))
-        : undefined,
-    endDate:
-      input.endWeek && input.year
-        ? formatDateInput(getWeekEndDate(input.year, input.endWeek))
-        : undefined,
-  };
-}
 
 export async function insertSeason(
   farmId: string,
   input: CreateSeasonInput
 ): Promise<Season | null> {
-  const derivedDates = deriveSeasonDates(input);
   const [row] = await db
     .insert(seasons)
     .values({
       farmId,
       name: input.name,
-      year: input.year,
+      year: input.year ?? 0,
       startWeek: input.startWeek ?? null,
       endWeek: input.endWeek ?? null,
-      startDate: derivedDates.startDate ? new Date(derivedDates.startDate) : null,
-      endDate: derivedDates.endDate ? new Date(derivedDates.endDate) : null,
+      startDate: null,
+      endDate: null,
     })
     .returning();
 
@@ -49,20 +30,6 @@ export async function updateSeason(
   farmId: string,
   input: UpdateSeasonInput
 ): Promise<Season | null> {
-  const existing = await getSeasonById(seasonId, farmId);
-  const year = input.year ?? existing?.year;
-  const startWeek = input.startWeek === undefined ? existing?.startWeek : input.startWeek;
-  const endWeek = input.endWeek === undefined ? existing?.endWeek : input.endWeek;
-  const derived: { startDate?: string; endDate?: string } =
-    year &&
-    (input.year !== undefined || input.startWeek !== undefined || input.endWeek !== undefined)
-      ? deriveSeasonDates({
-          year,
-          startWeek: startWeek ?? undefined,
-          endWeek: endWeek ?? undefined,
-        })
-      : {};
-
   await db
     .update(seasons)
     .set({
@@ -70,12 +37,6 @@ export async function updateSeason(
       ...(input.year !== undefined && { year: input.year }),
       ...(input.startWeek !== undefined && { startWeek: input.startWeek }),
       ...(input.endWeek !== undefined && { endWeek: input.endWeek }),
-      ...(derived.startDate !== undefined && {
-        startDate: derived.startDate ? new Date(derived.startDate) : null,
-      }),
-      ...(derived.endDate !== undefined && {
-        endDate: derived.endDate ? new Date(derived.endDate) : null,
-      }),
     })
     .where(and(eq(seasons.id, seasonId), eq(seasons.farmId, farmId)));
 
