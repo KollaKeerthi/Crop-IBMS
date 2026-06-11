@@ -153,8 +153,8 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
                 <FormControl>
                   <Input
                     type="number"
-                    min={1}
-                    placeholder="1"
+                    min={0}
+                    placeholder="0"
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => {

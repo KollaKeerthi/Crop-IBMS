@@ -10,7 +10,7 @@ export const CreateActivityInputSchema = z.object({
   category: z.string().trim().max(100).optional(),
   code: z.string().trim().max(20).optional(),
   displayOrder: z.number().int().min(0).default(0),
-  maxSimultaneous: z.number().int().min(1).default(1),
+  maxSimultaneous: z.number().int().min(0).default(0),
 });
 
 export const UpdateActivityInputSchema = z.object({
@@ -19,7 +19,7 @@ export const UpdateActivityInputSchema = z.object({
   category: z.string().trim().max(100).optional().nullable(),
   code: z.string().trim().max(20).optional().nullable(),
   displayOrder: z.number().int().min(0).optional(),
-  maxSimultaneous: z.number().int().min(1).optional(),
+  maxSimultaneous: z.number().int().min(0).optional(),
 });
 
 export const ActivitySchema = z.object({

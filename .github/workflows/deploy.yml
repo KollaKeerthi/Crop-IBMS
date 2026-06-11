@@ -33,6 +33,31 @@ jobs:
       - name: Vercel pull (production)
         run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
 
+      - name: Pull Vercel production env
+        run: vercel env pull .env.production.local --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -f .env.production.local ]; then
+            set -a
+            . .env.production.local
+            set +a
+          elif [ -f .vercel/.env.production.local ]; then
+            set -a
+            . .vercel/.env.production.local
+            set +a
+          fi
+
+          if [ -z "${DATABASE_URL_DIRECT:-}" ] && [ -z "${DATABASE_URL:-}" ]; then
+            echo "Missing DATABASE_URL_DIRECT or DATABASE_URL for migrations"
+            exit 1
+          fi
+
+          bunx drizzle-kit migrate
+
       - name: Vercel build (production)
         run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
 

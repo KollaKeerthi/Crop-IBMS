@@ -41,7 +41,7 @@ export const UpdateCropTypeInputSchema = z.object({
   description: z.string().trim().max(500).optional(),
 });
 
-// Crop Variety: name + gender + colourDescription
+// Crop Variety: name + gender + colourDescription + stakeholderId
 export const CreateCropVarietyInputSchema = z.object({
   name: z
     .string({ message: "Name is required" })
@@ -50,12 +50,14 @@ export const CreateCropVarietyInputSchema = z.object({
     .max(100),
   gender: z.enum(["Male", "Female"]).optional(),
   colourDescription: z.string().trim().max(500).optional(),
+  stakeholderId: z.string().uuid().optional(),
 });
 
 export const UpdateCropVarietyInputSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   gender: z.enum(["Male", "Female"]).optional(),
   colourDescription: z.string().trim().max(500).optional(),
+  stakeholderId: z.string().uuid().optional().nullable(),
 });
 
 export const CropTypeSchema = z.object({
@@ -73,6 +75,7 @@ export const CropVarietySchema = z.object({
   name: z.string(),
   gender: z.enum(["Male", "Female"]).nullable(),
   colourDescription: z.string().nullable(),
+  stakeholderId: z.string().uuid().nullable(),
   createdAt: z.string(),
 });
 

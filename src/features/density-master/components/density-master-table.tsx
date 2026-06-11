@@ -7,6 +7,7 @@ import { useFarm } from "@/lib/farm-context";
 import { useDensityMaster, useDeleteDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
 import { useProductionTypes } from "@/features/production-types";
+import { useStakeholderMaster } from "@/features/stakeholder-master";
 import type { DensityMaster } from "../schema";
 import { DensityForm } from "./density-form";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function DensityMasterTable() {
   const { data: densities, isLoading } = useDensityMaster(selectedFarmId);
   const { data: crops = [] } = useCrops();
   const { data: productionTypes = [] } = useProductionTypes();
+  const { data: stakeholders = [] } = useStakeholderMaster(selectedFarmId);
   const deleteMutation = useDeleteDensityMaster(selectedFarmId ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [editDensity, setEditDensity] = useState<DensityMaster | null>(null);
@@ -45,6 +47,7 @@ export function DensityMasterTable() {
   };
   const productionTypeName = (id: string | null) =>
     productionTypes.find((t) => t.id === id)?.code ?? "-";
+  const stakeholderName = (id: string | null) => stakeholders.find((s) => s.id === id)?.name ?? "-";
 
   async function handleDelete(id: string) {
     try {
@@ -85,6 +88,7 @@ export function DensityMasterTable() {
                 <TableHead>Crop</TableHead>
                 <TableHead>Crop Type</TableHead>
                 <TableHead>Production Type</TableHead>
+                <TableHead>Stakeholder</TableHead>
                 <TableHead>Female Density</TableHead>
                 <TableHead>Male Density</TableHead>
                 <TableHead>Year</TableHead>
@@ -100,6 +104,7 @@ export function DensityMasterTable() {
                   </TableCell>
                   <TableCell>{cropTypeName(d.cropId, d.cropTypeId)}</TableCell>
                   <TableCell>{productionTypeName(d.productionTypeId)}</TableCell>
+                  <TableCell>{stakeholderName(d.stakeholderId)}</TableCell>
                   <TableCell>{d.femaleDensity ?? "-"}</TableCell>
                   <TableCell>{d.maleDensity ?? "-"}</TableCell>
                   <TableCell>{d.year ?? "-"}</TableCell>

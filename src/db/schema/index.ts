@@ -22,6 +22,9 @@ export * from "./crops";
 export * from "./crop-types";
 export * from "./crop-varieties";
 
+// Stakeholder master
+export * from "./stakeholder-master";
+
 // Crop planning
 export * from "./seasons";
 export * from "./activities";

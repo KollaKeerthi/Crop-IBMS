@@ -7,11 +7,9 @@ export const CreateSeasonInputSchema = z
       .trim()
       .min(1, { message: "Name is required" })
       .max(200),
-    year: z.number({ message: "Year is required" }).int().min(1900).max(2100),
-    startWeek: z.coerce.number().int().min(1).max(53).optional(),
-    endWeek: z.coerce.number().int().min(1).max(53).optional(),
-    startDate: z.string().date().optional(),
-    endDate: z.string().date().optional(),
+    year: z.number().int().optional().default(0),
+    startWeek: z.coerce.number().int().min(1).max(520).optional(),
+    endWeek: z.coerce.number().int().min(1).max(520).optional(),
   })
   .refine((v) => !v.startWeek || !v.endWeek || v.startWeek <= v.endWeek, {
     message: "End week must be after start week",
@@ -21,11 +19,9 @@ export const CreateSeasonInputSchema = z
 export const UpdateSeasonInputSchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
-    year: z.number().int().min(1900).max(2100).optional(),
-    startWeek: z.coerce.number().int().min(1).max(53).optional().nullable(),
-    endWeek: z.coerce.number().int().min(1).max(53).optional().nullable(),
-    startDate: z.string().date().optional().nullable(),
-    endDate: z.string().date().optional().nullable(),
+    year: z.number().int().optional(),
+    startWeek: z.coerce.number().int().min(1).max(520).optional().nullable(),
+    endWeek: z.coerce.number().int().min(1).max(520).optional().nullable(),
   })
   .refine((v) => !v.startWeek || !v.endWeek || v.startWeek <= v.endWeek, {
     message: "End week must be after start week",

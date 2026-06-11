@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFarm } from "@/lib/farm-context";
 import { useBlockMaster } from "@/features/block-master/hooks";
-import { useReservations } from "@/features/reservations/hooks";
-import { useContracts } from "@/features/contracts/hooks";
-import type { Reservation } from "@/features/reservations/schema";
-import type { Contract } from "@/features/contracts/schema";
+import { useReservations, useUpdateReservation } from "@/features/reservations/hooks";
+import { useContracts, useUpdateContract } from "@/features/contracts/hooks";
+import type { Reservation, UpdateReservationInput } from "@/features/reservations/schema";
+import type { Contract, UpdateContractInput } from "@/features/contracts/schema";
 import { PlanningCalendar } from "./planning-calendar";
 import { ReservationNormalForm } from "./reservation-normal-form";
 import { ReservationEmptyForm } from "./reservation-empty-form";
@@ -23,20 +23,21 @@ type MainTab = "reservation" | "contract" | "field";
 type ResSubTab = "manual" | "unallocated" | "auto";
 type ManualSubTab = "normal" | "empty";
 type ContractSubTab = "manual" | "unallocated";
+type OpenSelector = "main" | "reservation-sub" | "contract-sub" | "manual-type" | null;
 type CalendarItem =
   | { kind: "reservation"; data: Reservation }
   | { kind: "contract"; data: Contract };
 
 const CURRENT_YEAR = new Date().getFullYear();
+const MIN_YEAR = CURRENT_YEAR - 3;
+const MAX_YEAR = CURRENT_YEAR + 3;
 
 // ─── Tab pill component ───────────────────────────────────────────────────────
-function TabPill({
-  active,
+function SelectorSegment({
   onClick,
   children,
   badge,
 }: {
-  active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   badge?: number;
@@ -45,21 +46,11 @@ function TabPill({
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        "relative flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
-        active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      )}
+      className="flex min-w-0 items-center gap-1 rounded px-1.5 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
     >
-      {children}
+      <span className="truncate">{children}</span>
       {badge != null && badge > 0 && (
-        <span
-          className={cn(
-            "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold",
-            active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-amber-500 text-white"
-          )}
-        >
+        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
           {badge}
         </span>
       )}
@@ -67,8 +58,12 @@ function TabPill({
   );
 }
 
+function SelectorDivider() {
+  return <span className="text-xs text-muted-foreground/50">-&gt;</span>;
+}
+
 // ─── Sub-tab chip ─────────────────────────────────────────────────────────────
-function SubTab({
+function SelectorOption({
   active,
   onClick,
   children,
@@ -84,10 +79,10 @@ function SubTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer capitalize",
+        "flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-medium capitalize transition-all",
         active
-          ? "bg-background border border-border text-foreground shadow-sm"
-          : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+          ? "border border-border bg-background text-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
       )}
     >
       {children}
@@ -110,12 +105,17 @@ export function CropPlanPageClient() {
   const [resSubTab, setResSubTab] = useState<ResSubTab>("manual");
   const [manualSubTab, setManualSubTab] = useState<ManualSubTab>("normal");
   const [contractSubTab, setContractSubTab] = useState<ContractSubTab>("manual");
+  const [openSelector, setOpenSelector] = useState<OpenSelector>(null);
   const [selectedItem, setSelectedItem] = useState<CalendarItem | null>(null);
   const [panelMode, setPanelMode] = useState<"create" | "edit">("create");
 
   const { data: blocks = [] } = useBlockMaster(farmId || null);
   const { data: reservations = [] } = useReservations(farmId || null, year);
   const { data: contracts = [] } = useContracts(farmId || null, year);
+  const { data: allReservations = [] } = useReservations(farmId || null);
+  const { data: allContracts = [] } = useContracts(farmId || null);
+  const updateReservation = useUpdateReservation(farmId);
+  const updateContract = useUpdateContract(farmId);
 
   const unallocRes = reservations.filter((r) => !r.blockId);
   const unallocCon = contracts.filter((c) => !c.blockId);
@@ -132,6 +132,7 @@ export function CropPlanPageClient() {
       setMainTab("contract");
       setContractSubTab("manual");
     }
+    setOpenSelector(null);
   }
 
   function clearSelection() {
@@ -139,8 +140,37 @@ export function CropPlanPageClient() {
     setPanelMode("create");
   }
 
-  function switchMainTab(tab: MainTab) {
+  function selectMainTab(tab: MainTab) {
     setMainTab(tab);
+    if (tab === "reservation") {
+      setResSubTab("manual");
+      setManualSubTab("normal");
+    }
+    if (tab === "contract") {
+      setContractSubTab("manual");
+    }
+    setOpenSelector(null);
+    clearSelection();
+  }
+
+  function selectReservationSubTab(tab: ResSubTab) {
+    setResSubTab(tab);
+    if (tab === "manual") {
+      setManualSubTab((current) => current ?? "normal");
+    }
+    setOpenSelector(null);
+    clearSelection();
+  }
+
+  function selectContractSubTab(tab: ContractSubTab) {
+    setContractSubTab(tab);
+    setOpenSelector(null);
+    clearSelection();
+  }
+
+  function selectManualSubTab(tab: ManualSubTab) {
+    setManualSubTab(tab);
+    setOpenSelector(null);
     clearSelection();
   }
 
@@ -152,6 +182,20 @@ export function CropPlanPageClient() {
   function handleSavedContract(c: Contract) {
     setSelectedItem({ kind: "contract", data: c });
     setPanelMode("edit");
+  }
+
+  async function handleReservationScheduleChange(id: string, input: UpdateReservationInput) {
+    const updated = await updateReservation.mutateAsync({ id, input });
+    if (selectedItem?.kind === "reservation" && selectedItem.data.id === id) {
+      setSelectedItem({ kind: "reservation", data: updated });
+    }
+  }
+
+  async function handleContractScheduleChange(id: string, input: UpdateContractInput) {
+    const updated = await updateContract.mutateAsync({ id, input });
+    if (selectedItem?.kind === "contract" && selectedItem.data.id === id) {
+      setSelectedItem({ kind: "contract", data: updated });
+    }
   }
 
   // ── Stats ──
@@ -174,6 +218,11 @@ export function CropPlanPageClient() {
 
   // ── Panel editing indicator label ──
   const isEditing = panelMode === "edit" && selectedItem != null;
+  const mainLabel =
+    mainTab === "reservation" ? "Reservation" : mainTab === "contract" ? "Contract" : "Field";
+  const secondaryLabel =
+    mainTab === "reservation" ? resSubTab : mainTab === "contract" ? contractSubTab : null;
+  const manualLabel = mainTab === "reservation" && resSubTab === "manual" ? manualSubTab : null;
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
@@ -183,8 +232,9 @@ export function CropPlanPageClient() {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => setYear((y) => y - 1)}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer"
+            onClick={() => setYear((y) => Math.max(MIN_YEAR, y - 1))}
+            disabled={year <= MIN_YEAR}
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft className="size-3.5" />
           </button>
@@ -193,8 +243,9 @@ export function CropPlanPageClient() {
           </span>
           <button
             type="button"
-            onClick={() => setYear((y) => y + 1)}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer"
+            onClick={() => setYear((y) => Math.min(MAX_YEAR, y + 1))}
+            disabled={year >= MAX_YEAR}
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card hover:bg-muted transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronRight className="size-3.5" />
           </button>
@@ -250,6 +301,7 @@ export function CropPlanPageClient() {
               setMainTab("reservation");
               setResSubTab("manual");
               setManualSubTab("normal");
+              setOpenSelector(null);
               clearSelection();
             }}
           >
@@ -262,6 +314,7 @@ export function CropPlanPageClient() {
             onClick={() => {
               setMainTab("contract");
               setContractSubTab("manual");
+              setOpenSelector(null);
               clearSelection();
             }}
           >
@@ -276,118 +329,168 @@ export function CropPlanPageClient() {
         {/* ─── Left form panel ──────────────────────────────────────────── */}
         <div className="flex w-80 xl:w-[340px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
           {/* Main tabs */}
-          <div className="flex items-center gap-1 px-3 pt-3 pb-2 border-b border-border bg-muted/30">
-            <TabPill
-              active={mainTab === "reservation"}
-              onClick={() => switchMainTab("reservation")}
-              badge={unallocRes.length}
-            >
-              Reservation
-            </TabPill>
-            <TabPill
-              active={mainTab === "contract"}
-              onClick={() => switchMainTab("contract")}
-              badge={unallocCon.length}
-            >
-              Contract
-            </TabPill>
-            <TabPill active={mainTab === "field"} onClick={() => switchMainTab("field")}>
-              Field
-            </TabPill>
+          <div className="border-b border-border bg-muted/25">
+            <div className="flex min-h-11 items-center gap-1 px-3 py-2">
+              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+                <SelectorSegment
+                  onClick={() => setOpenSelector((current) => (current === "main" ? null : "main"))}
+                  badge={
+                    mainTab === "reservation"
+                      ? unallocRes.length
+                      : mainTab === "contract"
+                        ? unallocCon.length
+                        : undefined
+                  }
+                >
+                  {mainLabel}
+                </SelectorSegment>
 
-            {isEditing && (
-              <button
-                type="button"
-                onClick={clearSelection}
-                className="ml-auto flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-              >
-                <X className="size-3" />
-                New
-              </button>
-            )}
-          </div>
+                {secondaryLabel && (
+                  <>
+                    <SelectorDivider />
+                    <SelectorSegment
+                      onClick={() => {
+                        const selector: OpenSelector =
+                          mainTab === "reservation" ? "reservation-sub" : "contract-sub";
+                        setOpenSelector((current) => (current === selector ? null : selector));
+                      }}
+                      badge={
+                        mainTab === "reservation" && resSubTab === "unallocated"
+                          ? unallocRes.length
+                          : mainTab === "contract" && contractSubTab === "unallocated"
+                            ? unallocCon.length
+                            : undefined
+                      }
+                    >
+                      {secondaryLabel}
+                    </SelectorSegment>
+                  </>
+                )}
 
-          {/* Sub-tabs */}
-          {mainTab === "reservation" && (
-            <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/15">
-              <SubTab active={resSubTab === "manual"} onClick={() => setResSubTab("manual")}>
-                Manual
-              </SubTab>
-              <SubTab
-                active={resSubTab === "unallocated"}
-                onClick={() => setResSubTab("unallocated")}
-                badge={unallocRes.length}
-              >
-                Unallocated
-              </SubTab>
-              <SubTab active={resSubTab === "auto"} onClick={() => setResSubTab("auto")}>
-                Auto
-              </SubTab>
-            </div>
-          )}
+                {manualLabel && (
+                  <>
+                    <SelectorDivider />
+                    <SelectorSegment
+                      onClick={() =>
+                        setOpenSelector((current) =>
+                          current === "manual-type" ? null : "manual-type"
+                        )
+                      }
+                    >
+                      {manualLabel}
+                    </SelectorSegment>
+                  </>
+                )}
+              </div>
 
-          {mainTab === "contract" && (
-            <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/15">
-              <SubTab
-                active={contractSubTab === "manual"}
-                onClick={() => setContractSubTab("manual")}
-              >
-                Manual
-              </SubTab>
-              <SubTab
-                active={contractSubTab === "unallocated"}
-                onClick={() => setContractSubTab("unallocated")}
-                badge={unallocCon.length}
-              >
-                Unallocated
-              </SubTab>
-            </div>
-          )}
-
-          {/* Normal / Empty toggle (Reservation Manual only) */}
-          {mainTab === "reservation" && resSubTab === "manual" && (
-            <div className="flex items-center justify-between border-b border-border px-3 py-1.5 bg-muted/10">
-              <div className="flex gap-1">
-                {(["normal", "empty"] as const).map((type) => (
+              {isEditing && (
+                <div className="ml-2 flex shrink-0 items-center gap-2">
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                    Editing
+                  </span>
                   <button
-                    key={type}
                     type="button"
                     onClick={() => {
-                      setManualSubTab(type);
+                      setOpenSelector(null);
                       clearSelection();
                     }}
-                    className={cn(
-                      "px-2.5 py-1 rounded text-[11px] font-medium transition-all cursor-pointer capitalize",
-                      manualSubTab === type
-                        ? "bg-background border border-border text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
+                    className="flex items-center gap-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    {type}
+                    <X className="size-3" />
+                    New
                   </button>
-                ))}
-              </div>
-              {isEditing && (
-                <span className="text-[10px] font-semibold text-primary bg-primary/10 rounded px-2 py-0.5">
-                  Editing
-                </span>
+                </div>
               )}
             </div>
-          )}
 
-          {/* Contract manual edit indicator */}
-          {mainTab === "contract" && contractSubTab === "manual" && isEditing && (
-            <div className="flex items-center justify-between border-b border-border px-3 py-1.5 bg-primary/[0.04]">
-              <span className="text-[10px] font-semibold text-primary">Editing contract</span>
-              <button
-                type="button"
-                onClick={clearSelection}
-                className="text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                ✕ New
-              </button>
-            </div>
-          )}
+            {openSelector && (
+              <div className="flex flex-wrap items-center gap-1 border-t border-border/60 bg-muted/15 px-3 py-2">
+                {openSelector === "main" && (
+                  <>
+                    <SelectorOption
+                      active={mainTab === "reservation"}
+                      onClick={() => selectMainTab("reservation")}
+                      badge={unallocRes.length}
+                    >
+                      Reservation
+                    </SelectorOption>
+                    <SelectorOption
+                      active={mainTab === "contract"}
+                      onClick={() => selectMainTab("contract")}
+                      badge={unallocCon.length}
+                    >
+                      Contract
+                    </SelectorOption>
+                    <SelectorOption
+                      active={mainTab === "field"}
+                      onClick={() => selectMainTab("field")}
+                    >
+                      Field
+                    </SelectorOption>
+                  </>
+                )}
+
+                {openSelector === "reservation-sub" && (
+                  <>
+                    <SelectorOption
+                      active={resSubTab === "manual"}
+                      onClick={() => selectReservationSubTab("manual")}
+                    >
+                      Manual
+                    </SelectorOption>
+                    <SelectorOption
+                      active={resSubTab === "unallocated"}
+                      onClick={() => selectReservationSubTab("unallocated")}
+                      badge={unallocRes.length}
+                    >
+                      Unallocated
+                    </SelectorOption>
+                    <SelectorOption
+                      active={resSubTab === "auto"}
+                      onClick={() => selectReservationSubTab("auto")}
+                    >
+                      Auto
+                    </SelectorOption>
+                  </>
+                )}
+
+                {openSelector === "contract-sub" && (
+                  <>
+                    <SelectorOption
+                      active={contractSubTab === "manual"}
+                      onClick={() => selectContractSubTab("manual")}
+                    >
+                      Manual
+                    </SelectorOption>
+                    <SelectorOption
+                      active={contractSubTab === "unallocated"}
+                      onClick={() => selectContractSubTab("unallocated")}
+                      badge={unallocCon.length}
+                    >
+                      Unallocated
+                    </SelectorOption>
+                  </>
+                )}
+
+                {openSelector === "manual-type" && (
+                  <>
+                    <SelectorOption
+                      active={manualSubTab === "normal"}
+                      onClick={() => selectManualSubTab("normal")}
+                    >
+                      Normal
+                    </SelectorOption>
+                    <SelectorOption
+                      active={manualSubTab === "empty"}
+                      onClick={() => selectManualSubTab("empty")}
+                    >
+                      Empty
+                    </SelectorOption>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* ── Form content ── */}
           <div className="flex-1 overflow-y-auto p-4">
@@ -509,10 +612,12 @@ export function CropPlanPageClient() {
         <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
           <PlanningCalendar
             blocks={blocks}
-            reservations={reservations}
-            contracts={contracts}
+            reservations={allReservations}
+            contracts={allContracts}
             year={year}
             onItemClick={handleCalendarItemClick}
+            onReservationScheduleChange={handleReservationScheduleChange}
+            onContractScheduleChange={handleContractScheduleChange}
             selectedId={selectedItem?.data.id ?? null}
           />
         </div>

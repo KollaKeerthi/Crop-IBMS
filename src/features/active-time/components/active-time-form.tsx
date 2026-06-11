@@ -11,6 +11,7 @@ import {
   UpdateActiveTimeInputSchema,
   type CreateActiveTimeInput,
   type ActiveTime,
+  type LeadTimeType,
 } from "../schema";
 import { useCreateActiveTime, useUpdateActiveTime, activeTimeKey } from "../hooks";
 import { addActivityToActiveTime, removeActivityFromActiveTime } from "../api";
@@ -56,7 +57,11 @@ function seasonLabel(options: SeasonOption[], value: string | undefined, placeho
   return season.year ? `${season.name} (${season.year})` : season.name;
 }
 
-const LEAD_TIME_TYPES = ["Reservation", "Standard", "Custom"];
+const LEAD_TIME_TYPES: LeadTimeType[] = ["Reservation", "Contract"];
+
+function leadTimeTypeValue(value: string | null | undefined): LeadTimeType {
+  return value === "Contract" ? "Contract" : "Reservation";
+}
 
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
@@ -70,7 +75,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
       varietyId: activeTime?.varietyId ?? undefined,
       seasonId: activeTime?.seasonId ?? undefined,
       productionTypeId: activeTime?.productionTypeId ?? undefined,
-      leadTimeType: activeTime?.leadTimeType ?? "Reservation",
+      leadTimeType: leadTimeTypeValue(activeTime?.leadTimeType),
       isActive: activeTime?.isActive ?? true,
       notes: activeTime?.notes ?? "",
     },

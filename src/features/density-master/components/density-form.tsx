@@ -14,6 +14,7 @@ import {
 import { useCreateDensityMaster, useUpdateDensityMaster } from "../hooks";
 import { useCrops } from "@/features/crops";
 import { useProductionTypes } from "@/features/production-types";
+import { useStakeholderMaster } from "@/features/stakeholder-master";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,6 +43,7 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
 
   const { data: crops = [] } = useCrops();
   const { data: productionTypes = [] } = useProductionTypes();
+  const { data: stakeholders = [] } = useStakeholderMaster(farmId);
 
   const form = useForm<CreateDensityMasterInput>({
     resolver: zodResolver(schema) as Resolver<CreateDensityMasterInput>,
@@ -49,6 +51,7 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
       cropId: density?.cropId ?? undefined,
       cropTypeId: density?.cropTypeId ?? undefined,
       productionTypeId: density?.productionTypeId ?? undefined,
+      stakeholderId: density?.stakeholderId ?? undefined,
       year: density?.year ?? currentYear,
       maleDensity: density?.maleDensity ?? undefined,
       femaleDensity: density?.femaleDensity ?? undefined,
@@ -243,6 +246,42 @@ export function DensityForm({ farmId, density, onSuccess }: Props) {
                   {productionTypes.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Stakeholder */}
+        <FormField
+          control={form.control}
+          name="stakeholderId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Stakeholder</FormLabel>
+              <Select
+                value={field.value ?? ""}
+                onValueChange={(v) => field.onChange(v || undefined)}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <span
+                      className={cn(
+                        "flex flex-1 truncate text-left",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {stakeholders.find((s) => s.id === field.value)?.name ?? "Select stakeholder"}
+                    </span>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {stakeholders.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -17,7 +17,7 @@ export async function insertActivity(
       category: input.category ?? null,
       code: input.code ?? null,
       displayOrder: input.displayOrder ?? 0,
-      maxSimultaneous: input.maxSimultaneous ?? 1,
+      maxSimultaneous: input.maxSimultaneous ?? 0,
     })
     .returning();
 

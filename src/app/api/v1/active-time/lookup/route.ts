@@ -19,9 +19,12 @@ export async function GET(req: NextRequest) {
     const hasAccess = await checkFarmAccess(farmId, ctx.userId);
     if (!hasAccess) throw new ApiError(403, "forbidden", "Access denied.");
 
+    const seasonId = p.get("seasonId");
+
     const conditions = [eq(activeTimes.farmId, farmId), eq(activeTimes.isActive, true)];
     if (cropId) conditions.push(eq(activeTimes.cropId, cropId));
     if (productionTypeId) conditions.push(eq(activeTimes.productionTypeId, productionTypeId));
+    if (seasonId) conditions.push(eq(activeTimes.seasonId, seasonId));
 
     const [row] = await db
       .select()

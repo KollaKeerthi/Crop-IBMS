@@ -25,6 +25,7 @@ function toCropVariety(row: CropVarietyRow): CropVariety {
     name: row.name,
     gender: (row.gender as "Male" | "Female") ?? null,
     colourDescription: row.colourDescription ?? null,
+    stakeholderId: row.stakeholderId ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

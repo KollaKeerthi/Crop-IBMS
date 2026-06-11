@@ -19,6 +19,8 @@ import {
   useUpdateStandaloneCropVariety,
   useDeleteStandaloneCropVariety,
 } from "../hooks";
+import { useStakeholderMaster } from "@/features/stakeholder-master";
+import { useFarm } from "@/lib/farm-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,11 +72,13 @@ function GenderBadge({ gender }: { gender: "Male" | "Female" | null }) {
 // ─── Create Form ─────────────────────────────────────────────────────────────
 function CreateVarietyForm({
   crops,
+  stakeholders,
   onSubmit,
   onCancel,
   submitting,
 }: {
   crops: { id: string; name: string }[];
+  stakeholders: { id: string; name: string }[];
   onSubmit: (values: CreateCropVarietyInput & { cropId: string }) => Promise<void> | void;
   onCancel: () => void;
   submitting?: boolean;
@@ -82,7 +86,7 @@ function CreateVarietyForm({
   const [selectedCropId, setSelectedCropId] = useState("");
   const form = useForm<CreateCropVarietyInput>({
     resolver: zodResolver(CreateCropVarietyInputSchema),
-    defaultValues: { name: "", gender: undefined, colourDescription: "" },
+    defaultValues: { name: "", gender: undefined, colourDescription: "", stakeholderId: undefined },
   });
 
   function handleSubmit(values: CreateCropVarietyInput) {
@@ -177,6 +181,33 @@ function CreateVarietyForm({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="stakeholderId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Stakeholder</FormLabel>
+              <Select
+                value={field.value ?? ""}
+                onValueChange={(v) => field.onChange(v || undefined)}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select stakeholder (optional)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {stakeholders.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
             Cancel
@@ -200,11 +231,13 @@ function CreateVarietyForm({
 // ─── Edit Form ────────────────────────────────────────────────────────────────
 function EditVarietyForm({
   initial,
+  stakeholders,
   onSubmit,
   onCancel,
   submitting,
 }: {
   initial: CropVariety;
+  stakeholders: { id: string; name: string }[];
   onSubmit: (values: UpdateCropVarietyInput) => Promise<void> | void;
   onCancel: () => void;
   submitting?: boolean;
@@ -215,6 +248,7 @@ function EditVarietyForm({
       name: initial.name,
       gender: initial.gender ?? undefined,
       colourDescription: initial.colourDescription ?? "",
+      stakeholderId: initial.stakeholderId ?? undefined,
     },
   });
 
@@ -285,6 +319,33 @@ function EditVarietyForm({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="stakeholderId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Stakeholder</FormLabel>
+              <Select
+                value={field.value ?? ""}
+                onValueChange={(v) => field.onChange(v || undefined)}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select stakeholder (optional)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {stakeholders.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
             Cancel
@@ -307,7 +368,9 @@ function EditVarietyForm({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function CropVarietiesTable() {
+  const { selectedFarmId } = useFarm();
   const { data: crops = [], isLoading } = useCrops();
+  const { data: stakeholders = [] } = useStakeholderMaster(selectedFarmId);
   const createMutation = useCreateStandaloneCropVariety();
   const updateMutation = useUpdateStandaloneCropVariety();
   const deleteMutation = useDeleteStandaloneCropVariety();
@@ -329,6 +392,7 @@ export function CropVarietiesTable() {
           name: values.name,
           gender: values.gender,
           colourDescription: values.colourDescription,
+          stakeholderId: values.stakeholderId,
         },
       });
       toast.success("Crop variety created successfully.");
@@ -417,6 +481,7 @@ export function CropVarietiesTable() {
                 <TableHead>Name</TableHead>
                 <TableHead>Gender</TableHead>
                 <TableHead>Colour Description</TableHead>
+                <TableHead>Stakeholder</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -430,6 +495,9 @@ export function CropVarietiesTable() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {v.colourDescription ?? "-"}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {stakeholders.find((s) => s.id === v.stakeholderId)?.name ?? "-"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
@@ -490,6 +558,7 @@ export function CropVarietiesTable() {
           </DialogHeader>
           <CreateVarietyForm
             crops={crops}
+            stakeholders={stakeholders}
             onSubmit={handleCreate}
             onCancel={() => setCreateOpen(false)}
             submitting={createMutation.isPending}
@@ -506,6 +575,7 @@ export function CropVarietiesTable() {
           {editingItem && (
             <EditVarietyForm
               initial={editingItem}
+              stakeholders={stakeholders}
               onSubmit={handleUpdate}
               onCancel={() => setEditingItem(null)}
               submitting={updateMutation.isPending}

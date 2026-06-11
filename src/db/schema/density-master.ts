@@ -3,6 +3,7 @@ import { farms } from "./farms";
 import { crops } from "./crops";
 import { cropTypes } from "./crop-types";
 import { productionTypes } from "./production-types";
+import { stakeholderMaster } from "./stakeholder-master";
 
 export const densityMaster = pgTable("density_master", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -12,6 +13,9 @@ export const densityMaster = pgTable("density_master", {
   cropId: uuid("crop_id").references(() => crops.id, { onDelete: "set null" }),
   cropTypeId: uuid("crop_type_id").references(() => cropTypes.id, { onDelete: "set null" }),
   productionTypeId: uuid("production_type_id").references(() => productionTypes.id, {
+    onDelete: "set null",
+  }),
+  stakeholderId: uuid("stakeholder_id").references(() => stakeholderMaster.id, {
     onDelete: "set null",
   }),
   year: integer("year"),
