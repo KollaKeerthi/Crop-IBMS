@@ -46,7 +46,7 @@ export function StakeholderMasterTable() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Stakeholder Master"
+        title="Stakeholder"
         description="Define the stakeholders associated with your farming operations."
         count={stakeholders?.length ?? 0}
         countUnit="stakeholders"

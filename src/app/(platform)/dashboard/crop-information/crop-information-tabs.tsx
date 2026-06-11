@@ -102,7 +102,7 @@ export function CropInformationTabs() {
           className="flex h-auto flex-1 justify-start gap-1 overflow-x-auto whitespace-nowrap border-b rounded-none px-0 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
           <TabsTrigger value="stakeholder-master" className={TAB_TRIGGER_CLASS}>
-            <Users className="h-4 w-4" /> Stakeholder Master
+            <Users className="h-4 w-4" /> Stakeholder
           </TabsTrigger>
           <TabsTrigger value="production-type" className={TAB_TRIGGER_CLASS}>
             <Layers className="h-4 w-4" /> Production Type
