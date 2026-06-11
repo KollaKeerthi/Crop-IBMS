@@ -1,11 +1,13 @@
 import { z } from "zod";
 
+export const LeadTimeType = z.enum(["Reservation", "Contract"]);
+
 export const CreateActiveTimeInputSchema = z.object({
   cropId: z.string().uuid().optional(),
   varietyId: z.string().uuid().optional(),
   seasonId: z.string().uuid().optional(),
   productionTypeId: z.string().uuid().optional(),
-  leadTimeType: z.string().trim().max(200).optional(),
+  leadTimeType: LeadTimeType.optional(),
   materialArrival: z.number().int().min(1).max(52).optional(),
   sowingMale: z.number().int().min(1).max(52).optional(),
   sowingFemale: z.number().int().min(1).max(52).optional(),
@@ -24,7 +26,7 @@ export const UpdateActiveTimeInputSchema = z.object({
   varietyId: z.string().uuid().optional().nullable(),
   seasonId: z.string().uuid().optional().nullable(),
   productionTypeId: z.string().uuid().optional().nullable(),
-  leadTimeType: z.string().trim().max(200).optional().nullable(),
+  leadTimeType: LeadTimeType.optional().nullable(),
   materialArrival: z.number().int().min(1).max(52).optional().nullable(),
   sowingMale: z.number().int().min(1).max(52).optional().nullable(),
   sowingFemale: z.number().int().min(1).max(52).optional().nullable(),
@@ -86,6 +88,7 @@ export const ActiveTimesResponseSchema = z.array(ActiveTimeSchema);
 
 export type CreateActiveTimeInput = z.infer<typeof CreateActiveTimeInputSchema>;
 export type UpdateActiveTimeInput = z.infer<typeof UpdateActiveTimeInputSchema>;
+export type LeadTimeType = z.infer<typeof LeadTimeType>;
 export type AddActivityToActiveTimeInput = z.infer<typeof AddActivityToActiveTimeSchema>;
 export type ActiveTimeActivity = z.infer<typeof ActiveTimeActivitySchema>;
 export type ActiveTime = z.infer<typeof ActiveTimeSchema>;

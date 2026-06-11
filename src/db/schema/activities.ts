@@ -13,7 +13,7 @@ export const activities = pgTable(
     category: text("category"),
     code: text("code"),
     displayOrder: integer("display_order").default(0),
-    maxSimultaneous: integer("max_simultaneous").default(1),
+    maxSimultaneous: integer("max_simultaneous").default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

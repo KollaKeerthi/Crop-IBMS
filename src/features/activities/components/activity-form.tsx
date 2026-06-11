@@ -41,7 +41,7 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
       category: activity?.category ?? "",
       code: activity?.code ?? "",
       displayOrder: activity?.displayOrder ?? 0,
-      maxSimultaneous: activity?.maxSimultaneous ?? 1,
+      maxSimultaneous: activity?.maxSimultaneous ?? 0,
     },
   });
 
@@ -148,10 +148,13 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
                 <FormControl>
                   <Input
                     type="number"
-                    min={1}
+                    min={0}
                     {...field}
-                    value={field.value ?? 1}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                    value={field.value ?? 0}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      field.onChange(Number.isNaN(value) ? 0 : value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

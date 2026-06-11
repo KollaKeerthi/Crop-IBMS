@@ -43,6 +43,13 @@
       "when": 1781086132288,
       "tag": "0017_chubby_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1781177400000,
+      "tag": "0018_activity_max_simultaneous_default_zero",
+      "breakpoints": true
     }
   ]
 }
