@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +20,7 @@ import { useProductionTypes } from "@/features/production-types/hooks";
 import { useSeasons } from "@/features/seasons/hooks";
 import { useBlockMaster } from "@/features/block-master/hooks";
 import { useDensityMaster } from "@/features/density-master/hooks";
+import { useStakeholderMaster } from "@/features/stakeholder-master/hooks";
 import { useCreateReservation, useUpdateReservation } from "@/features/reservations/hooks";
 import type { Reservation } from "@/features/reservations/schema";
 import { apiFetch } from "@/lib/api/client";
@@ -27,6 +28,7 @@ import { apiFetch } from "@/lib/api/client";
 const NONE = "__none__";
 
 const FormSchema = z.object({
+  pollinationYear: z.number().int().min(2000).max(2100),
   productionTypeId: z.string().uuid().optional().nullable(),
   cropId: z.string().uuid().optional().nullable(),
   cropTypeId: z.string().uuid().optional().nullable(),
@@ -37,11 +39,20 @@ const FormSchema = z.object({
   materialArrivalWeek: z.number().int().min(1).max(52).optional().nullable(),
   plantingWeek: z.number().int().min(1).max(52).optional().nullable(),
   endWeek: z.number().int().min(1).max(53).optional().nullable(),
-  noOfPlantsFemale: z.number().positive().optional().nullable(),
+  noOfPlantsFemale: z.number().positive("Must be a positive number").optional().nullable(),
   plantsPerM2: z.number().positive().optional().nullable(),
   surfaceMale: z.number().nonnegative().optional().nullable(),
   mfSameBlock: z.boolean(),
-  reservationRef: z.string().trim().max(200).optional().nullable(),
+  reservationRef: z
+    .string()
+    .trim()
+    .max(200)
+    .regex(
+      /^[A-Za-z0-9\-_]*$/,
+      "Reference must contain only letters, numbers, hyphens, or underscores"
+    )
+    .optional()
+    .nullable(),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -59,15 +70,25 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   const createMutation = useCreateReservation(farmId);
   const updateMutation = useUpdateReservation(farmId);
 
+  // Stakeholder is a local form filter — it refines density lookup by stakeholder.
+  // It is NOT yet persisted to the reservation record (no stakeholderId column on reservations).
+  // To persist: add stakeholder_id UUID to the reservations table and Zod schema.
+  const [stakeholderId, setStakeholderId] = useState<string | null>(null);
+
+  // Label of the auto-detected active time / lead time code
+  const [detectedLeadTimeCode, setDetectedLeadTimeCode] = useState<string | null>(null);
+
   const { data: allCrops = [] } = useCrops();
   const { data: productionTypes = [] } = useProductionTypes();
   const { data: seasons = [] } = useSeasons(farmId);
   const { data: blocks = [] } = useBlockMaster(farmId);
   const { data: densities = [] } = useDensityMaster(farmId);
+  const { data: stakeholders = [] } = useStakeholderMaster(farmId);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema) as Resolver<FormValues>,
     defaultValues: {
+      pollinationYear: reservation?.year ?? year,
       productionTypeId: reservation?.productionTypeId ?? null,
       cropId: reservation?.cropId ?? null,
       cropTypeId: reservation?.cropTypeId ?? null,
@@ -89,6 +110,8 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   const watchCropId = form.watch("cropId");
   const watchProductionTypeId = form.watch("productionTypeId");
   const watchPollinationWeek = form.watch("pollinationStartWeek");
+  const watchPollinationYear = form.watch("pollinationYear");
+  const watchSeasonId = form.watch("seasonId");
   const watchNoOfPlants = form.watch("noOfPlantsFemale");
   const watchPlantsPerM2 = form.watch("plantsPerM2");
   const watchSurfaceMale = form.watch("surfaceMale");
@@ -100,15 +123,34 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   );
   const cropTypes = selectedCrop?.types ?? [];
 
+  // Auto-detect season from pollinationYear + pollinationStartWeek
+  useEffect(() => {
+    if (!watchPollinationWeek || !watchPollinationYear || !seasons.length) return;
+    const match = seasons.find(
+      (s) =>
+        s.year === watchPollinationYear &&
+        s.startWeek != null &&
+        s.endWeek != null &&
+        s.startWeek <= watchPollinationWeek &&
+        s.endWeek >= watchPollinationWeek
+    );
+    if (match) form.setValue("seasonId", match.id);
+  }, [watchPollinationWeek, watchPollinationYear, seasons, form]);
+
+  // Look up active time (lead time) by crop + season + productionType
   useEffect(() => {
     if (!watchCropId || !watchPollinationWeek) return;
     const params = new URLSearchParams({ farmId });
-    if (watchCropId) params.set("cropId", watchCropId);
+    params.set("cropId", watchCropId);
     if (watchProductionTypeId) params.set("productionTypeId", watchProductionTypeId);
+    if (watchSeasonId) params.set("seasonId", watchSeasonId);
 
     apiFetch(`/api/v1/active-time/lookup?${params}`)
       .then((result: unknown) => {
-        if (!result) return;
+        if (!result) {
+          setDetectedLeadTimeCode(null);
+          return;
+        }
         const at = result as {
           id: string;
           materialArrival: number | null;
@@ -116,8 +158,10 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           pollinationStart: number | null;
           harvestingEnd: number | null;
           harvestingStart: number | null;
+          leadTimeType: string | null;
         };
         form.setValue("activeTimeId", at.id);
+        setDetectedLeadTimeCode(at.leadTimeType ?? null);
         const polRef = at.pollinationStart;
         if (polRef != null) {
           if (at.materialArrival != null)
@@ -136,21 +180,9 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         }
       })
       .catch(() => {});
-  }, [watchCropId, watchProductionTypeId, watchPollinationWeek, farmId, form]);
+  }, [watchCropId, watchProductionTypeId, watchSeasonId, watchPollinationWeek, farmId, form]);
 
-  useEffect(() => {
-    if (!watchPollinationWeek || !seasons.length) return;
-    const match = seasons.find(
-      (s) =>
-        s.year === year &&
-        s.startWeek != null &&
-        s.endWeek != null &&
-        s.startWeek <= watchPollinationWeek &&
-        s.endWeek >= watchPollinationWeek
-    );
-    if (match) form.setValue("seasonId", match.id);
-  }, [watchPollinationWeek, year, seasons, form]);
-
+  // Auto-fill density from density master (crop + cropType + productionType + stakeholder)
   useEffect(() => {
     if (!watchCropId) return;
     const cropTypeId = form.getValues("cropTypeId");
@@ -159,10 +191,11 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         d.cropId === watchCropId &&
         (cropTypeId ? d.cropTypeId === cropTypeId : true) &&
         (watchProductionTypeId ? d.productionTypeId === watchProductionTypeId : true) &&
+        (stakeholderId ? d.stakeholderId === stakeholderId : true) &&
         d.femaleDensity != null
     );
     if (match?.femaleDensity != null) form.setValue("plantsPerM2", match.femaleDensity);
-  }, [watchCropId, watchProductionTypeId, densities, form]);
+  }, [watchCropId, watchProductionTypeId, stakeholderId, densities, form]);
 
   const surfaceFemale = useMemo(() => {
     if (watchNoOfPlants && watchPlantsPerM2) return watchNoOfPlants / watchPlantsPerM2;
@@ -176,11 +209,12 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   }, [surfaceFemale, watchMfSameBlock, watchSurfaceMale]);
 
   async function onSubmit(values: FormValues) {
+    const { pollinationYear, ...rest } = values;
     const payload = {
-      ...values,
+      ...rest,
       type: "normal" as const,
       status: "new" as const,
-      year,
+      year: pollinationYear,
       surfaceFemale: surfaceFemale ?? undefined,
       totalSurface: totalSurface ?? undefined,
     };
@@ -202,7 +236,36 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-      {/* ── Identification ── */}
+      {/* ── Stakeholder ── */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Stakeholder</Label>
+        <Select
+          value={stakeholderId ?? NONE}
+          onValueChange={(v) => setStakeholderId(v === NONE ? null : v)}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue>
+              {(v: string) => {
+                if (!v || v === NONE)
+                  return <span className="text-muted-foreground">— Select —</span>;
+                return stakeholders.find((s) => s.id === v)?.name ?? String(v);
+              }}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE} label="— None —">
+              — None —
+            </SelectItem>
+            {stakeholders.map((s) => (
+              <SelectItem key={s.id} value={s.id} label={s.name}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* ── Crop / Production Type ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">Production Type</Label>
@@ -212,7 +275,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           >
             <SelectTrigger className="h-9 text-sm">
               <SelectValue>
-                {(v) =>
+                {(v: string) =>
                   v ? (
                     (productionTypes.find((pt) => pt.id === v)?.code ?? String(v))
                   ) : (
@@ -242,7 +305,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           >
             <SelectTrigger className="h-9 text-sm">
               <SelectValue>
-                {(v) =>
+                {(v: string) =>
                   v ? (
                     (allCrops.find((c) => c.id === v)?.name ?? String(v))
                   ) : (
@@ -261,7 +324,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           </Select>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 col-span-2">
           <Label className="text-xs font-medium">Crop Type</Label>
           <Select
             value={form.watch("cropTypeId") ?? ""}
@@ -270,7 +333,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           >
             <SelectTrigger className="h-9 text-sm">
               <SelectValue>
-                {(v) =>
+                {(v: string) =>
                   v ? (
                     (cropTypes.find((ct) => ct.id === v)?.name ?? String(v))
                   ) : (
@@ -288,7 +351,25 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             </SelectContent>
           </Select>
         </div>
+      </div>
 
+      {/* ── Pollination schedule inputs ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">Pollination Year *</Label>
+          <Input
+            type="number"
+            min={2000}
+            max={2100}
+            className="h-9 text-sm"
+            {...form.register("pollinationYear", { valueAsNumber: true })}
+          />
+          {form.formState.errors.pollinationYear && (
+            <p className="text-xs text-destructive">
+              {form.formState.errors.pollinationYear.message}
+            </p>
+          )}
+        </div>
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">Pollination Start Week *</Label>
           <Input
@@ -307,11 +388,31 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         </div>
       </div>
 
-      {/* ── Lead-time schedule (auto-filled) ── */}
+      {/* ── Reservation Reference ── */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Reservation Reference</Label>
+        <Input
+          className="h-9 text-sm"
+          placeholder="e.g. RES-2025-001"
+          {...form.register("reservationRef")}
+        />
+        {form.formState.errors.reservationRef && (
+          <p className="text-xs text-destructive">{form.formState.errors.reservationRef.message}</p>
+        )}
+      </div>
+
+      {/* ── Lead-time schedule (auto-filled from active time config) ── */}
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Lead-time schedule <span className="font-normal">(auto-calculated)</span>
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Lead-time schedule <span className="font-normal normal-case">(auto-calculated)</span>
+          </p>
+          {detectedLeadTimeCode && (
+            <span className="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              {detectedLeadTimeCode}
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-3 gap-2">
           <div className="space-y-1">
             <Label className="text-[10px] text-muted-foreground">Material Arrival</Label>
@@ -352,7 +453,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           >
             <SelectTrigger className="h-8 text-xs">
               <SelectValue>
-                {(v) =>
+                {(v: string) =>
                   v ? (
                     (seasons.find((s) => s.id === v)?.name ?? String(v))
                   ) : (
@@ -384,7 +485,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         >
           <SelectTrigger className="h-9 text-sm">
             <SelectValue>
-              {(v) => {
+              {(v: string) => {
                 if (!v || v === NONE) return "— Unallocated —";
                 const b = blocks.find((bl) => bl.id === v);
                 return b
@@ -416,13 +517,18 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         </p>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <Label className="text-[10px] font-medium">No. of Plants (F)</Label>
+            <Label className="text-[10px] font-medium">No. of Plants Female *</Label>
             <Input
               type="number"
-              min={0}
+              min={1}
               className="h-8 text-xs"
               {...form.register("noOfPlantsFemale", { valueAsNumber: true })}
             />
+            {form.formState.errors.noOfPlantsFemale && (
+              <p className="text-[10px] text-destructive">
+                {form.formState.errors.noOfPlantsFemale.message}
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] text-muted-foreground">Plants / m² (auto)</Label>
@@ -470,16 +576,6 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             </span>
           )}
         </div>
-      </div>
-
-      {/* ── Reference ── */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Reservation Reference</Label>
-        <Input
-          className="h-9 text-sm"
-          placeholder="e.g. RES-2025-001"
-          {...form.register("reservationRef")}
-        />
       </div>
 
       <div className="flex gap-2 pt-1">
