@@ -1,5 +1,5 @@
 {
-  "id": "917d686d-cf90-41ae-9cb3-9fdab6498b34",
+  "id": "f48e3b4b-7c1e-44e4-8fa4-7edd1bac5804",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1183,6 +1183,389 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.contracts": {
+      "name": "contracts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "farm_id": {
+          "name": "farm_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "is_allocated": {
+          "name": "is_allocated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "production_type_id": {
+          "name": "production_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crop_id": {
+          "name": "crop_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crop_type_id": {
+          "name": "crop_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_id": {
+          "name": "block_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_time_id": {
+          "name": "active_time_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "season_id": {
+          "name": "season_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pollination_start_week": {
+          "name": "pollination_start_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_arrival_week": {
+          "name": "material_arrival_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planting_week": {
+          "name": "planting_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_week": {
+          "name": "end_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "no_of_plants_female": {
+          "name": "no_of_plants_female",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plants_per_m2": {
+          "name": "plants_per_m2",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "surface_female": {
+          "name": "surface_female",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "surface_male": {
+          "name": "surface_male",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mf_same_block": {
+          "name": "mf_same_block",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "total_surface": {
+          "name": "total_surface",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reservation_ref": {
+          "name": "reservation_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "base_yield": {
+          "name": "base_yield",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_qty": {
+          "name": "requested_qty",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_revenue": {
+          "name": "contract_revenue",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abs_contract_no": {
+          "name": "abs_contract_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abs_header_no": {
+          "name": "abs_header_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nl_code": {
+          "name": "nl_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_ref": {
+          "name": "contract_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "contracts_farm_id_idx": {
+          "name": "contracts_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "contracts_year_idx": {
+          "name": "contracts_year_idx",
+          "columns": [
+            {
+              "expression": "year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "contracts_block_id_idx": {
+          "name": "contracts_block_id_idx",
+          "columns": [
+            {
+              "expression": "block_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "contracts_reservation_id_idx": {
+          "name": "contracts_reservation_id_idx",
+          "columns": [
+            {
+              "expression": "reservation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "contracts_farm_id_farms_id_fk": {
+          "name": "contracts_farm_id_farms_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "farms",
+          "columnsFrom": [
+            "farm_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "contracts_reservation_id_reservations_id_fk": {
+          "name": "contracts_reservation_id_reservations_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "reservations",
+          "columnsFrom": [
+            "reservation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_production_type_id_production_types_id_fk": {
+          "name": "contracts_production_type_id_production_types_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "production_types",
+          "columnsFrom": [
+            "production_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_crop_id_crops_id_fk": {
+          "name": "contracts_crop_id_crops_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "crops",
+          "columnsFrom": [
+            "crop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_crop_type_id_crop_types_id_fk": {
+          "name": "contracts_crop_type_id_crop_types_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "crop_types",
+          "columnsFrom": [
+            "crop_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_block_id_block_master_id_fk": {
+          "name": "contracts_block_id_block_master_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_active_time_id_active_times_id_fk": {
+          "name": "contracts_active_time_id_active_times_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "active_times",
+          "columnsFrom": [
+            "active_time_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "contracts_season_id_seasons_id_fk": {
+          "name": "contracts_season_id_seasons_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "seasons",
+          "columnsFrom": [
+            "season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -3654,9 +4037,21 @@
           "primaryKey": false,
           "notNull": false
         },
-        "production_site_id": {
-          "name": "production_site_id",
+        "crop_type_id": {
+          "name": "crop_type_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "production_type_id": {
+          "name": "production_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -3668,18 +4063,6 @@
         },
         "female_density": {
           "name": "female_density",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "spacing_m": {
-          "name": "spacing_m",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "row_spacing_m": {
-          "name": "row_spacing_m",
           "type": "real",
           "primaryKey": false,
           "notNull": false
@@ -3697,12 +4080,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": 52
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -3740,6 +4117,32 @@
           "tableTo": "crops",
           "columnsFrom": [
             "crop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "density_master_crop_type_id_crop_types_id_fk": {
+          "name": "density_master_crop_type_id_crop_types_id_fk",
+          "tableFrom": "density_master",
+          "tableTo": "crop_types",
+          "columnsFrom": [
+            "crop_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "density_master_production_type_id_production_types_id_fk": {
+          "name": "density_master_production_type_id_production_types_id_fk",
+          "tableFrom": "density_master",
+          "tableTo": "production_types",
+          "columnsFrom": [
+            "production_type_id"
           ],
           "columnsTo": [
             "id"
@@ -4803,6 +5206,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "start_week": {
+          "name": "start_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_week": {
+          "name": "end_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "start_date": {
           "name": "start_date",
           "type": "timestamp",
@@ -4879,53 +5294,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.production_sites": {
-      "name": "production_sites",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "code": {
-          "name": "code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "production_sites_code_unique": {
-          "name": "production_sites_code_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -5869,6 +6237,334 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.reservations": {
+      "name": "reservations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "farm_id": {
+          "name": "farm_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'normal'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'new'"
+        },
+        "production_type_id": {
+          "name": "production_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crop_id": {
+          "name": "crop_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crop_type_id": {
+          "name": "crop_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "block_id": {
+          "name": "block_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_time_id": {
+          "name": "active_time_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "season_id": {
+          "name": "season_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pollination_start_week": {
+          "name": "pollination_start_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "material_arrival_week": {
+          "name": "material_arrival_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planting_week": {
+          "name": "planting_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_week": {
+          "name": "end_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_week": {
+          "name": "start_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "no_of_plants_female": {
+          "name": "no_of_plants_female",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plants_per_m2": {
+          "name": "plants_per_m2",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "surface_female": {
+          "name": "surface_female",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "surface_male": {
+          "name": "surface_male",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mf_same_block": {
+          "name": "mf_same_block",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "total_surface": {
+          "name": "total_surface",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reservation_ref": {
+          "name": "reservation_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "reservations_farm_id_idx": {
+          "name": "reservations_farm_id_idx",
+          "columns": [
+            {
+              "expression": "farm_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reservations_year_idx": {
+          "name": "reservations_year_idx",
+          "columns": [
+            {
+              "expression": "year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reservations_block_id_idx": {
+          "name": "reservations_block_id_idx",
+          "columns": [
+            {
+              "expression": "block_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reservations_crop_id_idx": {
+          "name": "reservations_crop_id_idx",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reservations_farm_id_farms_id_fk": {
+          "name": "reservations_farm_id_farms_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "farms",
+          "columnsFrom": [
+            "farm_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reservations_production_type_id_production_types_id_fk": {
+          "name": "reservations_production_type_id_production_types_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "production_types",
+          "columnsFrom": [
+            "production_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "reservations_crop_id_crops_id_fk": {
+          "name": "reservations_crop_id_crops_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "crops",
+          "columnsFrom": [
+            "crop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "reservations_crop_type_id_crop_types_id_fk": {
+          "name": "reservations_crop_type_id_crop_types_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "crop_types",
+          "columnsFrom": [
+            "crop_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "reservations_block_id_block_master_id_fk": {
+          "name": "reservations_block_id_block_master_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "block_master",
+          "columnsFrom": [
+            "block_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "reservations_active_time_id_active_times_id_fk": {
+          "name": "reservations_active_time_id_active_times_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "active_times",
+          "columnsFrom": [
+            "active_time_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "reservations_season_id_seasons_id_fk": {
+          "name": "reservations_season_id_seasons_id_fk",
+          "tableFrom": "reservations",
+          "tableTo": "seasons",
+          "columnsFrom": [
+            "season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

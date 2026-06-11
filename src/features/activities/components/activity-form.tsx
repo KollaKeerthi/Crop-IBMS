@@ -40,8 +40,8 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
       description: activity?.description ?? "",
       category: activity?.category ?? "",
       code: activity?.code ?? "",
-      displayOrder: activity?.displayOrder ?? 0,
-      maxSimultaneous: activity?.maxSimultaneous ?? 1,
+      displayOrder: activity?.displayOrder ?? undefined,
+      maxSimultaneous: activity?.maxSimultaneous ?? undefined,
     },
   });
 
@@ -130,9 +130,14 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
                   <Input
                     type="number"
                     min={0}
+                    placeholder="0"
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    value={field.value ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseInt(v, 10);
+                      field.onChange(v === "" || Number.isNaN(n) ? undefined : n);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -149,9 +154,14 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
                   <Input
                     type="number"
                     min={1}
+                    placeholder="1"
                     {...field}
-                    value={field.value ?? 1}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                    value={field.value ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseInt(v, 10);
+                      field.onChange(v === "" || Number.isNaN(n) ? undefined : n);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

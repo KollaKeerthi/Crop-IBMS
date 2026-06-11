@@ -133,6 +133,42 @@ CREATE TABLE "calendar_integrations" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "contracts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"farm_id" uuid NOT NULL,
+	"reservation_id" uuid,
+	"status" text DEFAULT 'active' NOT NULL,
+	"is_allocated" boolean DEFAULT false NOT NULL,
+	"production_type_id" uuid,
+	"crop_id" uuid,
+	"crop_type_id" uuid,
+	"block_id" uuid,
+	"active_time_id" uuid,
+	"season_id" uuid,
+	"year" integer NOT NULL,
+	"pollination_start_week" integer,
+	"material_arrival_week" integer,
+	"planting_week" integer,
+	"end_week" integer,
+	"no_of_plants_female" real,
+	"plants_per_m2" real,
+	"surface_female" real,
+	"surface_male" real,
+	"mf_same_block" boolean DEFAULT false NOT NULL,
+	"total_surface" real,
+	"reservation_ref" text,
+	"base_yield" real,
+	"requested_qty" real,
+	"unit_price" real,
+	"contract_revenue" real,
+	"abs_contract_no" text,
+	"abs_header_no" text,
+	"nl_code" text,
+	"contract_ref" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "crop_data" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"farm_id" uuid NOT NULL,
@@ -430,14 +466,13 @@ CREATE TABLE "density_master" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"farm_id" uuid NOT NULL,
 	"crop_id" uuid,
-	"production_site_id" uuid,
+	"crop_type_id" uuid,
+	"production_type_id" uuid,
+	"year" integer,
 	"male_density" real,
 	"female_density" real,
-	"spacing_m" real,
-	"row_spacing_m" real,
 	"valid_from" integer DEFAULT 1 NOT NULL,
 	"valid_to" integer DEFAULT 52 NOT NULL,
-	"notes" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -584,18 +619,12 @@ CREATE TABLE "seasons" (
 	"farm_id" uuid NOT NULL,
 	"name" text NOT NULL,
 	"year" integer NOT NULL,
+	"start_week" integer,
+	"end_week" integer,
 	"start_date" timestamp,
 	"end_date" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "production_sites" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"code" text NOT NULL,
-	"description" text,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "production_sites_code_unique" UNIQUE("code")
 );
 --> statement-breakpoint
 CREATE TABLE "production_types" (
@@ -691,6 +720,35 @@ CREATE TABLE "task_templates" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "reservations" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"farm_id" uuid NOT NULL,
+	"type" text DEFAULT 'normal' NOT NULL,
+	"status" text DEFAULT 'new' NOT NULL,
+	"production_type_id" uuid,
+	"crop_id" uuid,
+	"crop_type_id" uuid,
+	"block_id" uuid,
+	"active_time_id" uuid,
+	"season_id" uuid,
+	"year" integer NOT NULL,
+	"pollination_start_week" integer,
+	"material_arrival_week" integer,
+	"planting_week" integer,
+	"end_week" integer,
+	"start_week" integer,
+	"no_of_plants_female" real,
+	"plants_per_m2" real,
+	"surface_female" real,
+	"surface_male" real,
+	"mf_same_block" boolean DEFAULT false NOT NULL,
+	"total_surface" real,
+	"reservation_ref" text,
+	"reason" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "active_time_activities" ADD CONSTRAINT "active_time_activities_active_time_id_active_times_id_fk" FOREIGN KEY ("active_time_id") REFERENCES "public"."active_times"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "active_time_activities" ADD CONSTRAINT "active_time_activities_activity_id_activities_id_fk" FOREIGN KEY ("activity_id") REFERENCES "public"."activities"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -708,6 +766,14 @@ ALTER TABLE "block_master" ADD CONSTRAINT "block_master_greenhouse_id_greenhouse
 ALTER TABLE "block_master" ADD CONSTRAINT "block_master_sub_block_id_sub_blocks_id_fk" FOREIGN KEY ("sub_block_id") REFERENCES "public"."sub_blocks"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "blocks" ADD CONSTRAINT "blocks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "calendar_integrations" ADD CONSTRAINT "calendar_integrations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_reservation_id_reservations_id_fk" FOREIGN KEY ("reservation_id") REFERENCES "public"."reservations"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_production_type_id_production_types_id_fk" FOREIGN KEY ("production_type_id") REFERENCES "public"."production_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_crop_id_crops_id_fk" FOREIGN KEY ("crop_id") REFERENCES "public"."crops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_crop_type_id_crop_types_id_fk" FOREIGN KEY ("crop_type_id") REFERENCES "public"."crop_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_block_id_block_master_id_fk" FOREIGN KEY ("block_id") REFERENCES "public"."block_master"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_active_time_id_active_times_id_fk" FOREIGN KEY ("active_time_id") REFERENCES "public"."active_times"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_season_id_seasons_id_fk" FOREIGN KEY ("season_id") REFERENCES "public"."seasons"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "crop_data" ADD CONSTRAINT "crop_data_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "crop_data" ADD CONSTRAINT "crop_data_crop_id_crops_id_fk" FOREIGN KEY ("crop_id") REFERENCES "public"."crops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "crop_data" ADD CONSTRAINT "crop_data_crop_type_id_crop_types_id_fk" FOREIGN KEY ("crop_type_id") REFERENCES "public"."crop_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -737,6 +803,8 @@ ALTER TABLE "crop_types" ADD CONSTRAINT "crop_types_crop_id_crops_id_fk" FOREIGN
 ALTER TABLE "crop_varieties" ADD CONSTRAINT "crop_varieties_crop_id_crops_id_fk" FOREIGN KEY ("crop_id") REFERENCES "public"."crops"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "density_master" ADD CONSTRAINT "density_master_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "density_master" ADD CONSTRAINT "density_master_crop_id_crops_id_fk" FOREIGN KEY ("crop_id") REFERENCES "public"."crops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "density_master" ADD CONSTRAINT "density_master_crop_type_id_crop_types_id_fk" FOREIGN KEY ("crop_type_id") REFERENCES "public"."crop_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "density_master" ADD CONSTRAINT "density_master_production_type_id_production_types_id_fk" FOREIGN KEY ("production_type_id") REFERENCES "public"."production_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "email_verification_tokens" ADD CONSTRAINT "email_verification_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -768,6 +836,13 @@ ALTER TABLE "tasks" ADD CONSTRAINT "tasks_created_by_users_id_fk" FOREIGN KEY ("
 ALTER TABLE "task_checklist_items" ADD CONSTRAINT "task_checklist_items_task_id_tasks_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."tasks"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_template_checklist_items" ADD CONSTRAINT "task_template_checklist_items_template_id_task_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."task_templates"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_templates" ADD CONSTRAINT "task_templates_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_production_type_id_production_types_id_fk" FOREIGN KEY ("production_type_id") REFERENCES "public"."production_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_crop_id_crops_id_fk" FOREIGN KEY ("crop_id") REFERENCES "public"."crops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_crop_type_id_crop_types_id_fk" FOREIGN KEY ("crop_type_id") REFERENCES "public"."crop_types"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_block_id_block_master_id_fk" FOREIGN KEY ("block_id") REFERENCES "public"."block_master"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_active_time_id_active_times_id_fk" FOREIGN KEY ("active_time_id") REFERENCES "public"."active_times"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_season_id_seasons_id_fk" FOREIGN KEY ("season_id") REFERENCES "public"."seasons"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "active_time_activities_active_time_id_idx" ON "active_time_activities" USING btree ("active_time_id");--> statement-breakpoint
 CREATE INDEX "active_time_activities_activity_id_idx" ON "active_time_activities" USING btree ("activity_id");--> statement-breakpoint
 CREATE INDEX "active_times_farm_id_idx" ON "active_times" USING btree ("farm_id");--> statement-breakpoint
@@ -784,6 +859,10 @@ CREATE INDEX "block_master_field_id_idx" ON "block_master" USING btree ("field_i
 CREATE INDEX "block_master_greenhouse_id_idx" ON "block_master" USING btree ("greenhouse_id");--> statement-breakpoint
 CREATE INDEX "blocks_farm_id_idx" ON "blocks" USING btree ("farm_id");--> statement-breakpoint
 CREATE INDEX "blocks_parent_id_idx" ON "blocks" USING btree ("parent_id");--> statement-breakpoint
+CREATE INDEX "contracts_farm_id_idx" ON "contracts" USING btree ("farm_id");--> statement-breakpoint
+CREATE INDEX "contracts_year_idx" ON "contracts" USING btree ("year");--> statement-breakpoint
+CREATE INDEX "contracts_block_id_idx" ON "contracts" USING btree ("block_id");--> statement-breakpoint
+CREATE INDEX "contracts_reservation_id_idx" ON "contracts" USING btree ("reservation_id");--> statement-breakpoint
 CREATE INDEX "crop_data_farm_id_idx" ON "crop_data" USING btree ("farm_id");--> statement-breakpoint
 CREATE INDEX "crop_data_crop_id_idx" ON "crop_data" USING btree ("crop_id");--> statement-breakpoint
 CREATE INDEX "crop_data_season_id_idx" ON "crop_data" USING btree ("season_id");--> statement-breakpoint
@@ -820,4 +899,8 @@ CREATE INDEX "tasks_farm_id_idx" ON "tasks" USING btree ("farm_id");--> statemen
 CREATE INDEX "tasks_crop_id_idx" ON "tasks" USING btree ("crop_id");--> statement-breakpoint
 CREATE INDEX "tasks_crop_data_id_idx" ON "tasks" USING btree ("crop_data_id");--> statement-breakpoint
 CREATE INDEX "tasks_assigned_to_idx" ON "tasks" USING btree ("assigned_to");--> statement-breakpoint
-CREATE INDEX "tasks_status_idx" ON "tasks" USING btree ("status");
+CREATE INDEX "tasks_status_idx" ON "tasks" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "reservations_farm_id_idx" ON "reservations" USING btree ("farm_id");--> statement-breakpoint
+CREATE INDEX "reservations_year_idx" ON "reservations" USING btree ("year");--> statement-breakpoint
+CREATE INDEX "reservations_block_id_idx" ON "reservations" USING btree ("block_id");--> statement-breakpoint
+CREATE INDEX "reservations_crop_id_idx" ON "reservations" USING btree ("crop_id");

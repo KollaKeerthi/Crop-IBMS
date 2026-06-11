@@ -21,7 +21,16 @@ import { passwordResetEmailHtml, passwordResetEmailText } from "./emails/passwor
 import type { SignUpInput } from "./schema";
 
 function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  // Use an explicit base URL when configured (ignore empty strings, which
+  // `??` would not catch and which produce relative links in emails).
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+
+  // Fall back to Vercel's runtime production URL (no protocol in the env var).
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
+
+  return "http://localhost:3000";
 }
 
 export async function signUpHandler(input: SignUpInput): Promise<{ email: string }> {
