@@ -260,7 +260,8 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
       }
       onSuccess?.();
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Something went wrong.";
+      const message =
+        err instanceof ApiError || err instanceof Error ? err.message : "Something went wrong.";
       form.setError("root", { message });
       toast.error(message);
       if (err instanceof ApiError && err.status === 404) {

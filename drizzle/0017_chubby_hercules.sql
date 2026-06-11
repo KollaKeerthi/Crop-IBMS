@@ -1,4 +1,4 @@
-CREATE TABLE "stakeholder_master" (
+CREATE TABLE IF NOT EXISTS "stakeholder_master" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"farm_id" uuid NOT NULL,
 	"name" text NOT NULL,
@@ -7,8 +7,8 @@ CREATE TABLE "stakeholder_master" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "crop_varieties" ADD COLUMN "stakeholder_id" uuid;--> statement-breakpoint
-ALTER TABLE "density_master" ADD COLUMN "stakeholder_id" uuid;--> statement-breakpoint
-ALTER TABLE "stakeholder_master" ADD CONSTRAINT "stakeholder_master_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "crop_varieties" ADD CONSTRAINT "crop_varieties_stakeholder_id_stakeholder_master_id_fk" FOREIGN KEY ("stakeholder_id") REFERENCES "public"."stakeholder_master"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "density_master" ADD CONSTRAINT "density_master_stakeholder_id_stakeholder_master_id_fk" FOREIGN KEY ("stakeholder_id") REFERENCES "public"."stakeholder_master"("id") ON DELETE set null ON UPDATE no action;
+ALTER TABLE "crop_varieties" ADD COLUMN IF NOT EXISTS "stakeholder_id" uuid;--> statement-breakpoint
+ALTER TABLE "density_master" ADD COLUMN IF NOT EXISTS "stakeholder_id" uuid;--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "stakeholder_master" ADD CONSTRAINT "stakeholder_master_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "crop_varieties" ADD CONSTRAINT "crop_varieties_stakeholder_id_stakeholder_master_id_fk" FOREIGN KEY ("stakeholder_id") REFERENCES "public"."stakeholder_master"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "density_master" ADD CONSTRAINT "density_master_stakeholder_id_stakeholder_master_id_fk" FOREIGN KEY ("stakeholder_id") REFERENCES "public"."stakeholder_master"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;

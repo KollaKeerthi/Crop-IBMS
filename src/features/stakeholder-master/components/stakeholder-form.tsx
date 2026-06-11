@@ -57,7 +57,7 @@ export function StakeholderForm({ farmId, stakeholder, onSuccess }: Props) {
       }
       onSuccess?.();
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof ApiError || err instanceof Error) {
         form.setError("root", { message: err.message });
       } else {
         form.setError("root", { message: "Something went wrong. Please try again." });
