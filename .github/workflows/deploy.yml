@@ -41,17 +41,20 @@ jobs:
           DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -f .env.production.local ]; then
-            set -a
-            . .env.production.local
-            set +a
-          elif [ -f .vercel/.env.production.local ]; then
-            set -a
-            . .vercel/.env.production.local
-            set +a
+          # The GitHub secret takes precedence. Only fall back to the pulled
+          # Vercel env file if neither secret is set, so a stray empty value in
+          # .env.production.local can't clobber the secret.
+          if [ -z "${DATABASE_URL_DIRECT:-}" ] && [ -z "${DATABASE_URL:-}" ]; then
+            for f in .env.production.local .vercel/.env.production.local; do
+              [ -f "$f" ] && { set -a; . "$f"; set +a; }
+            done
           fi
 
-          if [ -z "${DATABASE_URL_DIRECT:-}" ] && [ -z "${DATABASE_URL:-}" ]; then
+          if [ -n "${DATABASE_URL_DIRECT:-}" ]; then
+            echo "Using DATABASE_URL_DIRECT (length ${#DATABASE_URL_DIRECT})"
+          elif [ -n "${DATABASE_URL:-}" ]; then
+            echo "Using DATABASE_URL (length ${#DATABASE_URL})"
+          else
             echo "Missing DATABASE_URL_DIRECT or DATABASE_URL for migrations"
             exit 1
           fi
