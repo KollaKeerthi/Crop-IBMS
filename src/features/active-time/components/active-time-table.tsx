@@ -146,7 +146,9 @@ export function ActiveTimeTable() {
             <TableBody>
               {activeTimes.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{valueOrDash(item.leadTimeType)}</TableCell>
+                  <TableCell className="font-medium">
+                    {valueOrDash(item.leadTimeRefNumber)}
+                  </TableCell>
                   <TableCell>{valueOrDash(item.productionTypeName)}</TableCell>
                   <TableCell>{valueOrDash(item.cropName)}</TableCell>
                   <TableCell>{valueOrDash(item.varietyName)}</TableCell>

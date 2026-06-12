@@ -33,6 +33,7 @@ function buildActiveTime(
   return {
     id: row.id,
     farmId: row.farmId,
+    leadTimeRefNumber: row.leadTimeRefNumber ?? null,
     cropId: row.cropId ?? null,
     varietyId: row.varietyId ?? null,
     seasonId: row.seasonId ?? null,

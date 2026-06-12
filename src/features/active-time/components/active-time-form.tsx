@@ -71,6 +71,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const form = useForm<CreateActiveTimeInput>({
     resolver: zodResolver(schema) as Resolver<CreateActiveTimeInput>,
     defaultValues: {
+      leadTimeRefNumber: activeTime?.leadTimeRefNumber ?? "",
       cropId: activeTime?.cropId ?? undefined,
       varietyId: activeTime?.varietyId ?? undefined,
       seasonId: activeTime?.seasonId ?? undefined,
@@ -174,6 +175,25 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="leadTimeRefNumber"
+          render={({ field }) => (
+            <FormItem className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+              <FormLabel className="sm:text-right">Lead Time Ref. No.</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || undefined)}
+                  placeholder="e.g. CLT-1"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="leadTimeType"

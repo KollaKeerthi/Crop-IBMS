@@ -18,6 +18,7 @@ export const activeTimes = pgTable(
     productionTypeId: uuid("production_type_id").references(() => productionTypes.id, {
       onDelete: "set null",
     }),
+    leadTimeRefNumber: text("lead_time_ref_number"),
     leadTimeType: text("lead_time_type"),
     // All timeline fields are week numbers (integers) relative to season start
     materialArrival: integer("material_arrival"),

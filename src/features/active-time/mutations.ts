@@ -18,6 +18,7 @@ export async function createActiveTime(
     .insert(activeTimes)
     .values({
       farmId,
+      leadTimeRefNumber: input.leadTimeRefNumber ?? null,
       cropId: input.cropId ?? null,
       varietyId: input.varietyId ?? null,
       seasonId: input.seasonId ?? null,
@@ -45,6 +46,7 @@ export async function updateActiveTime(id: string, input: UpdateActiveTimeInput)
   await db
     .update(activeTimes)
     .set({
+      ...(input.leadTimeRefNumber !== undefined && { leadTimeRefNumber: input.leadTimeRefNumber }),
       ...(input.cropId !== undefined && { cropId: input.cropId }),
       ...(input.varietyId !== undefined && { varietyId: input.varietyId }),
       ...(input.seasonId !== undefined && { seasonId: input.seasonId }),

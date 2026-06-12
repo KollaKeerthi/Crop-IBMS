@@ -3,12 +3,13 @@ import { z } from "zod";
 export const LeadTimeType = z.enum(["Reservation", "Contract"]);
 
 export const CreateActiveTimeInputSchema = z.object({
+  leadTimeRefNumber: z.string().trim().max(50).optional(),
   cropId: z.string().uuid().optional(),
   varietyId: z.string().uuid().optional(),
   seasonId: z.string().uuid().optional(),
   productionTypeId: z.string().uuid().optional(),
   leadTimeType: LeadTimeType.optional(),
-  materialArrival: z.number().int().min(1).max(52).optional(),
+  materialArrival: z.number().int().min(0).max(52).optional(),
   sowingMale: z.number().int().min(1).max(52).optional(),
   sowingFemale: z.number().int().min(1).max(52).optional(),
   plantingMale: z.number().int().min(1).max(52).optional(),
@@ -22,12 +23,13 @@ export const CreateActiveTimeInputSchema = z.object({
 });
 
 export const UpdateActiveTimeInputSchema = z.object({
+  leadTimeRefNumber: z.string().trim().max(50).optional().nullable(),
   cropId: z.string().uuid().optional().nullable(),
   varietyId: z.string().uuid().optional().nullable(),
   seasonId: z.string().uuid().optional().nullable(),
   productionTypeId: z.string().uuid().optional().nullable(),
   leadTimeType: LeadTimeType.optional().nullable(),
-  materialArrival: z.number().int().min(1).max(52).optional().nullable(),
+  materialArrival: z.number().int().min(0).max(52).optional().nullable(),
   sowingMale: z.number().int().min(1).max(52).optional().nullable(),
   sowingFemale: z.number().int().min(1).max(52).optional().nullable(),
   plantingMale: z.number().int().min(1).max(52).optional().nullable(),
@@ -60,6 +62,7 @@ export const ActiveTimeActivitySchema = z.object({
 export const ActiveTimeSchema = z.object({
   id: z.string().uuid(),
   farmId: z.string().uuid(),
+  leadTimeRefNumber: z.string().nullable(),
   cropId: z.string().uuid().nullable(),
   varietyId: z.string().uuid().nullable(),
   seasonId: z.string().uuid().nullable(),

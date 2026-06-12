@@ -45,7 +45,7 @@ const MANAGEMENT_ITEMS: NavItem[] = [
 
 const INTELLIGENCE_ITEMS: NavItem[] = [];
 
-const PLATFORM_ITEMS: NavItem[] = [];
+const PLATFORM_ITEMS: NavItem[] = [{ label: "Farms", href: "/dashboard/farms", icon: Tractor }];
 
 function getInitials(name: string | null, email: string): string {
   if (name) {
