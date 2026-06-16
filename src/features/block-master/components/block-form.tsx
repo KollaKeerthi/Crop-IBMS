@@ -255,51 +255,6 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
                       <td className="px-2 py-2">
                         <FormField
                           control={form.control}
-                          name={`suitableCrops.${index}.seasonIds` as const}
-                          render={({ field }) => (
-                            <FormItem>
-                              {seasons.length > 0 ? (
-                                <div className="max-h-24 space-y-2 overflow-y-auto rounded-md border bg-background p-2">
-                                  {seasons.map((season) => {
-                                    const checkboxId = `suitable-crop-${row.id}-season-${season.id}`;
-                                    const checked = (field.value ?? []).includes(season.id);
-                                    return (
-                                      <div key={season.id} className="flex items-center gap-2">
-                                        <Checkbox
-                                          id={checkboxId}
-                                          checked={checked}
-                                          onCheckedChange={(nextChecked) => {
-                                            const current = field.value ?? [];
-                                            field.onChange(
-                                              nextChecked
-                                                ? [...current, season.id]
-                                                : current.filter((id) => id !== season.id)
-                                            );
-                                          }}
-                                        />
-                                        <Label
-                                          htmlFor={checkboxId}
-                                          className="min-w-0 cursor-pointer truncate text-xs font-normal"
-                                        >
-                                          {season.name}
-                                        </Label>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
-                                  No seasons
-                                </p>
-                              )}
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </td>
-                      <td className="px-2 py-2">
-                        <FormField
-                          control={form.control}
                           name={`suitableCrops.${index}.rows` as const}
                           render={({ field }) => (
                             <FormItem>

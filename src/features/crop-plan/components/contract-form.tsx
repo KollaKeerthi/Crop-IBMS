@@ -25,6 +25,11 @@ import type { Contract } from "@/features/contracts/schema";
 import { apiFetch } from "@/lib/api/client";
 
 const NONE = "__none__";
+const WEEKS_PER_YEAR = 52;
+
+function toOperationalWeek(globalWeek: number) {
+  return ((((globalWeek - 1) % WEEKS_PER_YEAR) + WEEKS_PER_YEAR) % WEEKS_PER_YEAR) + 1;
+}
 
 const FormSchema = z.object({
   productionTypeId: z.string().uuid().optional().nullable(),
@@ -138,16 +143,16 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
           if (at.materialArrival != null)
             form.setValue(
               "materialArrivalWeek",
-              Math.max(1, watchPollinationWeek - (polRef - at.materialArrival))
+              toOperationalWeek(watchPollinationWeek - (polRef - at.materialArrival))
             );
           if (at.plantingFemale != null)
             form.setValue(
               "plantingWeek",
-              Math.max(1, watchPollinationWeek - (polRef - at.plantingFemale))
+              toOperationalWeek(watchPollinationWeek - (polRef - at.plantingFemale))
             );
           const harv = at.harvestingEnd ?? at.harvestingStart;
           if (harv != null)
-            form.setValue("endWeek", Math.min(53, watchPollinationWeek + (harv - polRef)));
+            form.setValue("endWeek", toOperationalWeek(watchPollinationWeek + (harv - polRef)));
         }
       })
       .catch(() => {});

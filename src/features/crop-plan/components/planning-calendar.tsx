@@ -122,6 +122,21 @@ function getGlobalWeek(year: number, week: number): number | null {
   return offset + week;
 }
 
+function getCycleGlobalWeek(
+  year: number,
+  pollinationWeek: number | null,
+  week: number | null,
+  timing: "before" | "same" | "after"
+): number | null {
+  if (week == null) return null;
+  let targetYear = year;
+  if (pollinationWeek != null) {
+    if (timing === "before" && week > pollinationWeek) targetYear = year - 1;
+    if (timing === "after" && week < pollinationWeek) targetYear = year + 1;
+  }
+  return getGlobalWeek(targetYear, Math.min(week, WEEKS_PER_YEAR));
+}
+
 function getYearWeek(globalWeek: number): { year: number; week: number } {
   const clamped = clamp(globalWeek, 1, TOTAL_WEEKS);
   return {
@@ -146,14 +161,23 @@ function getBaseBarRange(item: CalendarItem): Range | null {
     const r = item.data;
     if (r.type === "empty") {
       if (r.startWeek != null) {
-        const endWeek = r.endWeek ?? r.startWeek;
-        return { start: offset + r.startWeek, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
+        const start = getGlobalWeek(r.year, r.startWeek);
+        const end = getGlobalWeek(r.year, r.endWeek ?? r.startWeek);
+        if (start != null && end != null) return { start, end };
       }
     } else {
       const start = r.materialArrivalWeek ?? r.plantingWeek ?? r.pollinationStartWeek;
       if (start != null) {
         const endWeek = r.endWeek ?? start;
-        return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
+        const startTiming =
+          start === r.pollinationStartWeek &&
+          r.materialArrivalWeek == null &&
+          r.plantingWeek == null
+            ? "same"
+            : "before";
+        const startGlobal = getCycleGlobalWeek(r.year, r.pollinationStartWeek, start, startTiming);
+        const endGlobal = getCycleGlobalWeek(r.year, r.pollinationStartWeek, endWeek, "after");
+        if (startGlobal != null && endGlobal != null) return { start: startGlobal, end: endGlobal };
       }
     }
   } else {
@@ -161,7 +185,13 @@ function getBaseBarRange(item: CalendarItem): Range | null {
     const start = c.materialArrivalWeek ?? c.plantingWeek ?? c.pollinationStartWeek;
     if (start != null) {
       const endWeek = c.endWeek ?? start;
-      return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
+      const startTiming =
+        start === c.pollinationStartWeek && c.materialArrivalWeek == null && c.plantingWeek == null
+          ? "same"
+          : "before";
+      const startGlobal = getCycleGlobalWeek(c.year, c.pollinationStartWeek, start, startTiming);
+      const endGlobal = getCycleGlobalWeek(c.year, c.pollinationStartWeek, endWeek, "after");
+      if (startGlobal != null && endGlobal != null) return { start: startGlobal, end: endGlobal };
     }
   }
 
@@ -173,29 +203,24 @@ function getBarRange(item: CalendarItem, optimisticRanges: Record<string, Range>
 }
 
 function getScheduleBounds(item: CalendarItem): Range | null {
-  const weeks =
-    item.kind === "reservation"
+  const d = item.data;
+  const globals =
+    item.kind === "reservation" && item.data.type === "empty"
       ? [
-          item.data.pollinationStartWeek,
-          item.data.materialArrivalWeek,
-          item.data.plantingWeek,
-          item.data.startWeek,
-          item.data.endWeek,
+          item.data.startWeek != null ? getGlobalWeek(d.year, item.data.startWeek) : null,
+          d.endWeek != null ? getGlobalWeek(d.year, d.endWeek) : null,
         ]
       : [
-          item.data.pollinationStartWeek,
-          item.data.materialArrivalWeek,
-          item.data.plantingWeek,
-          item.data.endWeek,
+          getCycleGlobalWeek(d.year, d.pollinationStartWeek, d.materialArrivalWeek, "before"),
+          getCycleGlobalWeek(d.year, d.pollinationStartWeek, d.plantingWeek, "before"),
+          getCycleGlobalWeek(d.year, d.pollinationStartWeek, d.pollinationStartWeek, "same"),
+          getCycleGlobalWeek(d.year, d.pollinationStartWeek, d.endWeek, "after"),
         ];
 
-  const globals = weeks
-    .filter((week): week is number => week != null)
-    .map((week) => getGlobalWeek(item.data.year, Math.min(week, WEEKS_PER_YEAR)))
-    .filter((week): week is number => week != null);
+  const validGlobals = globals.filter((week): week is number => week != null);
 
-  if (globals.length === 0) return null;
-  return { start: Math.min(...globals), end: Math.max(...globals) };
+  if (validGlobals.length === 0) return null;
+  return { start: Math.min(...validGlobals), end: Math.max(...validGlobals) };
 }
 
 function isEditable(item: CalendarItem): boolean {
