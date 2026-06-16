@@ -5,7 +5,37 @@ import { apiError, apiOk } from "@/lib/api/response";
 import { ApiError } from "@/lib/api/errors";
 import { checkFarmAccess } from "@/features/farms/queries";
 import { db } from "@/db";
-import { activeTimes } from "@/db/schema";
+import { activeTimeActivities, activeTimes, activities } from "@/db/schema";
+
+function normalizeActivityName(value: string | null): string {
+  return (value ?? "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function scheduleFieldFromActivity(name: string | null, code: string | null): string | null {
+  const fields: Record<string, string> = {
+    materialarrival: "materialArrival",
+    materialarrivalweek: "materialArrival",
+    sowingmale: "sowingMale",
+    sowingfemale: "sowingFemale",
+    planting: "plantingFemale",
+    plantingweek: "plantingFemale",
+    plantingfemale: "plantingFemale",
+    pollinationstart: "pollinationStart",
+    pollinationstartweek: "pollinationStart",
+    pollinationend: "pollinationEnd",
+    pollinationendweek: "pollinationEnd",
+    harvestingstart: "harvestingStart",
+    harvestingstartweek: "harvestingStart",
+    harvestingend: "harvestingEnd",
+    harvestingendweek: "harvestingEnd",
+    endweek: "harvestingEnd",
+  };
+  for (const value of [name, code]) {
+    const field = fields[normalizeActivityName(value)];
+    if (field) return field;
+  }
+  return null;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,18 +66,36 @@ export async function GET(req: NextRequest) {
 
     if (!row) return apiOk(null);
 
+    const activityRows = await db
+      .select({
+        name: activities.name,
+        code: activities.code,
+        weekNumber: activeTimeActivities.weekNumber,
+      })
+      .from(activeTimeActivities)
+      .leftJoin(activities, eq(activeTimeActivities.activityId, activities.id))
+      .where(eq(activeTimeActivities.activeTimeId, row.id));
+
+    const activitySchedule: Record<string, number | null> = {};
+    for (const activity of activityRows) {
+      const field = scheduleFieldFromActivity(activity.name, activity.code);
+      if (field && activity.weekNumber != null) {
+        activitySchedule[field] = activity.weekNumber;
+      }
+    }
+
     return apiOk({
       id: row.id,
       leadTimeRefNumber: row.leadTimeRefNumber,
-      materialArrival: row.materialArrival,
-      sowingMale: row.sowingMale,
-      sowingFemale: row.sowingFemale,
-      plantingMale: row.plantingMale,
-      plantingFemale: row.plantingFemale,
-      pollinationStart: row.pollinationStart,
-      pollinationEnd: row.pollinationEnd,
-      harvestingStart: row.harvestingStart,
-      harvestingEnd: row.harvestingEnd,
+      materialArrival: row.materialArrival ?? activitySchedule.materialArrival ?? null,
+      sowingMale: row.sowingMale ?? activitySchedule.sowingMale ?? null,
+      sowingFemale: row.sowingFemale ?? activitySchedule.sowingFemale ?? null,
+      plantingMale: row.plantingMale ?? activitySchedule.plantingMale ?? null,
+      plantingFemale: row.plantingFemale ?? activitySchedule.plantingFemale ?? null,
+      pollinationStart: row.pollinationStart ?? activitySchedule.pollinationStart ?? null,
+      pollinationEnd: row.pollinationEnd ?? activitySchedule.pollinationEnd ?? null,
+      harvestingStart: row.harvestingStart ?? activitySchedule.harvestingStart ?? null,
+      harvestingEnd: row.harvestingEnd ?? activitySchedule.harvestingEnd ?? null,
       leadTimeType: row.leadTimeType,
     });
   } catch (err) {
