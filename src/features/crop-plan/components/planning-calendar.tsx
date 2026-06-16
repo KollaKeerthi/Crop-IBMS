@@ -145,20 +145,23 @@ function getBaseBarRange(item: CalendarItem): Range | null {
   if (item.kind === "reservation") {
     const r = item.data;
     if (r.type === "empty") {
-      if (r.startWeek != null && r.endWeek != null) {
-        return { start: offset + r.startWeek, end: offset + Math.min(r.endWeek, WEEKS_PER_YEAR) };
+      if (r.startWeek != null) {
+        const endWeek = r.endWeek ?? r.startWeek;
+        return { start: offset + r.startWeek, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
       }
     } else {
       const start = r.plantingWeek ?? r.pollinationStartWeek;
-      if (start != null && r.endWeek != null) {
-        return { start: offset + start, end: offset + Math.min(r.endWeek, WEEKS_PER_YEAR) };
+      if (start != null) {
+        const endWeek = r.endWeek ?? start;
+        return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
       }
     }
   } else {
     const c = item.data;
     const start = c.plantingWeek ?? c.pollinationStartWeek;
-    if (start != null && c.endWeek != null) {
-      return { start: offset + start, end: offset + Math.min(c.endWeek, WEEKS_PER_YEAR) };
+    if (start != null) {
+      const endWeek = c.endWeek ?? start;
+      return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
     }
   }
 
