@@ -118,6 +118,7 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
     if (!watchCropId || !watchPollinationWeek) return;
     const params = new URLSearchParams({ farmId });
     if (watchCropId) params.set("cropId", watchCropId);
+    params.set("leadTimeType", "Contract");
     if (watchProductionTypeId) params.set("productionTypeId", watchProductionTypeId);
 
     apiFetch(`/api/v1/active-time/lookup?${params}`)

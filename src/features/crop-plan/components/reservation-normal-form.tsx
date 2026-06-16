@@ -142,6 +142,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
     if (!watchCropId || !watchPollinationWeek) return;
     const params = new URLSearchParams({ farmId });
     params.set("cropId", watchCropId);
+    params.set("leadTimeType", "Reservation");
     if (watchProductionTypeId) params.set("productionTypeId", watchProductionTypeId);
     if (watchSeasonId) params.set("seasonId", watchSeasonId);
 
@@ -149,10 +150,12 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
       .then((result: unknown) => {
         if (!result) {
           setDetectedLeadTimeCode(null);
+          form.setValue("activeTimeId", null);
           return;
         }
         const at = result as {
           id: string;
+          leadTimeRefNumber: string | null;
           materialArrival: number | null;
           plantingFemale: number | null;
           pollinationStart: number | null;
@@ -161,7 +164,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           leadTimeType: string | null;
         };
         form.setValue("activeTimeId", at.id);
-        setDetectedLeadTimeCode(at.leadTimeType ?? null);
+        setDetectedLeadTimeCode(at.leadTimeRefNumber ?? at.leadTimeType ?? null);
         const polRef = at.pollinationStart;
         if (polRef != null) {
           if (at.materialArrival != null)

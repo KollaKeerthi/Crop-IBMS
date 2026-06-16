@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const farmId = p.get("farmId");
     const cropId = p.get("cropId");
     const productionTypeId = p.get("productionTypeId");
+    const leadTimeType = p.get("leadTimeType");
 
     if (!farmId) throw new ApiError(400, "bad_request", "farmId is required.");
     const hasAccess = await checkFarmAccess(farmId, ctx.userId);
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
     if (cropId) conditions.push(eq(activeTimes.cropId, cropId));
     if (productionTypeId) conditions.push(eq(activeTimes.productionTypeId, productionTypeId));
     if (seasonId) conditions.push(eq(activeTimes.seasonId, seasonId));
+    if (leadTimeType) conditions.push(eq(activeTimes.leadTimeType, leadTimeType));
 
     const [row] = await db
       .select()
@@ -36,6 +38,7 @@ export async function GET(req: NextRequest) {
 
     return apiOk({
       id: row.id,
+      leadTimeRefNumber: row.leadTimeRefNumber,
       materialArrival: row.materialArrival,
       sowingMale: row.sowingMale,
       sowingFemale: row.sowingFemale,

@@ -150,7 +150,7 @@ function getBaseBarRange(item: CalendarItem): Range | null {
         return { start: offset + r.startWeek, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
       }
     } else {
-      const start = r.plantingWeek ?? r.pollinationStartWeek;
+      const start = r.materialArrivalWeek ?? r.plantingWeek ?? r.pollinationStartWeek;
       if (start != null) {
         const endWeek = r.endWeek ?? start;
         return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
@@ -158,7 +158,7 @@ function getBaseBarRange(item: CalendarItem): Range | null {
     }
   } else {
     const c = item.data;
-    const start = c.plantingWeek ?? c.pollinationStartWeek;
+    const start = c.materialArrivalWeek ?? c.plantingWeek ?? c.pollinationStartWeek;
     if (start != null) {
       const endWeek = c.endWeek ?? start;
       return { start: offset + start, end: offset + Math.min(endWeek, WEEKS_PER_YEAR) };
