@@ -44,7 +44,7 @@ export const UpdateActiveTimeInputSchema = z.object({
 
 export const AddActivityToActiveTimeSchema = z.object({
   activityId: z.string().uuid(),
-  weekNumber: z.number().int().min(1).max(52),
+  weekNumber: z.number().int().min(0).max(52),
   dayOffset: z.number().int().optional(),
   notes: z.string().trim().max(2000).optional(),
 });

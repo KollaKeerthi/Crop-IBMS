@@ -63,6 +63,12 @@ function leadTimeTypeValue(value: string | null | undefined): LeadTimeType {
   return value === "Contract" ? "Contract" : "Reservation";
 }
 
+function isMaterialArrivalActivity(name: string, code?: string | null) {
+  return [name, code ?? ""].some(
+    (value) => value.toLowerCase().replace(/[^a-z]/g, "") === "materialarrival"
+  );
+}
+
 export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
   const isEdit = !!activeTime;
   const schema = isEdit ? UpdateActiveTimeInputSchema : CreateActiveTimeInputSchema;
@@ -388,7 +394,7 @@ export function ActiveTimeForm({ farmId, activeTime, onSuccess }: Props) {
                 </label>
                 <Input
                   type="number"
-                  min={1}
+                  min={isMaterialArrivalActivity(activity.name, activity.code) ? 0 : 1}
                   max={52}
                   value={activityWeeks[activity.id] ?? ""}
                   onChange={(e) =>
