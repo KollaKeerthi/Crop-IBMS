@@ -11,5 +11,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"),
   role: userRoleEnum("role").notNull().default("OWNER"),
   primaryFarmId: uuid("primary_farm_id"), // set after first farm is created
+  // Bumped on every password change; older JWTs (issued before this) are rejected.
+  passwordChangedAt: timestamp("password_changed_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

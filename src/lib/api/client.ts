@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiError } from "./errors";
+import { rateLimitMessage } from "./rate-limit-message";
 
 type RequestOptions<TResponse> = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
@@ -24,9 +25,17 @@ export async function apiFetch<TResponse>(
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
+    const code = errBody?.error?.code ?? "unknown_error";
+
+    if (res.status === 429 || code === "rate_limited") {
+      const parsed = Number(res.headers.get("retry-after"));
+      const retryAfter = Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+      throw new ApiError(res.status, "rate_limited", rateLimitMessage(retryAfter), retryAfter);
+    }
+
     throw new ApiError(
       res.status,
-      errBody?.error?.code ?? "unknown_error",
+      code,
       errBody?.error?.message ?? `Request failed: ${res.status}`
     );
   }

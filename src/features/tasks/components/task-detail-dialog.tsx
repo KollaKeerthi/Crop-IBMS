@@ -82,7 +82,7 @@ export function TaskDetailDialog({ task, farmId, open, onClose }: Props) {
           }
         }}
       >
-        <DialogContent className="!max-w-[1100px] !w-[96vw] max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-275! w-[96vw]! max-h-[90vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle className="px-5 pt-5">Edit task</DialogTitle>
           </DialogHeader>

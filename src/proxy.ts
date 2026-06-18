@@ -6,14 +6,19 @@ import { getIp } from "@/lib/get-ip";
 
 const { auth } = NextAuth(authConfig);
 
-const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
+const apiLimiter = createRateLimiter({ windowMs: 60_000, max: 60, name: "api" });
+// Stricter budget for unauthenticated, abuse-prone endpoints (signup, password
+// reset, verification email) that send mail or validate tokens.
+const authLimiter = createRateLimiter({ windowMs: 60_000, max: 10, name: "auth" });
 
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
   const isApiV1 = pathname.startsWith("/api/v1/");
   if (isApiV1) {
-    const result = await apiLimiter(getIp(req as unknown as NextRequest));
+    const isSensitiveAuth = pathname.startsWith("/api/v1/auth/");
+    const limiter = isSensitiveAuth ? authLimiter : apiLimiter;
+    const result = await limiter(getIp(req as unknown as NextRequest));
     if (!result.allowed) {
       return NextResponse.json(
         { error: { code: "rate_limited", message: "Too many requests." } },

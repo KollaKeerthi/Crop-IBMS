@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { authConfig } from "./lib/config";
 import { getUserByEmail } from "./queries";
 import { verifyPassword } from "./lib/password";
+import { clearLoginAttempts } from "@/lib/login-attempts";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -31,12 +32,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Block sign-in until email is verified
         if (!user.emailVerified) return null;
 
+        // Successful credential check — reset the per-account failure counter.
+        await clearLoginAttempts(user.email);
+
         return {
           id: user.id,
           name: user.name ?? null,
           email: user.email,
           image: user.image ?? null,
           role: user.role,
+          passwordChangedAt: user.passwordChangedAt,
         };
       },
     }),

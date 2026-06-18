@@ -1,9 +1,13 @@
 import type { NextRequest } from "next/server";
 
-export function getIp(req: NextRequest): string {
+type HeaderGetter = { get(name: string): string | null };
+
+export function ipFromHeaders(headers: HeaderGetter): string {
   return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown"
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? headers.get("x-real-ip") ?? "unknown"
   );
+}
+
+export function getIp(req: NextRequest): string {
+  return ipFromHeaders(req.headers);
 }

@@ -1,0 +1,18 @@
+title = "crop-management gitleaks config"
+
+# Start from gitleaks' built-in rule set, then allowlist known non-secrets so the
+# CI gate doesn't fail on documented placeholders and test fixtures.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and CI test fixtures — not real secrets"
+paths = [
+  '''\.env\.example$''',
+]
+regexes = [
+  '''dummy:dummy@''',                       # dummy DATABASE_URL in CI
+  '''test-secret-at-least-32-chars-long''', # dummy AUTH_SECRET in CI
+  '''generate-with-openssl-rand-base64-32''', # .env.example placeholder
+  '''https://dummy\.upstash\.io''',         # dummy Upstash URL in CI
+]

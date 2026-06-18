@@ -1,7 +1,8 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/errors";
 import { apiError, apiOk, firstError } from "@/lib/api/response";
+import { createRateLimiter } from "@/lib/rate-limit";
 import { db } from "@/db";
 import { farms, tasks, plantings, crops, farmMemberships } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -9,9 +10,20 @@ import { AiChatRequestSchema } from "@/features/ai/schema";
 
 export const runtime = "nodejs";
 
+// LLM calls are expensive — gate per user, tighter than the global API limiter.
+const aiLimiter = createRateLimiter({ windowMs: 60_000, max: 20, name: "ai" });
+
 export async function POST(req: NextRequest) {
   try {
     const ctx = await requireAuth();
+
+    const ai = await aiLimiter(ctx.userId);
+    if (!ai.allowed) {
+      return NextResponse.json(
+        { error: { code: "rate_limited", message: "Too many AI requests." } },
+        { status: 429, headers: { "Retry-After": String(ai.retryAfter) } }
+      );
+    }
     const body = await req.json().catch(() => null);
     const parsedBody = AiChatRequestSchema.safeParse(body);
     if (!parsedBody.success) {

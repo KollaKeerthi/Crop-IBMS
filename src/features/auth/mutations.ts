@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users, emailVerificationTokens, passwordResetTokens } from "@/db/schema";
+import { bumpPasswordEpoch } from "@/lib/session-epoch";
 
 export async function createUser(data: { name: string; email: string; passwordHash: string }) {
   const rows = await db
@@ -58,6 +59,13 @@ export async function deletePasswordResetTokensByUserId(userId: string) {
 }
 
 export async function updateUserPassword(userId: string, passwordHash: string) {
-  const rows = await db.update(users).set({ passwordHash }).where(eq(users.id, userId)).returning();
+  const changedAt = new Date();
+  const rows = await db
+    .update(users)
+    .set({ passwordHash, passwordChangedAt: changedAt })
+    .where(eq(users.id, userId))
+    .returning();
+  // Invalidate every JWT issued before this change (see lib/session-epoch).
+  await bumpPasswordEpoch(userId, changedAt.getTime());
   return rows[0] ?? null;
 }
