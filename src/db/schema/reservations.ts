@@ -6,6 +6,7 @@ import { crops } from "./crops";
 import { farms } from "./farms";
 import { productionTypes } from "./production-types";
 import { seasons } from "./seasons";
+import { stakeholderMaster } from "./stakeholder-master";
 
 export const reservations = pgTable(
   "reservations",
@@ -21,6 +22,9 @@ export const reservations = pgTable(
     }),
     cropId: uuid("crop_id").references(() => crops.id, { onDelete: "set null" }),
     cropTypeId: uuid("crop_type_id").references(() => cropTypes.id, { onDelete: "set null" }),
+    stakeholderId: uuid("stakeholder_id").references(() => stakeholderMaster.id, {
+      onDelete: "set null",
+    }),
     blockId: uuid("block_id").references(() => blockMaster.id, { onDelete: "set null" }),
     activeTimeId: uuid("active_time_id").references(() => activeTimes.id, { onDelete: "set null" }),
     seasonId: uuid("season_id").references(() => seasons.id, { onDelete: "set null" }),

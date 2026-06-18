@@ -21,6 +21,7 @@ import { useSeasons } from "@/features/seasons/hooks";
 import { useBlockMaster } from "@/features/block-master/hooks";
 import { useDensityMaster } from "@/features/density-master/hooks";
 import { useStakeholderMaster } from "@/features/stakeholder-master/hooks";
+import { useVariability } from "@/features/variability/hooks";
 import { useCreateReservation, useUpdateReservation } from "@/features/reservations/hooks";
 import type { Reservation } from "@/features/reservations/schema";
 import { apiFetch } from "@/lib/api/client";
@@ -75,10 +76,10 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   const createMutation = useCreateReservation(farmId);
   const updateMutation = useUpdateReservation(farmId);
 
-  // Stakeholder is a local form filter — it refines density lookup by stakeholder.
-  // It is NOT yet persisted to the reservation record (no stakeholderId column on reservations).
-  // To persist: add stakeholder_id UUID to the reservations table and Zod schema.
-  const [stakeholderId, setStakeholderId] = useState<string | null>(null);
+  // Persisted on the reservation (stakeholder_id) and also refines the density lookup.
+  const [stakeholderId, setStakeholderId] = useState<string | null>(
+    reservation?.stakeholderId ?? null
+  );
 
   // Label of the auto-detected active time / lead time code
   const [detectedLeadTimeCode, setDetectedLeadTimeCode] = useState<string | null>(null);
@@ -89,6 +90,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   const { data: blocks = [] } = useBlockMaster(farmId);
   const { data: densities = [] } = useDensityMaster(farmId);
   const { data: stakeholders = [] } = useStakeholderMaster(farmId);
+  const { data: variabilities = [] } = useVariability(farmId);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema) as Resolver<FormValues>,
@@ -216,6 +218,22 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
     return surfaceFemale + (watchSurfaceMale ?? 0);
   }, [surfaceFemale, watchMfSameBlock, watchSurfaceMale]);
 
+  // Variability is keyed by production type: "Fixed" locks plants/m² to the density
+  // value; "Flexible" lets the planner override it. Defaults to Fixed when undefined.
+  const isFlexible = useMemo(
+    () =>
+      !!watchProductionTypeId &&
+      variabilities.find((v) => v.productionTypeId === watchProductionTypeId)?.variability ===
+        "Flexible",
+    [variabilities, watchProductionTypeId]
+  );
+
+  // Only planning-enabled blocks are allocatable (keep the current block if editing).
+  const planningBlocks = useMemo(
+    () => blocks.filter((b) => b.useInPlanning || b.id === reservation?.blockId),
+    [blocks, reservation?.blockId]
+  );
+
   async function onSubmit(values: FormValues) {
     const { pollinationYear, ...rest } = values;
     const payload = {
@@ -223,6 +241,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
       type: "normal" as const,
       status: "new" as const,
       year: pollinationYear,
+      stakeholderId,
       surfaceFemale: surfaceFemale ?? undefined,
       totalSurface: totalSurface ?? undefined,
     };
@@ -506,7 +525,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             <SelectItem value={NONE} label="— Unallocated —">
               — Unallocated —
             </SelectItem>
-            {blocks.map((b) => {
+            {planningBlocks.map((b) => {
               const blockLabel = `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`;
               return (
                 <SelectItem key={b.id} value={b.id} label={blockLabel}>
@@ -520,9 +539,24 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
 
       {/* ── Surface calculation ── */}
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Surface
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Surface
+          </p>
+          <span
+            className={
+              "rounded px-1.5 py-0.5 text-[9px] font-semibold " +
+              (isFlexible ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600")
+            }
+            title={
+              isFlexible
+                ? "Flexible: plants/m² can be overridden"
+                : "Fixed: plants/m² locked to density master"
+            }
+          >
+            {isFlexible ? "Flexible" : "Fixed"}
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <Label className="text-[10px] font-medium">No. of Plants Female *</Label>
@@ -539,12 +573,15 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             )}
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] text-muted-foreground">Plants / m² (auto)</Label>
+            <Label className="text-[10px] text-muted-foreground">
+              Plants / m² {isFlexible ? "(editable)" : "(density-locked)"}
+            </Label>
             <Input
               type="number"
               min={0}
               step="0.01"
-              className="h-8 text-xs bg-muted/40"
+              readOnly={!isFlexible}
+              className={"h-8 text-xs " + (isFlexible ? "" : "bg-muted/60 text-muted-foreground")}
               {...form.register("plantsPerM2", { valueAsNumber: true })}
             />
           </div>

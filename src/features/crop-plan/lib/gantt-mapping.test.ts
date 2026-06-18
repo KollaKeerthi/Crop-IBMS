@@ -35,11 +35,13 @@ function reservation(over: Partial<Reservation>): Reservation {
     totalSurface: null,
     reservationRef: null,
     reason: null,
+    stakeholderId: null,
     cropName: "Cucumber",
     cropTypeName: "Type 1",
     productionTypeName: null,
     blockName: "A1",
     seasonName: null,
+    stakeholderName: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
     ...over,
@@ -99,8 +101,17 @@ describe("week <-> date", () => {
 });
 
 describe("buildGanttModel", () => {
-  it("creates one group row and one bar per booking (no stage rows)", () => {
-    const { tasks, meta } = buildGanttModel("block", [reservation({})], []);
+  it("seeds a block row from the planning blocks and one bar per booking", () => {
+    const blocks = [{ id: "blk1", blockName: "A1" }];
+    const colors = new Map([["c-cuc", "#197b30"]]);
+    const { tasks, meta } = buildGanttModel(
+      "block",
+      [reservation({})],
+      [],
+      new Map(),
+      blocks,
+      colors
+    );
 
     const group = tasks.find((t) => meta[String(t.id)]?.kind === "group");
     expect(group?.text).toBe("A1");
@@ -108,8 +119,9 @@ describe("buildGanttModel", () => {
     const cycle = tasks.find((t) => t.id === "r1");
     expect(cycle?.type).toBe("task");
     expect((cycle as Record<string, unknown>)._weeks).toBe("W2–W17 ’26");
+    expect((cycle as Record<string, unknown>)._cropColor).toBe("#197b30");
 
-    // exactly group + cycle, nothing nested
+    // exactly block group + cycle, nothing nested
     expect(tasks.length).toBe(2);
   });
 

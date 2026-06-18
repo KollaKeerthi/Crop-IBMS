@@ -35,13 +35,24 @@ export interface TaskGeom {
   end: Date;
 }
 
-// ─── Week ⇄ Date ──────────────────────────────────────────────────────────────
-// SVAR works with Date objects; our domain uses (year, week). We anchor week N to
-// Jan 1 + (N-1)*7 days.
+// ─── Week ⇄ Date (real calendar, ISO weeks) ──────────────────────────────────
+// Bars are positioned by real Date so the year/month/week scales show real
+// calendar values. We use ISO weeks (Monday-anchored) so a bar for (year, weekN)
+// starts exactly on the Monday of that week — aligning with SVAR's week columns.
 
+const MS_PER_DAY = 86400000;
+
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+/** Monday of ISO week `week` in ISO-year `year`. (ISO week 1 contains Jan 4.) */
 export function weekToDate(year: number, week: number): Date {
-  const w = clamp(week, 1, 53);
-  return new Date(year, 0, 1 + (w - 1) * 7);
+  const jan4 = new Date(year, 0, 4);
+  const dow = (jan4.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const week1Monday = new Date(year, 0, 4 - dow);
+  week1Monday.setDate(week1Monday.getDate() + (clamp(week, 1, 53) - 1) * 7);
+  return week1Monday;
 }
 
 /** End-exclusive boundary so a [startWeek, endWeek] bar visually covers endWeek. */
@@ -49,14 +60,24 @@ export function weekEndToDate(year: number, week: number): Date {
   return weekToDate(year, clamp(week, 1, 53) + 1);
 }
 
-export function dateToWeekNum(date: Date): number {
-  const jan1 = new Date(date.getFullYear(), 0, 1);
-  const days = Math.floor((date.getTime() - jan1.getTime()) / 86400000);
-  return clamp(Math.floor(days / 7) + 1, 1, WEEKS_PER_YEAR);
+function isoWeekInfo(date: Date): { isoYear: number; week: number } {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dayNr = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - dayNr + 3); // Thursday of this week determines ISO year
+  const isoYear = d.getFullYear();
+  const firstThu = new Date(isoYear, 0, 4);
+  const firstThuDow = (firstThu.getDay() + 6) % 7;
+  firstThu.setDate(firstThu.getDate() - firstThuDow + 3);
+  const week = 1 + Math.round((d.getTime() - firstThu.getTime()) / (7 * MS_PER_DAY));
+  return { isoYear, week };
 }
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+export function dateToWeekNum(date: Date): number {
+  return clamp(isoWeekInfo(date).week, 1, 53);
+}
+
+export function dateToYear(date: Date): number {
+  return isoWeekInfo(date).isoYear;
 }
 
 // ─── Id + label helpers ─────────────────────────────────────────────────────
@@ -100,11 +121,18 @@ function weekRangeLabel(item: Reservation | Contract): string {
 
 // ─── Model builder ────────────────────────────────────────────────────────────
 
+export interface BlockLite {
+  id: string;
+  blockName: string;
+}
+
 export function buildGanttModel(
   view: GanttViewMode,
   reservations: Reservation[],
   contracts: Contract[],
-  shortNameById: Map<string, string> = new Map()
+  shortNameById: Map<string, string> = new Map(),
+  blocks: BlockLite[] = [],
+  colorById: Map<string, string> = new Map()
 ): GanttModel {
   const tasks: ITask[] = [];
   const links: ILink[] = [];
@@ -116,23 +144,53 @@ export function buildGanttModel(
     ...contracts.map((c) => ({ kind: "contract" as const, item: c })),
   ];
 
-  const groupKey = (e: Entry): { key: string; label: string } => {
-    if (view === "block") {
-      return { key: e.item.blockId ?? "unallocated", label: e.item.blockName ?? "Unallocated" };
-    }
-    const name = e.item.cropName ?? "Unknown";
-    return { key: name, label: name };
+  const blockIds = new Set(blocks.map((b) => b.id));
+  const UNALLOC = "unallocated";
+
+  // Resolve the group a row belongs to.
+  const parentKey = (e: Entry): string => {
+    if (view === "crop") return e.item.cropName ?? "Unknown";
+    return e.item.blockId && blockIds.has(e.item.blockId) ? e.item.blockId : UNALLOC;
   };
 
-  // 1) Group rows.
-  const seenGroups = new Set<string>();
-  for (const e of entries) {
-    const { key, label } = groupKey(e);
-    const gid = groupTaskId(view, key);
-    if (!seenGroups.has(gid)) {
-      seenGroups.add(gid);
-      tasks.push({ id: gid, text: label, type: "summary", open: true, _kind: "group" } as ITask);
+  const usedKeys = new Set(entries.map(parentKey));
+
+  // 1) Group rows — only groups that actually contain bookings (SVAR rejects
+  // childless summaries). Planning-enabled blocks order the block view.
+  if (view === "block") {
+    for (const b of blocks) {
+      if (!usedKeys.has(b.id)) continue;
+      const gid = groupTaskId("block", b.id);
+      tasks.push({
+        id: gid,
+        text: b.blockName,
+        type: "summary",
+        open: true,
+        _kind: "group",
+      } as ITask);
       meta[gid] = { kind: "group" };
+    }
+    if (usedKeys.has(UNALLOC)) {
+      const gid = groupTaskId("block", UNALLOC);
+      tasks.push({
+        id: gid,
+        text: "Unallocated",
+        type: "summary",
+        open: true,
+        _kind: "group",
+      } as ITask);
+      meta[gid] = { kind: "group" };
+    }
+  } else {
+    const seen = new Set<string>();
+    for (const e of entries) {
+      const name = e.item.cropName ?? "Unknown";
+      const gid = groupTaskId("crop", name);
+      if (!seen.has(gid)) {
+        seen.add(gid);
+        tasks.push({ id: gid, text: name, type: "summary", open: true, _kind: "group" } as ITask);
+        meta[gid] = { kind: "group" };
+      }
     }
   }
 
@@ -143,12 +201,29 @@ export function buildGanttModel(
     const startWeek = cycleStartWeek(item);
     const endWeek = Math.max(cycleEndWeek(item), startWeek);
     const label = barLabel(item, e.kind, isEmpty, shortNameById);
+    const cropColor = item.cropId ? colorById.get(item.cropId) : undefined;
+
+    // Lifecycle phase boundaries as fractions of the bar width:
+    //   [0..p1] material→planting, [p1..p2] planting→pollination, [p2..1] pollination→harvest
+    let p1: number | undefined;
+    let p2: number | undefined;
+    if (!isEmpty) {
+      const total = endWeek - startWeek;
+      if (total > 0 && item.plantingWeek != null && item.pollinationStartWeek != null) {
+        const a = clamp((item.plantingWeek - startWeek) / total, 0, 1);
+        const b = clamp((item.pollinationStartWeek - startWeek) / total, 0, 1);
+        if (b >= a) {
+          p1 = a;
+          p2 = b;
+        }
+      }
+    }
 
     tasks.push({
       id: item.id,
       text: label,
       type: "task",
-      parent: groupTaskId(view, groupKey(e).key),
+      parent: groupTaskId(view, parentKey(e)),
       start: weekToDate(item.year, startWeek),
       end: weekEndToDate(item.year, endWeek),
       _kind: "cycle",
@@ -156,6 +231,9 @@ export function buildGanttModel(
       _status: item.status,
       _empty: isEmpty,
       _weeks: weekRangeLabel(item),
+      _cropColor: isEmpty ? undefined : cropColor,
+      _p1: p1,
+      _p2: p2,
     } as ITask);
     meta[String(item.id)] = { kind: "cycle", entityKind: e.kind, entityId: item.id };
   }
@@ -190,7 +268,26 @@ export function buildGanttModel(
     }
   }
 
-  return { tasks, links, meta };
+  // Defensive: SVAR throws on a childless summary. Drop any group row that ended
+  // up with no bookings (shouldn't happen, but guarantees the chart never crashes).
+  const childCount = new Map<string, number>();
+  for (const t of tasks) {
+    if (t.parent) childCount.set(String(t.parent), (childCount.get(String(t.parent)) ?? 0) + 1);
+  }
+  const safeTasks = tasks.filter((t) => {
+    if (t.type === "summary" && !childCount.get(String(t.id))) {
+      delete meta[String(t.id)];
+      return false;
+    }
+    return true;
+  });
+  // Drop links whose endpoints were removed.
+  const keptIds = new Set(safeTasks.map((t) => String(t.id)));
+  const safeLinks = links.filter(
+    (l) => keptIds.has(String(l.source)) && keptIds.has(String(l.target))
+  );
+
+  return { tasks: safeTasks, links: safeLinks, meta };
 }
 
 // ─── Self-built critical path ───────────────────────────────────────────────
@@ -264,23 +361,29 @@ export function computeCriticalPath(tasks: ITask[], links: ILink[]): Set<string>
 // ─── Drag → REST input ──────────────────────────────────────────────────────
 // Rebuild week fields from the cycle bar's geometry after a move or resize.
 
+// `geom.end` is the end-exclusive boundary (Monday after endWeek); step back one
+// day to land in the last occupied week.
+function endWeekFromGeom(end: Date): number {
+  return dateToWeekNum(new Date(end.getTime() - MS_PER_DAY));
+}
+
 export function reservationUpdateFromGeom(
   item: Reservation,
   geom: TaskGeom | undefined
 ): UpdateReservationInput {
   if (!geom) return {};
   const startWeek = dateToWeekNum(geom.start);
-  const endWeek = dateToWeekNum(addDays(geom.end, -1));
+  const endWeek = endWeekFromGeom(geom.end);
   if (item.type === "empty") {
     return {
-      year: geom.start.getFullYear(),
+      year: dateToYear(geom.start),
       startWeek: clamp(startWeek, 1, 52),
       endWeek: clamp(Math.max(endWeek, startWeek), 1, 53),
     };
   }
   const delta = startWeek - cycleStartWeek(item);
   return {
-    year: geom.start.getFullYear(),
+    year: dateToYear(geom.start),
     materialArrivalWeek: shift(item.materialArrivalWeek, delta, 52),
     plantingWeek: shift(item.plantingWeek, delta, 52),
     pollinationStartWeek: shift(item.pollinationStartWeek, delta, 52),
@@ -294,10 +397,10 @@ export function contractUpdateFromGeom(
 ): UpdateContractInput {
   if (!geom) return {};
   const startWeek = dateToWeekNum(geom.start);
-  const endWeek = dateToWeekNum(addDays(geom.end, -1));
+  const endWeek = endWeekFromGeom(geom.end);
   const delta = startWeek - cycleStartWeek(item);
   return {
-    year: geom.start.getFullYear(),
+    year: dateToYear(geom.start),
     materialArrivalWeek: shift(item.materialArrivalWeek, delta, 52),
     plantingWeek: shift(item.plantingWeek, delta, 52),
     pollinationStartWeek: shift(item.pollinationStartWeek, delta, 52),
@@ -308,8 +411,4 @@ export function contractUpdateFromGeom(
 function shift(week: number | null, delta: number, max: number): number | null {
   if (week == null) return null;
   return clamp(week + delta, 1, max);
-}
-
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * 86400000);
 }

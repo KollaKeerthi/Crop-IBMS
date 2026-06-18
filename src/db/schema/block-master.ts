@@ -1,4 +1,14 @@
-import { index, integer, jsonb, pgTable, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { farms } from "./farms";
 import { fields } from "./fields";
 import { greenhouses } from "./greenhouses";
@@ -21,6 +31,7 @@ export const blockMaster = pgTable(
     rowLengthM: real("row_length_m"),
     rowWidthM: real("row_width_m"),
     suitableCrops: jsonb("suitable_crops"),
+    useInPlanning: boolean("use_in_planning").notNull().default(true),
     indexStarts: integer("index_starts").default(1),
     notes: text("notes"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

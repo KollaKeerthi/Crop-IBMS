@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { MapPin, Trash2 } from "lucide-react";
+import { GripVertical, MapPin, Trash2 } from "lucide-react";
+
+export const RESERVATION_DND_TYPE = "application/x-reservation-id";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -68,8 +70,20 @@ export function UnallocatedReservationsPanel({ farmId, reservations, onEdit }: P
 
   return (
     <div className="space-y-3">
+      <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <GripVertical className="size-3" />
+        Drag a card onto a block row in the calendar to allocate it.
+      </p>
       {unallocated.map((r) => (
-        <div key={r.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
+        <div
+          key={r.id}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(RESERVATION_DND_TYPE, r.id);
+            e.dataTransfer.effectAllowed = "move";
+          }}
+          className="rounded-lg border border-border bg-card p-3 space-y-2 cursor-grab active:cursor-grabbing"
+        >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

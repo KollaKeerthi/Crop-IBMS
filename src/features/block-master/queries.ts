@@ -18,6 +18,7 @@ function toBlock(row: BlockRow): BlockMaster {
     fieldId: row.fieldId ?? null,
     greenhouseId: row.greenhouseId ?? null,
     suitableCrops: (row.suitableCrops as BlockMaster["suitableCrops"]) ?? null,
+    useInPlanning: row.useInPlanning,
     notes: row.notes ?? null,
     createdAt: row.createdAt.toISOString(),
   };

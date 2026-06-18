@@ -21,6 +21,7 @@ export const CreateBlockMasterInputSchema = z.object({
   fieldId: z.string().uuid().optional(),
   greenhouseId: z.string().uuid().optional(),
   suitableCrops: z.array(SuitableCropInputSchema).optional(),
+  useInPlanning: z.boolean().optional(),
   notes: z.string().trim().max(2000).optional(),
 });
 
@@ -34,6 +35,7 @@ export const UpdateBlockMasterInputSchema = z.object({
   fieldId: z.string().uuid().optional().nullable(),
   greenhouseId: z.string().uuid().optional().nullable(),
   suitableCrops: z.array(SuitableCropInputSchema).optional().nullable(),
+  useInPlanning: z.boolean().optional(),
   notes: z.string().trim().max(2000).optional().nullable(),
 });
 
@@ -49,6 +51,7 @@ export const BlockMasterSchema = z.object({
   fieldId: z.string().uuid().nullable(),
   greenhouseId: z.string().uuid().nullable(),
   suitableCrops: z.array(z.union([SuitableCropInputSchema, z.string()])).nullable(),
+  useInPlanning: z.boolean(),
   notes: z.string().nullable(),
   createdAt: z.string(),
 });

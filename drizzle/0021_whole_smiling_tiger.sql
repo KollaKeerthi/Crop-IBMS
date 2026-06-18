@@ -1,0 +1,3 @@
+ALTER TABLE "block_master" ADD COLUMN "use_in_planning" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+ALTER TABLE "reservations" ADD COLUMN "stakeholder_id" uuid;--> statement-breakpoint
+ALTER TABLE "reservations" ADD CONSTRAINT "reservations_stakeholder_id_stakeholder_master_id_fk" FOREIGN KEY ("stakeholder_id") REFERENCES "public"."stakeholder_master"("id") ON DELETE set null ON UPDATE no action;

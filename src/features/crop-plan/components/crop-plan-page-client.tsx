@@ -1,13 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Layers, Plus, X } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFarm } from "@/lib/farm-context";
 import { useBlockMaster } from "@/features/block-master/hooks";
 import { useReservations, useUpdateReservation } from "@/features/reservations/hooks";
 import { useContracts, useUpdateContract } from "@/features/contracts/hooks";
+import { useActiveTimes } from "@/features/active-time/hooks";
+import { useActivities } from "@/features/activities/hooks";
+import { computeConflicts, type Conflict } from "../lib/conflicts";
 import type { Reservation, UpdateReservationInput } from "@/features/reservations/schema";
 import type { Contract, UpdateContractInput } from "@/features/contracts/schema";
 import { CropGantt } from "./crop-gantt";
@@ -101,6 +115,8 @@ export function CropPlanPageClient() {
   const farmId = selectedFarmId ?? "";
 
   const [year, setYear] = useState(CURRENT_YEAR);
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [mainTab, setMainTab] = useState<MainTab>("reservation");
   const [resSubTab, setResSubTab] = useState<ResSubTab>("manual");
   const [manualSubTab, setManualSubTab] = useState<ManualSubTab>("normal");
@@ -108,17 +124,53 @@ export function CropPlanPageClient() {
   const [openSelector, setOpenSelector] = useState<OpenSelector>(null);
   const [selectedItem, setSelectedItem] = useState<CalendarItem | null>(null);
   const [panelMode, setPanelMode] = useState<"create" | "edit">("create");
+  const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
 
   const { data: blocks = [] } = useBlockMaster(farmId || null);
+  const planningBlocks = blocks.filter((b) => b.useInPlanning);
   const { data: reservations = [] } = useReservations(farmId || null, year);
   const { data: contracts = [] } = useContracts(farmId || null, year);
   const { data: allReservations = [] } = useReservations(farmId || null);
   const { data: allContracts = [] } = useContracts(farmId || null);
+  const { data: activeTimes = [] } = useActiveTimes(farmId || null);
+  const { data: activities = [] } = useActivities(farmId || null);
   const updateReservation = useUpdateReservation(farmId);
   const updateContract = useUpdateContract(farmId);
 
   const unallocRes = reservations.filter((r) => !r.blockId);
   const unallocCon = contracts.filter((c) => !c.blockId);
+
+  const conflictIds = new Set((conflicts ?? []).map((c) => c.entityId));
+
+  function runConflictCheck() {
+    setConflicts(
+      computeConflicts({
+        reservations: allReservations,
+        contracts: allContracts,
+        blocks: blocks.map((b) => ({
+          id: b.id,
+          blockName: b.blockName,
+          areaSqm: b.areaSqm,
+          useInPlanning: b.useInPlanning,
+          suitableCrops: b.suitableCrops,
+        })),
+        activeTimes: activeTimes.map((a) => ({
+          id: a.id,
+          isActive: a.isActive,
+          seasonId: a.seasonId ?? null,
+          activities: a.activities.map((x) => ({
+            activityId: x.activityId,
+            weekNumber: x.weekNumber,
+          })),
+        })),
+        activities: activities.map((a) => ({
+          id: a.id,
+          name: a.name,
+          maxSimultaneous: a.maxSimultaneous,
+        })),
+      })
+    );
+  }
 
   // ── Interaction handlers ──
   function handleCalendarItemClick(item: CalendarItem) {
@@ -260,6 +312,25 @@ export function CropPlanPageClient() {
           )}
         </div>
 
+        {/* Week jump */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            Week
+          </span>
+          <select
+            value={selectedWeek ?? ""}
+            onChange={(e) => setSelectedWeek(e.target.value ? Number(e.target.value) : null)}
+            className="h-7 rounded-md border border-border bg-card px-1.5 text-xs tabular-nums outline-none hover:bg-muted"
+          >
+            <option value="">—</option>
+            {Array.from({ length: 52 }, (_, i) => i + 1).map((w) => (
+              <option key={w} value={w}>
+                W{w}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Stats chips */}
         <div className="flex items-center gap-2.5 ml-2">
           <div className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5">
@@ -296,6 +367,15 @@ export function CropPlanPageClient() {
           <Button
             size="sm"
             variant="outline"
+            className="h-8 gap-1.5 text-xs"
+            onClick={runConflictCheck}
+          >
+            <ShieldCheck className="size-3.5" />
+            Check Conflicts
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             className="h-8 gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 text-xs"
             onClick={() => {
               setMainTab("reservation");
@@ -324,10 +404,81 @@ export function CropPlanPageClient() {
         </div>
       </div>
 
+      {/* ═══ Conflict results banner ═══════════════════════════════════════ */}
+      {conflicts !== null &&
+        (conflicts.length === 0 ? (
+          <div className="flex shrink-0 items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-700">
+            <CheckCircle2 className="size-4" />
+            No conflicts found.
+            <button
+              type="button"
+              onClick={() => setConflicts(null)}
+              className="ml-auto text-emerald-700/70 hover:text-emerald-900"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="max-h-40 shrink-0 overflow-y-auto border-b border-red-200 bg-red-50/60">
+            <div className="sticky top-0 flex items-center gap-2 bg-red-50 px-5 py-2 text-xs font-bold text-red-700">
+              <AlertTriangle className="size-4" />
+              {conflicts.length} conflict{conflicts.length !== 1 ? "s" : ""} found
+              <button
+                type="button"
+                onClick={() => setConflicts(null)}
+                className="ml-auto text-red-700/70 hover:text-red-900"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+            <ul className="px-5 py-1.5">
+              {conflicts.map((c) => (
+                <li
+                  key={c.id}
+                  className="flex items-start gap-2 py-0.5 text-[11px] text-red-900/90"
+                >
+                  <span
+                    className={cn(
+                      "mt-0.5 rounded px-1 text-[9px] font-bold uppercase",
+                      c.severity === "error"
+                        ? "bg-red-200 text-red-800"
+                        : "bg-amber-200 text-amber-800"
+                    )}
+                  >
+                    {c.kind}
+                  </span>
+                  <span>{c.message}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
       {/* ═══ Body ═══════════════════════════════════════════════════════════ */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* ─── Left form panel ──────────────────────────────────────────── */}
-        <div className="flex w-80 xl:w-85 shrink-0 flex-col border-r border-border bg-card overflow-hidden">
+        {/* ─── Left form panel (collapsible) ────────────────────────────── */}
+        {panelCollapsed && (
+          <div className="flex w-9 shrink-0 flex-col items-center border-r border-border bg-card py-2.5">
+            <button
+              type="button"
+              onClick={() => setPanelCollapsed(false)}
+              title="Expand panel"
+              aria-label="Expand panel"
+              className="flex size-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <PanelLeftOpen className="size-4" />
+            </button>
+            <span className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground [writing-mode:vertical-rl]">
+              {mainLabel}
+            </span>
+          </div>
+        )}
+        <div
+          className={cn(
+            "flex w-80 xl:w-85 shrink-0 flex-col border-r border-border bg-card overflow-hidden",
+            panelCollapsed && "hidden"
+          )}
+        >
           {/* Main tabs */}
           <div className="border-b border-border bg-muted/25">
             <div className="flex min-h-11 items-center gap-1 px-3 py-2">
@@ -401,6 +552,15 @@ export function CropPlanPageClient() {
                   </button>
                 </div>
               )}
+              <button
+                type="button"
+                onClick={() => setPanelCollapsed(true)}
+                title="Collapse panel"
+                aria-label="Collapse panel"
+                className="ml-1 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <PanelLeftClose className="size-4" />
+              </button>
             </div>
 
             {openSelector && (
@@ -611,7 +771,7 @@ export function CropPlanPageClient() {
         {/* ─── Timeline (Gantt) ─────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
           <CropGantt
-            blocks={blocks}
+            blocks={planningBlocks}
             reservations={allReservations}
             contracts={allContracts}
             year={year}
@@ -619,6 +779,8 @@ export function CropPlanPageClient() {
             onReservationScheduleChange={handleReservationScheduleChange}
             onContractScheduleChange={handleContractScheduleChange}
             selectedId={selectedItem?.data.id ?? null}
+            selectedWeek={selectedWeek}
+            conflictIds={conflictIds}
           />
         </div>
       </div>

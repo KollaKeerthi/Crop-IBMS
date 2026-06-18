@@ -1,6 +1,14 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { blockMaster, cropTypes, crops, productionTypes, reservations, seasons } from "@/db/schema";
+import {
+  blockMaster,
+  cropTypes,
+  crops,
+  productionTypes,
+  reservations,
+  seasons,
+  stakeholderMaster,
+} from "@/db/schema";
 import type { Reservation } from "./schema";
 
 type ReservationRow = typeof reservations.$inferSelect;
@@ -11,7 +19,8 @@ function toReservation(
   cropTypeName: string | null,
   productionTypeName: string | null,
   blockName: string | null,
-  seasonName: string | null
+  seasonName: string | null,
+  stakeholderName: string | null
 ): Reservation {
   return {
     id: row.id,
@@ -21,6 +30,7 @@ function toReservation(
     productionTypeId: row.productionTypeId ?? null,
     cropId: row.cropId ?? null,
     cropTypeId: row.cropTypeId ?? null,
+    stakeholderId: row.stakeholderId ?? null,
     blockId: row.blockId ?? null,
     activeTimeId: row.activeTimeId ?? null,
     seasonId: row.seasonId ?? null,
@@ -43,6 +53,7 @@ function toReservation(
     productionTypeName,
     blockName,
     seasonName,
+    stakeholderName,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -60,6 +71,7 @@ export async function listReservations(farmId: string, year?: number): Promise<R
       productionTypeName: productionTypes.code,
       blockName: blockMaster.blockName,
       seasonName: seasons.name,
+      stakeholderName: stakeholderMaster.name,
     })
     .from(reservations)
     .leftJoin(crops, eq(reservations.cropId, crops.id))
@@ -67,6 +79,7 @@ export async function listReservations(farmId: string, year?: number): Promise<R
     .leftJoin(productionTypes, eq(reservations.productionTypeId, productionTypes.id))
     .leftJoin(blockMaster, eq(reservations.blockId, blockMaster.id))
     .leftJoin(seasons, eq(reservations.seasonId, seasons.id))
+    .leftJoin(stakeholderMaster, eq(reservations.stakeholderId, stakeholderMaster.id))
     .where(and(...conditions))
     .orderBy(reservations.createdAt);
 
@@ -77,7 +90,8 @@ export async function listReservations(farmId: string, year?: number): Promise<R
       r.cropTypeName ?? null,
       r.productionTypeName ?? null,
       r.blockName ?? null,
-      r.seasonName ?? null
+      r.seasonName ?? null,
+      r.stakeholderName ?? null
     )
   );
 }
@@ -91,6 +105,7 @@ export async function listUnallocatedReservations(farmId: string): Promise<Reser
       productionTypeName: productionTypes.code,
       blockName: blockMaster.blockName,
       seasonName: seasons.name,
+      stakeholderName: stakeholderMaster.name,
     })
     .from(reservations)
     .leftJoin(crops, eq(reservations.cropId, crops.id))
@@ -98,6 +113,7 @@ export async function listUnallocatedReservations(farmId: string): Promise<Reser
     .leftJoin(productionTypes, eq(reservations.productionTypeId, productionTypes.id))
     .leftJoin(blockMaster, eq(reservations.blockId, blockMaster.id))
     .leftJoin(seasons, eq(reservations.seasonId, seasons.id))
+    .leftJoin(stakeholderMaster, eq(reservations.stakeholderId, stakeholderMaster.id))
     .where(and(eq(reservations.farmId, farmId), isNull(reservations.blockId)))
     .orderBy(reservations.createdAt);
 
@@ -108,7 +124,8 @@ export async function listUnallocatedReservations(farmId: string): Promise<Reser
       r.cropTypeName ?? null,
       r.productionTypeName ?? null,
       r.blockName ?? null,
-      r.seasonName ?? null
+      r.seasonName ?? null,
+      r.stakeholderName ?? null
     )
   );
 }
@@ -122,6 +139,7 @@ export async function getReservationById(id: string, farmId: string): Promise<Re
       productionTypeName: productionTypes.code,
       blockName: blockMaster.blockName,
       seasonName: seasons.name,
+      stakeholderName: stakeholderMaster.name,
     })
     .from(reservations)
     .leftJoin(crops, eq(reservations.cropId, crops.id))
@@ -129,6 +147,7 @@ export async function getReservationById(id: string, farmId: string): Promise<Re
     .leftJoin(productionTypes, eq(reservations.productionTypeId, productionTypes.id))
     .leftJoin(blockMaster, eq(reservations.blockId, blockMaster.id))
     .leftJoin(seasons, eq(reservations.seasonId, seasons.id))
+    .leftJoin(stakeholderMaster, eq(reservations.stakeholderId, stakeholderMaster.id))
     .where(and(eq(reservations.id, id), eq(reservations.farmId, farmId)));
 
   const row = rows[0];
@@ -140,6 +159,7 @@ export async function getReservationById(id: string, farmId: string): Promise<Re
     row.cropTypeName ?? null,
     row.productionTypeName ?? null,
     row.blockName ?? null,
-    row.seasonName ?? null
+    row.seasonName ?? null,
+    row.stakeholderName ?? null
   );
 }

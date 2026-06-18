@@ -82,10 +82,16 @@
   border-bottom: 1px solid var(--wx-border-medium);
 }
 .cg-wrap .wx-scale .wx-cell {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--wx-color-font-alt);
-  border-color: var(--wx-border-light);
+  border-right: 1px solid var(--wx-border-light);
+  /* Clip + center so narrow week labels ("W52") never bleed into neighbours. */
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  text-align: center;
+  padding: 0 1px;
 }
 
 /* ── Chart rows / grid lines ──────────────────────────────────────────── */
@@ -153,6 +159,26 @@
 .cg-bar--contract {
   background: linear-gradient(180deg, #8b5cf6, #7c3aed);
 }
+
+/* Contracts keep the crop fill but get a left accent stripe + a "C" badge so
+   they stay distinguishable from reservations once both use the crop color. */
+.cg-bar--contract-accent {
+  border-left: 3px solid rgba(15, 23, 42, 0.55);
+}
+.cg-bar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #1e293b;
+  font-size: 8px;
+  font-weight: 800;
+}
+
 .cg-bar--empty {
   /* Opaque base + hatch so SVAR's default bar shell never bleeds through. */
   background:
@@ -164,6 +190,13 @@
 .cg-bar--completed {
   background: linear-gradient(180deg, #a8b1bd, #94a3b8);
   color: #f8fafc;
+}
+
+/* Conflicting bar — red ring after a Check Conflicts run. */
+.cg-bar--conflict {
+  box-shadow:
+    0 0 0 2px #ef4444,
+    0 2px 8px rgba(239, 68, 68, 0.35);
 }
 
 /* Self-built critical path — refined amber highlight, not a heavy box. */
@@ -188,6 +221,11 @@
     0 2px 10px rgba(15, 118, 110, 0.3);
 }
 
+/* Selected-week column highlight (via highlightTime). */
+.cg-wrap .cg-week-sel {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+}
+
 /* ── "Today" marker ───────────────────────────────────────────────────── */
 .wx-gantt .cg-today,
 .cg-today {
@@ -195,12 +233,23 @@
   width: 2px;
 }
 
-/* ── Legend dots (toolbar) ────────────────────────────────────────────── */
-.cg-dot--res {
-  background: #059669;
+/* ── Legend (toolbar) ─────────────────────────────────────────────────── */
+.cg-legend-phases {
+  display: inline-block;
+  width: 30px;
+  height: 9px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #059669 40%, white) 0 33%,
+    color-mix(in srgb, #059669 68%, white) 33% 60%,
+    #059669 60% 100%
+  );
 }
-.cg-dot--con {
-  background: #7c3aed;
+.cg-legend-badge {
+  position: static;
+  width: 13px;
+  height: 13px;
 }
 .cg-dot--empty {
   background: rgba(239, 68, 68, 0.35);

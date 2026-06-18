@@ -86,6 +86,7 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
     defaultValues: {
       blockName: block?.blockName ?? "",
       areaSqm: block?.areaSqm ?? undefined,
+      useInPlanning: block?.useInPlanning ?? true,
       suitableCrops: normalizeSuitableCrops(block),
     },
   });
@@ -179,6 +180,24 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
           />
           {areaField}
         </div>
+
+        <FormField
+          control={form.control}
+          name="useInPlanning"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-2 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value ?? true}
+                  onCheckedChange={(v) => field.onChange(v === true)}
+                />
+              </FormControl>
+              <FormLabel className="cursor-pointer font-normal">
+                Use this block in crop planning
+              </FormLabel>
+            </FormItem>
+          )}
+        />
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">

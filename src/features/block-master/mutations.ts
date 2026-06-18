@@ -21,6 +21,7 @@ export async function insertBlock(
       fieldId: input.fieldId ?? null,
       greenhouseId: input.greenhouseId ?? null,
       suitableCrops: input.suitableCrops ?? null,
+      useInPlanning: input.useInPlanning ?? true,
       notes: input.notes ?? null,
     })
     .returning();
@@ -46,6 +47,7 @@ export async function updateBlock(
       ...(input.fieldId !== undefined && { fieldId: input.fieldId }),
       ...(input.greenhouseId !== undefined && { greenhouseId: input.greenhouseId }),
       ...(input.suitableCrops !== undefined && { suitableCrops: input.suitableCrops }),
+      ...(input.useInPlanning !== undefined && { useInPlanning: input.useInPlanning }),
       ...(input.notes !== undefined && { notes: input.notes }),
       updatedAt: new Date(),
     })
