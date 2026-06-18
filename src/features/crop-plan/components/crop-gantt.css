@@ -1,0 +1,252 @@
+/* ============================================================================
+   SVAR Gantt — professional retheme, scoped to .cg-wrap
+   SVAR's Willow theme is CSS-variable driven, so we restyle by overriding
+   --wx-* tokens, then add a few targeted structural polishes.
+   ========================================================================== */
+
+.cg-wrap {
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Theme tokens must be set on the Willow theme element itself (SVAR re-declares
+   them there, so an ancestor override would be shadowed). */
+.cg-wrap .wx-willow-theme {
+  /* Typography */
+  --wx-font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --wx-font-size: 12px;
+  --wx-font-size-sm: 11px;
+
+  /* Neutral palette (slate) — light, clean, professional */
+  --wx-background: #ffffff;
+  --wx-background-alt: #f8fafc;
+  --wx-background-hover: #f1f5f9;
+  --wx-color-font: #1e293b;
+  --wx-color-font-alt: #64748b;
+  --wx-border-color: #e9eef4;
+  --wx-border-light: #f1f5f9;
+  --wx-border-medium: #e2e8f0;
+
+  /* Accent used by selection / links */
+  --wx-color-primary: #0f766e;
+  --wx-color-primary-selected: #ccfbf1;
+
+  /* Gantt specifics */
+  --wx-gantt-border-color: #e9eef4;
+  --wx-gantt-bar-border-radius: 7px;
+  --wx-gantt-bar-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  --wx-gantt-link-color: #94a3b8;
+  --wx-gantt-link-color-hovered: #475569;
+  --wx-gantt-select-color: #eef6f5;
+  --wx-gantt-marker-color: #ef4444;
+  --wx-gantt-marker-font-color: #ef4444;
+}
+.cg-wrap > *,
+.cg-wrap > * > * {
+  height: 100%;
+  min-height: 0;
+}
+.cg-wrap .wx-gantt {
+  height: 100%;
+  border: none;
+}
+
+/* ── Grid (left table) ────────────────────────────────────────────────── */
+.cg-wrap .wx-grid,
+.cg-wrap .wx-table {
+  background: var(--wx-background);
+}
+.cg-wrap .wx-header {
+  background: var(--wx-background-alt);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wx-color-font-alt);
+  border-bottom: 1px solid var(--wx-border-medium);
+}
+.cg-wrap .wx-cell,
+.cg-wrap .wx-cell-value {
+  font-size: 11.5px;
+  color: var(--wx-color-font);
+}
+.cg-wrap .wx-row:hover {
+  background: var(--wx-background-hover);
+}
+
+/* ── Timeline scale header ────────────────────────────────────────────── */
+.cg-wrap .wx-scale {
+  background: var(--wx-background-alt);
+  border-bottom: 1px solid var(--wx-border-medium);
+}
+.cg-wrap .wx-scale .wx-cell {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--wx-color-font-alt);
+  border-color: var(--wx-border-light);
+}
+
+/* ── Chart rows / grid lines ──────────────────────────────────────────── */
+.cg-wrap .wx-chart .wx-row {
+  border-bottom: 1px solid var(--wx-border-light);
+}
+.cg-wrap .wx-chart .wx-row:hover {
+  background: rgba(241, 245, 249, 0.5);
+}
+
+/* ── Group (block/crop) rows: slim neutral span, no dominating bar ────── */
+.cg-wrap .wx-summary,
+.cg-wrap .wx-summary-rollup {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.cg-group-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #cbd5e1, #e2e8f0);
+}
+
+/* ── Task bars ────────────────────────────────────────────────────────── */
+/* Neutralize SVAR's default bar shell — our .cg-bar overlay is the only paint. */
+.cg-wrap .wx-bar,
+.cg-wrap .wx-task {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.cg-bar {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+  color: #fff;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.cg-bar__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cg-bar--reservation {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+.cg-bar--contract {
+  background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+}
+.cg-bar--empty {
+  /* Opaque base + hatch so SVAR's default bar shell never bleeds through. */
+  background:
+    repeating-linear-gradient(45deg, rgba(239, 68, 68, 0.14) 0 6px, transparent 6px 12px), #fef2f2;
+  border: 1px dashed #ef4444;
+  color: #b91c1c;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+.cg-bar--completed {
+  background: linear-gradient(180deg, #a8b1bd, #94a3b8);
+  color: #f8fafc;
+}
+
+/* Self-built critical path — refined amber highlight, not a heavy box. */
+.cg-bar--critical {
+  box-shadow:
+    0 0 0 1.5px #f59e0b,
+    0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+/* ── Dependency links ─────────────────────────────────────────────────── */
+.cg-wrap .wx-link {
+  opacity: 0.7;
+}
+.cg-wrap .wx-link:hover {
+  opacity: 1;
+}
+
+/* ── Selected row bar ─────────────────────────────────────────────────── */
+.cg-wrap .wx-selected .cg-bar {
+  box-shadow:
+    0 0 0 2px #0f766e,
+    0 2px 10px rgba(15, 118, 110, 0.3);
+}
+
+/* ── "Today" marker ───────────────────────────────────────────────────── */
+.wx-gantt .cg-today,
+.cg-today {
+  background-color: #ef4444 !important;
+  width: 2px;
+}
+
+/* ── Legend dots (toolbar) ────────────────────────────────────────────── */
+.cg-dot--res {
+  background: #059669;
+}
+.cg-dot--con {
+  background: #7c3aed;
+}
+.cg-dot--empty {
+  background: rgba(239, 68, 68, 0.35);
+  border: 1px dashed #ef4444;
+}
+
+/* ── Hover tooltip ────────────────────────────────────────────────────── */
+.cg-tip {
+  min-width: 190px;
+  max-width: 270px;
+  padding: 9px 11px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f8fafc;
+  background: #1e293b;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+}
+.cg-tip__title {
+  font-weight: 700;
+  font-size: 12.5px;
+}
+.cg-tip__sub {
+  margin-top: 2px;
+  margin-bottom: 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  text-transform: capitalize;
+  color: #cbd5e1;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+.cg-tip__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cg-tip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+.cg-tip__label {
+  color: #94a3b8;
+}
+.cg-tip__value {
+  font-weight: 600;
+  text-align: right;
+}

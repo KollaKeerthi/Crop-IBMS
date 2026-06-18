@@ -10,7 +10,7 @@ import { useReservations, useUpdateReservation } from "@/features/reservations/h
 import { useContracts, useUpdateContract } from "@/features/contracts/hooks";
 import type { Reservation, UpdateReservationInput } from "@/features/reservations/schema";
 import type { Contract, UpdateContractInput } from "@/features/contracts/schema";
-import { PlanningCalendar } from "./planning-calendar";
+import { CropGantt } from "./crop-gantt";
 import { ReservationNormalForm } from "./reservation-normal-form";
 import { ReservationEmptyForm } from "./reservation-empty-form";
 import { UnallocatedReservationsPanel } from "./unallocated-reservations-panel";
@@ -238,7 +238,7 @@ export function CropPlanPageClient() {
           >
             <ChevronLeft className="size-3.5" />
           </button>
-          <span className="min-w-[52px] text-center text-base font-bold tracking-tight tabular-nums">
+          <span className="min-w-13 text-center text-base font-bold tracking-tight tabular-nums">
             {year}
           </span>
           <button
@@ -327,7 +327,7 @@ export function CropPlanPageClient() {
       {/* ═══ Body ═══════════════════════════════════════════════════════════ */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* ─── Left form panel ──────────────────────────────────────────── */}
-        <div className="flex w-80 xl:w-[340px] shrink-0 flex-col border-r border-border bg-card overflow-hidden">
+        <div className="flex w-80 xl:w-85 shrink-0 flex-col border-r border-border bg-card overflow-hidden">
           {/* Main tabs */}
           <div className="border-b border-border bg-muted/25">
             <div className="flex min-h-11 items-center gap-1 px-3 py-2">
@@ -608,9 +608,9 @@ export function CropPlanPageClient() {
           )}
         </div>
 
-        {/* ─── Calendar ──────────────────────────────────────────────────── */}
+        {/* ─── Timeline (Gantt) ─────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
-          <PlanningCalendar
+          <CropGantt
             blocks={blocks}
             reservations={allReservations}
             contracts={allContracts}
