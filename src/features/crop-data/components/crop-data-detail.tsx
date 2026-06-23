@@ -15,7 +15,8 @@ import {
 import { SeedsQualityForm, SqBreakdownForm, GerminationTestForm } from "./seeds-forms";
 import { HarvestDetailsTable, PerformanceTable } from "./collection-tables";
 import { MediaAttachments } from "./media-attachments";
-import { ModuleEditor } from "./module-editor";
+import { PlantingData } from "./planting-data";
+import { postHarvestComputations } from "../compute";
 
 type CropDataModule = {
   moduleType: string;
@@ -26,6 +27,8 @@ type FullCropDataRecord = {
   id: string;
   farmId: string;
   cropId?: string | null;
+  cropName?: string | null;
+  varietyName?: string | null;
   block?: string | null;
   fieldName?: string | null;
   sexExpression?: string | null;
@@ -54,12 +57,17 @@ type Props = {
   activeTab: string;
 };
 
-const MODULE_TABS: { key: string; label: string }[] = [
-  { key: "planting_records", label: "Planting Records" },
-];
-
 export function CropDataDetail({ record, farmId, activeTab }: Props) {
   const router = useRouter();
+  const postHarvestContext = {
+    ...(record.programInfo ?? {}),
+    ...(record.sections.production ?? {}),
+    ...(record.nursery ?? {}),
+  };
+  const postHarvestMetrics = postHarvestComputations(
+    record.sections.post_harvest ?? {},
+    postHarvestContext
+  );
   function getModuleData(moduleType: string): Record<string, unknown> | null {
     const found = record.modules.find((m) => m.moduleType === moduleType);
     return found?.data ?? null;
@@ -87,6 +95,9 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="nursery" className={triggerClassName}>
           Nursery
         </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="planting-data" className={triggerClassName}>
+          Planting Data
+        </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="production" className={triggerClassName}>
           Production
         </TabsPrimitive.Tab>
@@ -96,20 +107,11 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="post_harvest" className={triggerClassName}>
           Post Harvest
         </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>
-          Post Harvest Summary
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
-          Germination Test
-        </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
           Seeds Quality
         </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
           SQ Breakdown
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
-          Performance Per Person
         </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
           Harvest Details
@@ -117,11 +119,15 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="media" className={triggerClassName}>
           Media Attachment
         </TabsPrimitive.Tab>
-        {MODULE_TABS.map((tab) => (
-          <TabsPrimitive.Tab key={tab.key} value={tab.key} className={triggerClassName}>
-            {tab.label}
-          </TabsPrimitive.Tab>
-        ))}
+        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
+          Performance
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>
+          Harvest Summary
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
+          Germination Test
+        </TabsPrimitive.Tab>
       </TabsPrimitive.List>
 
       {/* Program Info */}
@@ -146,6 +152,17 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           farmId={farmId}
           nursery={record.nursery}
           programInfo={record.programInfo}
+        />
+      </TabsPrimitive.Panel>
+
+      {/* Planting Data */}
+      <TabsPrimitive.Panel value="planting-data" className="mt-0">
+        <PlantingData
+          cropDataId={record.id}
+          farmId={farmId}
+          initialData={getModuleData("planting_records")}
+          fallbackCrop={record.cropName}
+          fallbackVariety={record.varietyName}
         />
       </TabsPrimitive.Panel>
 
@@ -176,11 +193,7 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           cropDataId={record.id}
           farmId={farmId}
           initial={record.sections.post_harvest ?? null}
-          context={{
-            ...(record.programInfo ?? {}),
-            ...(record.sections.production ?? {}),
-            ...(record.nursery ?? {}),
-          }}
+          context={postHarvestContext}
         />
       </TabsPrimitive.Panel>
 
@@ -194,16 +207,11 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
       </TabsPrimitive.Panel>
 
       {/* Seeds Quality */}
-      <TabsPrimitive.Panel value="seeds_quality" className="mt-0 space-y-6">
+      <TabsPrimitive.Panel value="seeds_quality" className="mt-0">
         <SeedsQualityForm
           cropDataId={record.id}
           farmId={farmId}
           initial={record.sections.seeds_quality ?? null}
-        />
-        <SqBreakdownForm
-          cropDataId={record.id}
-          farmId={farmId}
-          initial={record.sections.sq_breakdown ?? null}
         />
       </TabsPrimitive.Panel>
 
@@ -231,6 +239,8 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           cropDataId={record.id}
           farmId={farmId}
           rows={record.collections.performance ?? []}
+          harvestRows={record.collections.harvest_records ?? []}
+          blockAverage={postHarvestMetrics.gramsPerSqm}
         />
       </TabsPrimitive.Panel>
 
@@ -248,21 +258,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
       <TabsPrimitive.Panel value="media" className="mt-0">
         <MediaAttachments cropDataId={record.id} farmId={farmId} media={record.media ?? []} />
       </TabsPrimitive.Panel>
-
-      {/* Remaining JSONB module tabs */}
-      {MODULE_TABS.map((tab) => (
-        <TabsPrimitive.Panel key={tab.key} value={tab.key} className="mt-0">
-          <div className="rounded-lg border p-6">
-            <h3 className="text-base font-semibold mb-4">{tab.label}</h3>
-            <ModuleEditor
-              cropDataId={record.id}
-              farmId={farmId}
-              moduleType={tab.key}
-              initialData={getModuleData(tab.key)}
-            />
-          </div>
-        </TabsPrimitive.Panel>
-      ))}
     </TabsPrimitive.Root>
   );
 }

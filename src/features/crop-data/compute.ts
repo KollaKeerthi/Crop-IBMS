@@ -45,10 +45,7 @@ export function revenueSide(rev: Vals, programInfo: Vals | null, side: "male" | 
   const weeks = toNum(rev[`${side}TotalWeeks`]);
 
   // Hidden fetches from Program Info
-  const orderKg =
-    toNum(programInfo?.femaleRequestedQuantity) ||
-    toNum(programInfo?.maleRequestedQuantity) ||
-    toNum(programInfo?.agreedOrderFromCustomerKg);
+  const orderKg = toNum(programInfo?.agreedOrderFromCustomerKg);
   const surfaceArea = toNum(programInfo?.plannedSurfaceArea);
 
   // Additional revenue is present on the Actual (female) column only
@@ -107,10 +104,9 @@ export function postHarvestComputations(ph: Vals, ctx: Vals | null) {
   return { gramsPerSqm, gramsPerPlant, actualYieldPct, netWeeks, actualGrPerSqmWk };
 }
 
-/** Seeds Quality %G = (Good1 + Good2) / Total Seeds Sown × 100. */
+/** Seeds Quality %G = Good1 + Good2. */
 export function seedsQualityGerminationPct(sq: Vals): number | null {
-  const good = add(toNum(sq.good1), toNum(sq.good2));
-  return mul(div(good, toNum(sq.totalSeedsSown)), 100);
+  return add(toNum(sq.good1), toNum(sq.good2));
 }
 
 /** Harvest record gr/m2 = kg × 1000 ÷ row m2. */
@@ -133,13 +129,12 @@ export function computeProgramInfoDerivedFields(
   const femalePlants = toNum(vals.femalePlannedPlants);
   const totalPlants = add(malePlants, femalePlants);
 
-  const femaleDensity = toNum(vals.femalePlannedPlantsPerSqm);
-  const maleDensity = toNum(vals.malePlannedPlantsPerSqm);
-  const density = femaleDensity !== null ? femaleDensity : maleDensity;
-
   const femalePlantsPerRow = toNum(vals.femalePlannedPlantsPerRow);
   const malePlantsPerRow = toNum(vals.malePlannedPlantsPerRow);
   const plantsPerRow = femalePlantsPerRow !== null ? femalePlantsPerRow : malePlantsPerRow;
+  const maleDensity = div(malePlantsPerRow, 32);
+  const femaleDensity = div(femalePlantsPerRow, 32);
+  const density = femaleDensity !== null ? femaleDensity : maleDensity;
 
   const agreedGramPerPlant = toNum(vals.agreedGramPerPlant);
   const baseYieldKg = toNum(vals.baseYieldKg);
@@ -159,6 +154,9 @@ export function computeProgramInfoDerivedFields(
 
   return {
     ...vals,
+    malePlannedPlantsPerSqm: maleDensity !== null ? maleDensity : vals.malePlannedPlantsPerSqm,
+    femalePlannedPlantsPerSqm:
+      femaleDensity !== null ? femaleDensity : vals.femalePlannedPlantsPerSqm,
     plannedSurfaceArea: plannedSurfaceArea !== null ? plannedSurfaceArea : vals.plannedSurfaceArea,
     plannedNoOfRows: plannedNoOfRows !== null ? plannedNoOfRows : vals.plannedNoOfRows,
     gramsPerSqm: gramsPerSqm !== null ? gramsPerSqm : vals.gramsPerSqm,

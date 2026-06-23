@@ -121,11 +121,16 @@ export function useMediaMutations(cropDataId: string, farmId: string) {
     mutationFn: (file: File) => api.uploadMedia(cropDataId, farmId, file),
     onSuccess: invalidate,
   });
+  const addLink = useMutation({
+    mutationFn: (input: { url: string; name?: string }) =>
+      api.addMediaLink(cropDataId, farmId, input),
+    onSuccess: invalidate,
+  });
   const remove = useMutation({
     mutationFn: (mediaId: string) => api.deleteMedia(cropDataId, farmId, mediaId),
     onSuccess: invalidate,
   });
-  return { upload, remove };
+  return { upload, addLink, remove };
 }
 
 export function useUpdateModule(cropDataId: string, farmId: string, moduleType: string) {

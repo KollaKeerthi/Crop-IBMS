@@ -8,7 +8,7 @@ import {
   PERFORMANCE_DATE_FIELDS,
 } from "../schema";
 import { useCollectionMutations } from "../hooks";
-import { fmtNum, harvestGrPerM2, seedsQualityGerminationPct } from "../compute";
+import { fmtNum, harvestGrPerM2, seedsQualityGerminationPct, toNum } from "../compute";
 
 type Props = {
   cropDataId: string;
@@ -18,6 +18,11 @@ type Props = {
 
 type HarvestProps = Props & {
   seedsQuality: Vals | null;
+};
+
+type PerformanceProps = Props & {
+  harvestRows?: Vals[];
+  blockAverage?: number | null;
 };
 
 // ---- Harvest Details ----
@@ -75,16 +80,56 @@ const PERFORMANCE_COLUMNS: RowColumn[] = [
   { name: "notes", label: "Notes", type: "text" },
 ];
 
-export function PerformanceTable({ cropDataId, farmId, rows }: Props) {
+function performanceTone(value: unknown, blockAverage: number | null) {
+  const output = toNum(value);
+  if (output === null || blockAverage === null) return "text-muted-foreground";
+  if (output < blockAverage) return "text-destructive";
+  if (output > blockAverage) return "text-primary";
+  return "text-muted-foreground";
+}
+
+export function PerformanceTable({
+  cropDataId,
+  farmId,
+  rows,
+  harvestRows = [],
+  blockAverage = null,
+}: PerformanceProps) {
   const mutations = useCollectionMutations(cropDataId, farmId, "performance");
+  const displayRows = useMemo(() => {
+    if (rows.length > 0) return rows;
+    return harvestRows.map((row, index) => ({
+      id: row.id ?? `harvest-${index}`,
+      date: row.harvestDate,
+      empName: row.empName,
+      activity: "Harvesting",
+      outputQty: harvestGrPerM2(row),
+      notes: row.remarks,
+    }));
+  }, [harvestRows, rows]);
+
   return (
     <RowTableEditor
       title="Performance Per Person"
       columns={PERFORMANCE_COLUMNS}
+      computed={[
+        {
+          label: "Performance",
+          compute: (row) => {
+            const value = toNum(row.outputQty);
+            if (value === null || blockAverage === null) return "-";
+            if (value < blockAverage) return "Least";
+            if (value > blockAverage) return "Best";
+            return "Average";
+          },
+          className: (row) => performanceTone(row.outputQty, blockAverage),
+        },
+      ]}
       dateFields={PERFORMANCE_DATE_FIELDS}
       schema={PerformanceInputSchema}
-      rows={rows}
+      rows={displayRows}
       mutations={mutations}
+      readOnly={rows.length === 0 && harvestRows.length > 0}
     />
   );
 }

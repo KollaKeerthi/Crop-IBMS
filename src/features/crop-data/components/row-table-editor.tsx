@@ -12,7 +12,11 @@ import type { Vals } from "./metric-form";
 
 export type RowFieldType = "text" | "number" | "int" | "date";
 export type RowColumn = { name: string; label: string; type: RowFieldType };
-export type ComputedColumn = { label: string; compute: (row: Vals) => string };
+export type ComputedColumn = {
+  label: string;
+  compute: (row: Vals) => string;
+  className?: (row: Vals) => string;
+};
 
 type Mutations = {
   create: { mutateAsync: (input: Record<string, unknown>) => Promise<unknown>; isPending: boolean };
@@ -32,6 +36,7 @@ type Props = {
   rows: Vals[];
   mutations: Mutations;
   defaultValues?: Vals;
+  readOnly?: boolean;
 };
 
 function emptyForm(columns: RowColumn[]): Vals {
@@ -71,6 +76,7 @@ export function RowTableEditor({
   rows,
   mutations,
   defaultValues = {},
+  readOnly = false,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -173,7 +179,7 @@ export function RowTableEditor({
     <div className="rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b px-5 py-4">
         <h3 className="text-base font-semibold">{title}</h3>
-        {!showForm && (
+        {!showForm && !readOnly && (
           <Button size="sm" onClick={openNew}>
             <Plus className="mr-1.5 h-4 w-4" /> New
           </Button>
@@ -223,14 +229,14 @@ export function RowTableEditor({
                   {c.label}
                 </th>
               ))}
-              <th className="px-3 py-2.5 text-right font-medium">Actions</th>
+              {!readOnly && <th className="px-3 py-2.5 text-right font-medium">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={columns.length + computed.length + 1}
+                  colSpan={columns.length + computed.length + (readOnly ? 0 : 1)}
                   className="px-3 py-6 text-center text-muted-foreground"
                 >
                   No records yet. Click &quot;New&quot; to add one.
@@ -245,29 +251,34 @@ export function RowTableEditor({
                     </td>
                   ))}
                   {computed.map((c) => (
-                    <td key={c.label} className="px-3 py-2 font-medium">
+                    <td
+                      key={c.label}
+                      className={`px-3 py-2 font-medium ${c.className?.(row) ?? ""}`}
+                    >
                       {c.compute(row)}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEdit(row)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleDelete(String(row.id))}
-                      disabled={mutations.remove.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </td>
+                  {!readOnly && (
+                    <td className="px-3 py-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => openEdit(row)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleDelete(String(row.id))}
+                        disabled={mutations.remove.isPending}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

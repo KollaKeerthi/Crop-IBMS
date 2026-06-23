@@ -125,6 +125,17 @@ export async function uploadMedia(cropDataId: string, farmId: string, file: File
   return json?.data ?? json;
 }
 
+export function addMediaLink(
+  cropDataId: string,
+  farmId: string,
+  input: { url: string; name?: string }
+) {
+  return apiFetch<unknown>(
+    `/api/v1/crop-data/${cropDataId}/media?farmId=${encodeURIComponent(farmId)}`,
+    { method: "POST", body: input }
+  );
+}
+
 export function deleteMedia(cropDataId: string, farmId: string, mediaId: string) {
   return apiFetch<unknown>(
     `/api/v1/crop-data/${cropDataId}/media/${mediaId}?farmId=${encodeURIComponent(farmId)}`,

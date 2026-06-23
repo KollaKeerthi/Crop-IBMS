@@ -135,17 +135,17 @@ const POST_HARVEST_ROWS: MetricRow[] = [
   {
     kind: "computed",
     label: "Actual Yield (%)",
-    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).actualYieldPct, 8),
+    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).actualYieldPct, 1),
   },
   {
     kind: "computed",
     label: "Grams per m2",
-    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).gramsPerSqm, 8),
+    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).gramsPerSqm, 2),
   },
   {
     kind: "computed",
     label: "Grams per Plant",
-    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).gramsPerPlant, 8),
+    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).gramsPerPlant, 2),
   },
   {
     kind: "computed",
@@ -155,7 +155,7 @@ const POST_HARVEST_ROWS: MetricRow[] = [
   {
     kind: "computed",
     label: "Actual Gr/m2/wk",
-    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).actualGrPerSqmWk, 9),
+    compute: (v, ctx) => fmtNum(postHarvestComputations(v, ctx).actualGrPerSqmWk, 2),
   },
   { kind: "single", label: "% Germination", type: "number", name: "germinationPct", suffix: "%" },
   { kind: "single", label: "Remarks", type: "textarea", name: "remarks" },

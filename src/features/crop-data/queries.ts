@@ -22,6 +22,7 @@ export async function listCropData(farmId: string) {
       farmId: cropData.farmId,
       cropId: cropData.cropId,
       cropName: crops.name,
+      cropTypeName: cropTypes.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
       block: cropData.block,
@@ -38,6 +39,7 @@ export async function listCropData(farmId: string) {
     })
     .from(cropData)
     .leftJoin(crops, eq(crops.id, cropData.cropId))
+    .leftJoin(cropTypes, eq(cropTypes.id, cropData.cropTypeId))
     .leftJoin(cropVarieties, eq(cropVarieties.id, cropData.varietyId))
     .leftJoin(seasons, eq(seasons.id, cropData.seasonId))
     .where(eq(cropData.farmId, farmId))

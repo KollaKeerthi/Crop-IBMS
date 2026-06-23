@@ -273,6 +273,7 @@ export const CropDataSchema = z.object({
   farmId: z.string().uuid(),
   cropId: z.string().uuid().nullable(),
   cropName: z.string().nullable(),
+  cropTypeName: z.string().nullable().optional(),
   varietyName: z.string().nullable(),
   seasonName: z.string().nullable(),
   block: z.string().nullable(),

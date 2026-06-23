@@ -77,7 +77,7 @@ const ROWS: MetricRow[] = [
   },
   {
     kind: "single",
-    label: "Agreed Order From Customer (kg)",
+    label: "Agreed Order From NL (kg)",
     type: "number",
     name: "agreedOrderFromCustomerKg",
   },

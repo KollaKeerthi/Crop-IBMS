@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api/errors";
 import { requireAuth } from "@/lib/api/auth";
 import { addMediaHandler } from "@/features/crop-data/handlers";
 import { uploadToTeedy } from "@/lib/teedy";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
@@ -21,12 +22,31 @@ const ALLOWED_MIME = new Set([
   "application/pdf",
 ]);
 
+const LinkAttachmentSchema = z.object({
+  url: z.string().url(),
+  name: z.string().trim().min(1).max(200).optional(),
+});
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const ctx = await requireAuth();
     const { id } = await params;
     const farmId = req.nextUrl.searchParams.get("farmId");
     if (!farmId) throw new ApiError(400, "missing_farm_id", "farmId is required.");
+
+    if (req.headers.get("content-type")?.includes("application/json")) {
+      const parsed = LinkAttachmentSchema.safeParse(await req.json());
+      if (!parsed.success) {
+        const first = parsed.error.issues[0]?.message ?? "Invalid link attachment.";
+        throw new ApiError(400, "invalid_link", first);
+      }
+      const saved = await addMediaHandler(ctx, id, farmId, {
+        url: parsed.data.url,
+        name: parsed.data.name ?? parsed.data.url,
+        mimeType: "text/uri-list",
+      });
+      return apiOk(saved);
+    }
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
