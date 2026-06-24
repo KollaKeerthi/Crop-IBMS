@@ -1,8 +1,8 @@
 "use client";
 
-import { MetricForm, type MetricRow, type Vals } from "./metric-form";
+import type { FieldType, MetricRow, Vals } from "./metric-form";
 import { useMemo, useState } from "react";
-import { CalendarDays, Info, Pencil, X } from "lucide-react";
+import { CalendarDays, Info, Mars, Pencil, Venus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   UpdateProgramInfoInputSchema,
@@ -33,7 +33,7 @@ const PLANNING_ROWS: MetricRow[] = [
   },
   {
     kind: "mf",
-    label: "Planned No. of Plants",
+    label: "Planned No of Plants",
     type: "int",
     male: "malePlannedPlants",
     female: "femalePlannedPlants",
@@ -47,13 +47,13 @@ const PLANNING_ROWS: MetricRow[] = [
   },
   {
     kind: "mf",
-    label: "Planned Plants / m2",
+    label: "Planned Plants / m²",
     type: "number",
     male: "malePlannedPlantsPerSqm",
     female: "femalePlannedPlantsPerSqm",
   },
   { kind: "single", label: "Planned Surface Area", type: "number", name: "plannedSurfaceArea" },
-  { kind: "single", label: "Planned No. of Rows", type: "int", name: "plannedNoOfRows" },
+  { kind: "single", label: "Planned No of Rows", type: "int", name: "plannedNoOfRows" },
   {
     kind: "single",
     label: "Proposed gram / Plant (Customer)",
@@ -114,28 +114,326 @@ type Props = {
 
 export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
   const mutation = useUpdateProgramInfo(cropDataId, farmId);
+  const fields = useMemo(() => editableFields([...PLANNING_ROWS, ...CONTEXT_FIELDS]), []);
+  const buildState = useMemo(
+    () => () => buildProgramState(programInfo, fields),
+    [fields, programInfo]
+  );
+  const [editing, setEditing] = useState(false);
+  const [values, setValues] = useState<Vals>(buildState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const displayValues = editing ? values : buildState();
+
+  function startEdit() {
+    setValues(buildState());
+    setErrors({});
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setValues(buildState());
+    setErrors({});
+    setEditing(false);
+  }
+
+  function setField(name: string, value: unknown) {
+    setValues((current) => computeProgramInfoDerivedFields({ ...current, [name]: value }));
+  }
+
+  async function handleSave() {
+    const payload = assembleProgramPayload(values, fields);
+    const parsed = UpdateProgramInfoInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      const nextErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0] ?? "");
+        if (key && !nextErrors[key]) nextErrors[key] = issue.message;
+      }
+      setErrors(nextErrors);
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
+    await mutation.mutateAsync(parsed.data);
+    toast.success("Program Parameters saved");
+    setEditing(false);
+  }
+
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(22rem,1fr)]">
-      <MetricForm
-        title="Program Parameters"
-        description="Manage sowing dates, plant counts, and yield targets."
-        icon={<Info className="h-4 w-4" />}
-        editLabel="Edit Parameters"
-        rows={PLANNING_ROWS}
-        initial={programInfo}
-        schema={UpdateProgramInfoInputSchema}
-        columnLabels={{ left: "Male Parent", right: "Female Parent" }}
-        dateFields={PROGRAM_INFO_DATE_FIELDS}
-        isSaving={mutation.isPending}
-        onSave={(values) => mutation.mutateAsync(values as UpdateProgramInfoInput)}
-        onValuesChange={computeProgramInfoDerivedFields}
-      />
-      <TemporalContextCard
-        programInfo={programInfo}
-        isSaving={mutation.isPending}
-        onSave={(values) => mutation.mutateAsync(values)}
-      />
+    <div className="space-y-5">
+      <section className="rounded-lg border bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-4 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-cyan-50 text-cyan-600">
+              <Info className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight">Program Parameters</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage sowing dates, plant counts, and yield targets.
+              </p>
+            </div>
+          </div>
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={cancelEdit} disabled={mutation.isPending}>
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={mutation.isPending}>
+                {mutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={startEdit}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Parameters
+            </Button>
+          )}
+        </div>
+      </section>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(23rem,1fr)]">
+        <ProgramParametersTable
+          values={displayValues}
+          saved={programInfo}
+          editing={editing}
+          errors={errors}
+          onFieldChange={setField}
+        />
+        <TemporalContextCard
+          values={displayValues}
+          saved={programInfo}
+          editing={editing}
+          errors={errors}
+          onFieldChange={setField}
+        />
+      </div>
     </div>
+  );
+}
+
+type EditableField = { name: string; type: FieldType };
+
+function editableFields(rows: Array<MetricRow | ContextField>): EditableField[] {
+  const out: EditableField[] = [];
+  for (const row of rows) {
+    if ("kind" in row && row.kind === "mf") {
+      out.push({ name: row.male, type: row.type }, { name: row.female, type: row.type });
+    } else if ("kind" in row && row.kind === "single") {
+      out.push({ name: row.name, type: row.type });
+    } else if (!("kind" in row)) {
+      out.push({ name: row.name, type: row.type });
+    }
+  }
+  return out;
+}
+
+function buildProgramState(programInfo: Vals | null, fields: EditableField[]): Vals {
+  const state: Vals = {};
+  for (const field of fields) {
+    const raw = programInfo?.[field.name];
+    state[field.name] = field.type === "date" ? formatDateForInput(raw) : (raw ?? "");
+  }
+  return computeProgramInfoDerivedFields(state);
+}
+
+function assembleProgramPayload(values: Vals, fields: EditableField[]): UpdateProgramInfoInput {
+  const dateSet = new Set<string>(PROGRAM_INFO_DATE_FIELDS);
+  const payload: Vals = {};
+  for (const field of fields) {
+    const value = values[field.name];
+    if (field.type === "number" || field.type === "int") {
+      payload[field.name] =
+        value === "" || value === null || value === undefined ? null : Number(value);
+    } else if (dateSet.has(field.name) || field.type === "date") {
+      payload[field.name] = value === "" || value === null || value === undefined ? null : value;
+    } else {
+      payload[field.name] = value === "" ? null : value;
+    }
+  }
+  return payload as UpdateProgramInfoInput;
+}
+
+function displayProgramValue(value: unknown, type: FieldType) {
+  if (value === null || value === undefined || value === "") return "-";
+  if (type === "date") return formatDateForInput(value);
+  if (type === "number") return formatNumber(value, 2);
+  if (type === "int") return formatNumber(value, 0);
+  return String(value);
+}
+
+function formatNumber(value: unknown, fractionDigits: number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return String(value);
+  return parsed.toLocaleString("en-US", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+}
+
+function MetricInput({
+  name,
+  type,
+  value,
+  onFieldChange,
+}: {
+  name: string;
+  type: FieldType;
+  value: unknown;
+  onFieldChange: (name: string, value: unknown) => void;
+}) {
+  if (type === "textarea") {
+    return (
+      <Textarea
+        value={(value ?? "") as string}
+        rows={3}
+        onChange={(event) => onFieldChange(name, event.target.value)}
+      />
+    );
+  }
+  return (
+    <Input
+      className="h-9"
+      type={type === "date" ? "date" : type === "text" ? "text" : "number"}
+      step={type === "int" ? 1 : type === "number" ? "any" : undefined}
+      value={(value ?? "") as string | number}
+      onChange={(event) => onFieldChange(name, event.target.value)}
+    />
+  );
+}
+
+function ProgramParametersTable({
+  values,
+  saved,
+  editing,
+  errors,
+  onFieldChange,
+}: {
+  values: Vals;
+  saved: Vals | null;
+  editing: boolean;
+  errors: Record<string, string>;
+  onFieldChange: (name: string, value: unknown) => void;
+}) {
+  function renderCell(name: string, type: FieldType) {
+    if (!editing) {
+      return (
+        <span className="text-lg font-bold text-slate-900">
+          {displayProgramValue(saved?.[name], type)}
+        </span>
+      );
+    }
+    return (
+      <div>
+        <MetricInput
+          name={name}
+          type={type}
+          value={values[name] ?? ""}
+          onFieldChange={onFieldChange}
+        />
+        {errors[name] ? <p className="mt-1 text-xs text-destructive">{errors[name]}</p> : null}
+      </div>
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <table className="w-full table-fixed text-sm">
+        <thead>
+          <tr className="border-b bg-muted/30">
+            <th className="w-[34%] px-5 py-4 text-left text-base font-bold text-slate-900">
+              Metric Definition
+            </th>
+            <th className="w-[33%] px-5 py-4 text-left text-base font-bold text-cyan-700">
+              <span className="inline-flex items-center gap-2">
+                <Mars className="h-4 w-4" />
+                Male Parent
+              </span>
+            </th>
+            <th className="w-[33%] px-5 py-4 text-left text-base font-bold text-pink-600">
+              <span className="inline-flex items-center gap-2">
+                <Venus className="h-4 w-4" />
+                Female Parent
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {PLANNING_ROWS.map((row) => {
+            if (row.kind === "mf") {
+              return (
+                <tr key={row.label} className="border-b last:border-0">
+                  <td className="px-5 py-4 text-base font-semibold text-muted-foreground">
+                    {row.label}
+                  </td>
+                  <td className="px-5 py-4">{renderCell(row.male, row.type)}</td>
+                  <td className="px-5 py-4">{renderCell(row.female, row.type)}</td>
+                </tr>
+              );
+            }
+            if (row.kind === "single") {
+              return (
+                <tr key={row.label} className="border-b last:border-0">
+                  <td className="px-5 py-4 text-base font-semibold text-muted-foreground">
+                    {row.label}
+                  </td>
+                  <td className="px-5 py-4" />
+                  <td className="px-5 py-4">{renderCell(row.name, row.type)}</td>
+                </tr>
+              );
+            }
+            return null;
+          })}
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
+function TemporalContextCard({
+  values,
+  saved,
+  editing,
+  errors,
+  onFieldChange,
+}: {
+  values: Vals;
+  saved: Vals | null;
+  editing: boolean;
+  errors: Record<string, string>;
+  onFieldChange: (name: string, value: unknown) => void;
+}) {
+  return (
+    <section className="rounded-lg border bg-card shadow-sm">
+      <div className="flex items-center gap-3 px-5 py-5">
+        <CalendarDays className="h-5 w-5 text-cyan-600" />
+        <h3 className="text-base font-bold text-slate-900">Temporal Context</h3>
+      </div>
+      <div className="space-y-5 px-8 pb-6 pt-1">
+        {CONTEXT_FIELDS.map((field) => (
+          <div key={field.name}>
+            <div className="mb-2 text-xs font-bold text-slate-700">{field.label}</div>
+            {editing ? (
+              <>
+                <MetricInput
+                  name={field.name}
+                  type={field.type}
+                  value={values[field.name] ?? ""}
+                  onFieldChange={onFieldChange}
+                />
+                {errors[field.name] ? (
+                  <p className="mt-1 text-xs text-destructive">{errors[field.name]}</p>
+                ) : null}
+              </>
+            ) : (
+              <div className="text-lg font-bold text-slate-900">
+                {displayContextValue(saved?.[field.name], field.type)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -153,145 +451,7 @@ function displayContextValue(value: unknown, type: ContextField["type"]) {
     if (Number.isNaN(date.getTime())) return String(value);
     return date.toLocaleDateString("en-GB").replace(/\//g, "-");
   }
+  if (type === "number") return formatNumber(value, 2);
+  if (type === "int") return formatNumber(value, 2);
   return String(value);
-}
-
-function buildContextState(programInfo: Vals | null): Record<string, string | number> {
-  const state: Record<string, string | number> = {};
-  for (const field of CONTEXT_FIELDS) {
-    const value = programInfo?.[field.name];
-    state[field.name] =
-      field.type === "date" ? formatDateForInput(value) : ((value ?? "") as string);
-  }
-  return state;
-}
-
-function TemporalContextCard({
-  programInfo,
-  isSaving,
-  onSave,
-}: {
-  programInfo: Vals | null;
-  isSaving: boolean;
-  onSave: (values: UpdateProgramInfoInput) => Promise<unknown>;
-}) {
-  const dateSet = useMemo(() => new Set<string>(PROGRAM_INFO_DATE_FIELDS), []);
-  const [editing, setEditing] = useState(false);
-  const [values, setValues] = useState<Record<string, string | number>>(() =>
-    buildContextState(programInfo)
-  );
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  function startEdit() {
-    setValues(buildContextState(programInfo));
-    setErrors({});
-    setEditing(true);
-  }
-
-  function cancelEdit() {
-    setValues(buildContextState(programInfo));
-    setErrors({});
-    setEditing(false);
-  }
-
-  function setField(name: string, value: string | number) {
-    setValues((current) => ({ ...current, [name]: value }));
-  }
-
-  function renderInput(field: ContextField) {
-    const value = values[field.name] ?? "";
-    if (field.type === "textarea") {
-      return (
-        <Textarea
-          value={value as string}
-          rows={3}
-          onChange={(event) => setField(field.name, event.target.value)}
-        />
-      );
-    }
-    return (
-      <Input
-        type={field.type === "date" ? "date" : field.type === "text" ? "text" : "number"}
-        step={field.type === "int" ? 1 : field.type === "number" ? "any" : undefined}
-        value={value}
-        onChange={(event) => setField(field.name, event.target.value)}
-      />
-    );
-  }
-
-  async function handleSave() {
-    const payload: Record<string, unknown> = {};
-    for (const field of CONTEXT_FIELDS) {
-      const value = values[field.name];
-      if (field.type === "number" || field.type === "int") {
-        payload[field.name] =
-          value === "" || value === null || value === undefined ? null : Number(value);
-      } else if (dateSet.has(field.name)) {
-        payload[field.name] = value === "" ? null : value;
-      } else {
-        payload[field.name] = value === "" ? null : value;
-      }
-    }
-    const parsed = UpdateProgramInfoInputSchema.safeParse(payload);
-    if (!parsed.success) {
-      const nextErrors: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? "");
-        if (key && !nextErrors[key]) nextErrors[key] = issue.message;
-      }
-      setErrors(nextErrors);
-      toast.error("Please fix the highlighted fields.");
-      return;
-    }
-    await onSave(parsed.data);
-    toast.success("Temporal Context saved");
-    setEditing(false);
-  }
-
-  return (
-    <section className="rounded-xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between gap-4 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <CalendarDays className="h-4 w-4" />
-          </div>
-          <h3 className="text-lg font-semibold">Temporal Context</h3>
-        </div>
-        {editing ? (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={isSaving}>
-              <X className="mr-1 h-4 w-4" /> Cancel
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
-          </div>
-        ) : (
-          <Button variant="outline" size="sm" onClick={startEdit}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit Context
-          </Button>
-        )}
-      </div>
-
-      <div className="space-y-5 border-t px-5 py-5">
-        {CONTEXT_FIELDS.map((field) => (
-          <div key={field.name}>
-            <div className="mb-2 text-xs font-semibold text-muted-foreground">{field.label}</div>
-            {editing ? (
-              <>
-                {renderInput(field)}
-                {errors[field.name] ? (
-                  <p className="mt-1 text-xs text-destructive">{errors[field.name]}</p>
-                ) : null}
-              </>
-            ) : (
-              <div className="text-base font-semibold text-foreground">
-                {displayContextValue(programInfo?.[field.name], field.type)}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
 }
