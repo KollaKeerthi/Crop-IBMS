@@ -3,7 +3,7 @@ import { logAudit } from "@/lib/audit";
 import type { ApiContext } from "@/lib/api/auth";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { farmMemberships, cropVarieties, cropTypes } from "@/db/schema";
+import { farmMemberships, cropVarieties, cropTypes, blocks as locationBlocks } from "@/db/schema";
 import {
   listCropData,
   getCropDataById,
@@ -80,6 +80,18 @@ async function validateCropLinks(input: {
   }
 }
 
+async function validateLocationBlock(farmId: string, locationBlockId?: string | null) {
+  if (!locationBlockId) return;
+  const [block] = await db
+    .select({ id: locationBlocks.id })
+    .from(locationBlocks)
+    .where(and(eq(locationBlocks.id, locationBlockId), eq(locationBlocks.farmId, farmId)))
+    .limit(1);
+  if (!block) {
+    throw new ApiError(400, "invalid_location_block", "Block does not belong to this farm.");
+  }
+}
+
 export async function listCropDataHandler(ctx: ApiContext, farmId: string) {
   await verifyFarmAccess(ctx.userId, farmId);
   return listCropData(farmId);
@@ -125,6 +137,7 @@ export async function getCropDataHandler(ctx: ApiContext, id: string, farmId: st
 export async function createCropDataHandler(ctx: ApiContext, input: CreateCropDataInput) {
   await verifyFarmAccess(ctx.userId, input.farmId);
   await validateCropLinks(input);
+  await validateLocationBlock(input.farmId, input.locationBlockId);
   const record = await createCropDataRecord(input);
   await logAudit({
     userId: ctx.userId,
@@ -157,6 +170,7 @@ export async function updateCropDataHandler(
     cropTypeId: input.cropTypeId,
     varietyId: input.varietyId,
   });
+  await validateLocationBlock(farmId, input.locationBlockId);
   const updated = await updateCropDataRecord(id, input);
   await logAudit({
     userId: ctx.userId,

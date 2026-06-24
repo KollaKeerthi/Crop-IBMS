@@ -7,6 +7,7 @@ import {
   revenue,
   cropDataModules,
   mediaAttachments,
+  blocks as locationBlocks,
   crops,
   cropTypes,
   cropVarieties,
@@ -25,6 +26,7 @@ export async function listCropData(farmId: string) {
       cropTypeName: cropTypes.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      locationBlockId: cropData.locationBlockId,
       block: cropData.block,
       fieldName: cropData.fieldName,
       fieldCode: cropData.fieldCode,
@@ -60,6 +62,8 @@ export async function getCropDataById(id: string, farmId: string) {
       cropTypeName: cropTypes.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      locationBlockId: cropData.locationBlockId,
+      locationBlockBoundary: locationBlocks.boundary,
       cropImageUrl: crops.imageUrl,
       block: cropData.block,
       fieldName: cropData.fieldName,
@@ -79,6 +83,7 @@ export async function getCropDataById(id: string, farmId: string) {
     .leftJoin(cropTypes, eq(cropTypes.id, cropData.cropTypeId))
     .leftJoin(cropVarieties, eq(cropVarieties.id, cropData.varietyId))
     .leftJoin(seasons, eq(seasons.id, cropData.seasonId))
+    .leftJoin(locationBlocks, eq(locationBlocks.id, cropData.locationBlockId))
     .where(and(eq(cropData.id, id), eq(cropData.farmId, farmId)))
     .limit(1);
   return rows[0] ?? null;

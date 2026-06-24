@@ -19,6 +19,8 @@ type FullRecord = {
   varietyName?: string | null;
   seasonName?: string | null;
   cropImageUrl?: string | null;
+  locationBlockId?: string | null;
+  locationBlockBoundary?: unknown;
   block?: string | null;
   fieldName?: string | null;
   fieldCode?: string | null;

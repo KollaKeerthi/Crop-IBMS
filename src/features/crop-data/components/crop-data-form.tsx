@@ -268,6 +268,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                       field.onChange(val);
                       // Clear block when field changes
                       form.setValue("block", "");
+                      form.setValue("locationBlockId", null);
                     }}
                   >
                     <FormControl>
@@ -307,17 +308,26 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 <FormItem>
                   <FormLabel>Block</FormLabel>
                   {blocksInDb.length > 0 ? (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                    <Select
+                      value={form.watch("locationBlockId") ?? ""}
+                      onValueChange={(blockId) => {
+                        const selectedBlock = blocksInDb.find((b) => b.id === blockId);
+                        field.onChange(selectedBlock?.name ?? "");
+                        form.setValue("locationBlockId", selectedBlock?.id ?? null);
+                      }}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select block from DB">
-                            {(value) => value || "Select block from DB"}
+                            {(value) =>
+                              blocksInDb.find((b) => b.id === value)?.name ?? "Select block from DB"
+                            }
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {blocksInDb.map((b) => (
-                          <SelectItem key={b.id} value={b.name}>
+                          <SelectItem key={b.id} value={b.id}>
                             {b.name}
                           </SelectItem>
                         ))}
@@ -325,7 +335,15 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                     </Select>
                   ) : (
                     <FormControl>
-                      <Input {...field} value={field.value ?? ""} placeholder="e.g. Block A" />
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="e.g. Block A"
+                        onChange={(event) => {
+                          field.onChange(event);
+                          form.setValue("locationBlockId", null);
+                        }}
+                      />
                     </FormControl>
                   )}
                   <FormMessage />

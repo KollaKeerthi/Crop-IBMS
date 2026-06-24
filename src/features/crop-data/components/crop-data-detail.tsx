@@ -6,7 +6,12 @@ import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { ProgramInfoForm } from "./program-info-form";
 import { NurseryForm } from "./nursery-form";
 import { RevenueForm } from "./revenue-form";
-import { ProductionForm, PollinationForm, PostHarvestForm } from "./section-forms";
+import {
+  ProductionForm,
+  PollinationForm,
+  PostHarvestForm,
+  PostHarvestSummaryForm,
+} from "./section-forms";
 import { SeedsQualityForm, SqBreakdownForm } from "./seeds-forms";
 import { HarvestDetailsTable, PerformanceTable } from "./collection-tables";
 import { MediaAttachments } from "./media-attachments";
@@ -24,6 +29,8 @@ type FullCropDataRecord = {
   cropId?: string | null;
   cropName?: string | null;
   varietyName?: string | null;
+  locationBlockId?: string | null;
+  locationBlockBoundary?: unknown;
   block?: string | null;
   fieldName?: string | null;
   sexExpression?: string | null;
@@ -153,6 +160,8 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           initialData={getModuleData("planting_records")}
           fallbackCrop={record.cropName}
           fallbackVariety={record.varietyName}
+          locationBlockId={record.locationBlockId}
+          locationBlockBoundary={record.locationBlockBoundary}
         />
       </TabsPrimitive.Panel>
 
@@ -179,12 +188,19 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
 
       {/* Post Harvest */}
       <TabsPrimitive.Panel value="post_harvest" className="mt-0">
-        <PostHarvestForm
-          cropDataId={record.id}
-          farmId={farmId}
-          initial={record.sections.post_harvest ?? null}
-          context={postHarvestContext}
-        />
+        <div className="space-y-5">
+          <PostHarvestForm
+            cropDataId={record.id}
+            farmId={farmId}
+            initial={record.sections.post_harvest ?? null}
+            context={postHarvestContext}
+          />
+          <PostHarvestSummaryForm
+            cropDataId={record.id}
+            farmId={farmId}
+            initial={record.sections.post_harvest_summary ?? null}
+          />
+        </div>
       </TabsPrimitive.Panel>
 
       {/* Seeds Quality */}

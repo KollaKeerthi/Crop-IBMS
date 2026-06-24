@@ -147,6 +147,7 @@ export function MetricForm({
   function assemblePayload(): Vals {
     const dateSet = new Set(dateFields);
     const payload: Vals = {};
+    const fieldNames = new Set(fields.map((field) => field.name));
     for (const { name, type } of fields) {
       const v = values[name];
       if (type === "number" || type === "int") {
@@ -155,6 +156,11 @@ export function MetricForm({
         payload[name] = v === "" || v === null || v === undefined ? null : v;
       } else {
         payload[name] = v === "" ? null : v;
+      }
+    }
+    for (const [name, value] of Object.entries(values)) {
+      if (!fieldNames.has(name) && value !== undefined) {
+        payload[name] = value === "" ? null : value;
       }
     }
     return payload;

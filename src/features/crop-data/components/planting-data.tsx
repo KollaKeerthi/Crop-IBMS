@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, Grid3X3, Plus, Save, Sprout, Wand2 } from "lucide-react";
+import { Eye, Grid3X3, MapPinned, Plus, Save, Sprout, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { useUpdateBlock } from "@/features/locations/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +38,13 @@ type Props = {
   initialData: Record<string, unknown> | null;
   fallbackCrop?: string | null;
   fallbackVariety?: string | null;
+  locationBlockId?: string | null;
+  locationBlockBoundary?: unknown;
+};
+
+type CoordinatePoint = {
+  lng: string;
+  lat: string;
 };
 
 const MODULE_TYPE = "planting_records";
@@ -77,14 +85,14 @@ function initialRows(
     id: newId(),
     rowNo: index + 1,
     m2PerRow: DEFAULT_M2_PER_ROW,
-    actualM2PerRow: null,
-    noOfPlants: null,
-    density: null,
+    actualM2PerRow: index === 1 ? 15 : index < 2 || (index >= 4 && index <= 6) ? 10 : null,
+    noOfPlants: index === 1 ? 30 : index < 2 || (index >= 4 && index <= 6) ? 20 : null,
+    density: index === 1 ? 2 : index < 2 || (index >= 4 && index <= 6) ? 2 : null,
     crop: fallbackCrop ?? "",
     cropVariety: "",
     type: index < 2 ? "Female" : "Male",
-    plantingSpaceCm: null,
-    planted: false,
+    plantingSpaceCm: index === 1 ? 25 : index < 2 ? 30 : index >= 4 && index <= 6 ? 10 : null,
+    planted: index < 2 || (index >= 4 && index <= 6),
   }));
 }
 
@@ -103,12 +111,66 @@ function rowDensity(row: PlantingRow) {
   return plants / area;
 }
 
+function emptyCoordinatePoints(): CoordinatePoint[] {
+  return Array.from({ length: 4 }, () => ({ lng: "", lat: "" }));
+}
+
+function coordinatePointsFromBoundary(boundary: unknown): CoordinatePoint[] {
+  if (!boundary || typeof boundary !== "object") return emptyCoordinatePoints();
+  const polygon = boundary as { type?: unknown; coordinates?: unknown };
+  if (polygon.type !== "Polygon" || !Array.isArray(polygon.coordinates)) {
+    return emptyCoordinatePoints();
+  }
+  const ring = polygon.coordinates[0];
+  if (!Array.isArray(ring)) return emptyCoordinatePoints();
+  const points = ring.slice(0, 4).map((point) => {
+    if (!Array.isArray(point)) return { lng: "", lat: "" };
+    return {
+      lng: point[0] == null ? "" : String(point[0]),
+      lat: point[1] == null ? "" : String(point[1]),
+    };
+  });
+  while (points.length < 4) points.push({ lng: "", lat: "" });
+  return points;
+}
+
+function boundaryFromCoordinatePoints(points: CoordinatePoint[]) {
+  const hasAnyValue = points.some((point) => point.lng.trim() || point.lat.trim());
+  if (!hasAnyValue) return null;
+
+  const parsed = points.map((point, index) => {
+    const lng = Number(point.lng);
+    const lat = Number(point.lat);
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+      throw new Error(`Point ${index + 1} needs a valid longitude and latitude.`);
+    }
+    if (lng < -180 || lng > 180) {
+      throw new Error(`Point ${index + 1} longitude must be between -180 and 180.`);
+    }
+    if (lat < -90 || lat > 90) {
+      throw new Error(`Point ${index + 1} latitude must be between -90 and 90.`);
+    }
+    return [lng, lat] as [number, number];
+  });
+
+  return {
+    type: "Polygon",
+    coordinates: [[...parsed, parsed[0]]],
+  };
+}
+
+function generatedPlantCode(rowNo: number, plantNo: number) {
+  return `R${rowNo}-P${plantNo}`;
+}
+
 export function PlantingData({
   cropDataId,
   farmId,
   initialData,
   fallbackCrop,
   fallbackVariety,
+  locationBlockId,
+  locationBlockBoundary,
 }: Props) {
   const [mode, setMode] = useState<"data" | "visual">("data");
   const [rows, setRows] = useState<PlantingRow[]>(() => {
@@ -120,7 +182,11 @@ export function PlantingData({
     }));
   });
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [coordinatePoints, setCoordinatePoints] = useState<CoordinatePoint[]>(() =>
+    coordinatePointsFromBoundary(locationBlockBoundary)
+  );
   const mutation = useUpdateModule(cropDataId, farmId, MODULE_TYPE);
+  const updateBlock = useUpdateBlock();
 
   const sortedRows = useMemo(() => [...rows].sort((a, b) => b.rowNo - a.rowNo), [rows]);
   const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null;
@@ -191,6 +257,32 @@ export function PlantingData({
     }
   }
 
+  function setCoordinatePoint(index: number, field: keyof CoordinatePoint, value: string) {
+    setCoordinatePoints((current) =>
+      current.map((point, pointIndex) =>
+        pointIndex === index ? { ...point, [field]: value } : point
+      )
+    );
+  }
+
+  async function saveCoordinates() {
+    if (!locationBlockId) {
+      toast.error("Select a block from location masters before saving coordinates");
+      return;
+    }
+    try {
+      const boundary = boundaryFromCoordinatePoints(coordinatePoints);
+      await updateBlock.mutateAsync({
+        id: locationBlockId,
+        farmId,
+        input: { boundary },
+      });
+      toast.success(boundary ? "Block coordinates saved" : "Block coordinates cleared");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save block coordinates");
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="rounded-lg border bg-card">
@@ -241,6 +333,75 @@ export function PlantingData({
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-lg border bg-card px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-md bg-primary/10 p-2 text-primary">
+              <MapPinned className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold">Block Coordinates</h3>
+              <p className="text-sm text-muted-foreground">
+                Optional four-point longitude and latitude boundary for the selected block.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setCoordinatePoints(emptyCoordinatePoints())}
+              disabled={updateBlock.isPending}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Clear
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={saveCoordinates}
+              disabled={!locationBlockId || updateBlock.isPending}
+            >
+              <Save className="mr-1.5 h-4 w-4" />
+              {updateBlock.isPending ? "Saving..." : "Save Coordinates"}
+            </Button>
+          </div>
+        </div>
+        {!locationBlockId ? (
+          <p className="mt-3 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+            Select a block from the location masters when creating the crop data record to save
+            coordinates.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {coordinatePoints.map((point, index) => (
+              <div key={index} className="rounded-md border bg-background p-3">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Point {index + 1}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    step="any"
+                    placeholder="Longitude"
+                    value={point.lng}
+                    onChange={(event) => setCoordinatePoint(index, "lng", event.target.value)}
+                  />
+                  <Input
+                    type="number"
+                    step="any"
+                    placeholder="Latitude"
+                    value={point.lat}
+                    onChange={(event) => setCoordinatePoint(index, "lat", event.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {mode === "data" ? (
@@ -372,35 +533,39 @@ export function PlantingData({
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <div className="flex flex-wrap items-center gap-3 border-b bg-primary px-5 py-3 text-primary-foreground">
-            <span className="font-semibold">A / A2</span>
-            <span className="text-sm opacity-85">2m x 25m - {fmtNum(totalArea)} m2</span>
-            <span className="rounded-md bg-primary-foreground/10 px-3 py-1 text-sm">
+        <div className="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/60">
+          <div className="flex flex-wrap items-center gap-3 border-b border-emerald-800 bg-emerald-900 px-5 py-3 text-emerald-50">
+            <span className="font-semibold text-white">A / A2</span>
+            <span className="text-sm text-emerald-100">2m x 25m - {fmtNum(totalArea)} m2</span>
+            <span className="rounded-full bg-emerald-700 px-3 py-1 text-sm font-semibold text-emerald-50 shadow-inner">
               {rows.length} Rows
             </span>
-            <span className="rounded-md bg-primary-foreground/10 px-3 py-1 text-sm">
+            <span className="rounded-full bg-emerald-700 px-3 py-1 text-sm font-semibold text-emerald-50 shadow-inner">
               {totalPlants} Plants
             </span>
-            <span className="rounded-md bg-primary-foreground/10 px-3 py-1 text-sm">
+            <span className="rounded-full bg-sky-800 px-3 py-1 text-sm font-semibold text-sky-50 shadow-inner">
               Male {malePlants}
             </span>
-            <span className="rounded-md bg-primary-foreground/10 px-3 py-1 text-sm">
+            <span className="rounded-full bg-rose-800 px-3 py-1 text-sm font-semibold text-rose-50 shadow-inner">
               Female {femalePlants}
             </span>
-            <span className="rounded-md bg-primary-foreground/10 px-3 py-1 text-sm">
+            <span className="rounded-full bg-lime-700 px-3 py-1 text-sm font-semibold text-lime-50 shadow-inner">
               {plantedRows.length}/{rows.length} planted
             </span>
           </div>
 
-          <div className="bg-muted p-4">
-            <div className="rounded-lg border bg-background p-4 shadow-inner">
-              <div className="mb-3 inline-flex rounded-md bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
+          <div className="bg-emerald-50 p-4">
+            <div className="rounded-xl border border-emerald-500 bg-gradient-to-b from-emerald-100 via-lime-100 to-emerald-200 p-4 shadow-[inset_0_0_0_4px_rgba(16,185,129,0.18),inset_0_16px_30px_rgba(255,255,255,0.35),0_18px_35px_rgba(15,118,110,0.14)]">
+              <div className="mb-3 inline-flex rounded-md bg-emerald-700 px-3 py-1 text-sm font-semibold text-white shadow">
                 A - A2
               </div>
               <div className="space-y-2">
                 {sortedRows.map((row) => {
                   const count = plantCount(row);
+                  const plantedTone =
+                    row.type === "Female"
+                      ? "bg-gradient-to-b from-emerald-100 to-emerald-200"
+                      : "bg-gradient-to-b from-sky-100 to-emerald-100";
                   return (
                     <div
                       key={row.id}
@@ -418,41 +583,55 @@ export function PlantingData({
                         }
                       }}
                       className={`group grid min-h-12 cursor-pointer grid-cols-[3rem_minmax(30rem,1fr)] items-center gap-3 rounded-md border bg-card px-3 py-2 transition ${
-                        selectedRowId === row.id ? "ring-2 ring-primary" : "hover:border-primary"
+                        row.planted
+                          ? `${plantedTone} border-emerald-400 shadow-[inset_0_2px_8px_rgba(255,255,255,0.55),0_1px_2px_rgba(15,118,110,0.18)]`
+                          : "border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 opacity-70 shadow-[inset_0_2px_10px_rgba(148,163,184,0.16)]"
+                      } ${
+                        selectedRowId === row.id
+                          ? "ring-2 ring-lime-500"
+                          : "hover:border-emerald-500"
                       }`}
                     >
                       <span
                         className={
                           row.planted
-                            ? "rounded bg-primary px-2 py-1 text-center text-xs font-semibold text-primary-foreground"
-                            : "rounded bg-muted px-2 py-1 text-center text-xs font-semibold text-muted-foreground"
+                            ? row.type === "Female"
+                              ? "rounded bg-[#0cae57] px-2 py-1 text-center text-xs font-semibold text-white shadow"
+                              : "rounded bg-[#1b75f2] px-2 py-1 text-center text-xs font-semibold text-white shadow"
+                            : "rounded bg-[#d2d5cf] px-2 py-1 text-center text-xs font-semibold text-[#6b7280] shadow"
                         }
                       >
                         R{row.rowNo}
                       </span>
                       {row.planted && count > 0 ? (
                         <div className="relative flex items-center gap-2 overflow-hidden">
-                          {Array.from({ length: count }).map((_, index) => (
-                            <Sprout
-                              key={index}
-                              className={
-                                row.type === "Male"
-                                  ? "h-4 w-4 shrink-0 text-primary"
-                                  : "h-4 w-4 shrink-0 text-emerald-600"
-                              }
-                            />
-                          ))}
-                          <div className="absolute right-0 hidden rounded-md bg-foreground px-3 py-1 text-xs text-background shadow group-hover:block">
+                          {Array.from({ length: count }).map((_, index) => {
+                            const plantNo = index + 1;
+                            const code = generatedPlantCode(row.rowNo, plantNo);
+                            return (
+                              <span key={code} title={code} aria-label={code}>
+                                <Sprout
+                                  key={code}
+                                  className={
+                                    row.type === "Male"
+                                      ? "h-4 w-4 shrink-0 text-[#4b8dff] drop-shadow-[0_0_2px_rgba(110,168,255,0.8)]"
+                                      : "h-4 w-4 shrink-0 text-[#22c76a] drop-shadow-[0_0_2px_rgba(65,220,116,0.8)]"
+                                  }
+                                />
+                              </span>
+                            );
+                          })}
+                          <div className="absolute right-0 hidden rounded-md bg-slate-900 px-3 py-1 text-xs text-white shadow group-hover:block">
                             {row.noOfPlants ?? 0} plants&nbsp;&nbsp;
                             {row.plantingSpaceCm ?? "-"}cm&nbsp;&nbsp;
                             {row.type}
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-xs italic text-muted-foreground">
-                          <span className="h-1 w-6 rounded-full bg-muted" />
-                          <span className="h-1 w-6 rounded-full bg-muted" />
-                          <span className="h-1 w-6 rounded-full bg-muted" />
+                        <div className="flex items-center gap-2 text-xs italic text-slate-400">
+                          <span className="h-1 w-6 rounded-full bg-slate-300" />
+                          <span className="h-1 w-6 rounded-full bg-slate-300" />
+                          <span className="h-1 w-6 rounded-full bg-slate-300" />
                           not planted
                         </div>
                       )}
@@ -517,13 +696,13 @@ export function PlantingData({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 border-t bg-primary px-5 py-3 text-xs text-primary-foreground">
+          <div className="flex flex-wrap items-center gap-5 border-t border-emerald-800 bg-emerald-900 px-5 py-3 text-xs text-emerald-50">
             <span className="font-semibold uppercase tracking-wide">Field Legend</span>
             <span className="inline-flex items-center gap-1">
-              <Sprout className="h-4 w-4 text-emerald-200" /> Female
+              <Sprout className="h-4 w-4 text-[#22c76a]" /> Female
             </span>
             <span className="inline-flex items-center gap-1">
-              <Sprout className="h-4 w-4" /> Male
+              <Sprout className="h-4 w-4 text-[#4b8dff]" /> Male
             </span>
             <span>Empty Soil</span>
             <span>Planted Row</span>
