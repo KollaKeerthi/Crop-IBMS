@@ -1,6 +1,7 @@
 "use client";
 
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
+import { DollarSign } from "lucide-react";
 import { UpdateRevenueInputSchema, type UpdateRevenueInput } from "../schema";
 import { useUpdateRevenue } from "../hooks";
 import { fmtNum, revenueSide } from "../compute";
@@ -73,7 +74,10 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
   const mutation = useUpdateRevenue(cropDataId, farmId);
   return (
     <MetricForm
-      title="Revenue"
+      title="Revenue Projections"
+      description="Track and manage financial metrics and projections."
+      icon={<DollarSign className="h-4 w-4" />}
+      editLabel="Edit Financials"
       rows={ROWS}
       initial={revenue}
       schema={UpdateRevenueInputSchema}

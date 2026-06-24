@@ -1,6 +1,7 @@
 "use client";
 
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
+import { Info } from "lucide-react";
 import {
   UpdateProgramInfoInputSchema,
   PROGRAM_INFO_DATE_FIELDS,
@@ -77,7 +78,7 @@ const ROWS: MetricRow[] = [
   },
   {
     kind: "single",
-    label: "Agreed Order From NL (kg)",
+    label: "Agreed Order (kg)",
     type: "number",
     name: "agreedOrderFromCustomerKg",
   },
@@ -108,10 +109,14 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
   const mutation = useUpdateProgramInfo(cropDataId, farmId);
   return (
     <MetricForm
-      title="Program Info"
+      title="Program Parameters"
+      description="Manage sowing dates, plant counts, and yield targets."
+      icon={<Info className="h-4 w-4" />}
+      editLabel="Edit Parameters"
       rows={ROWS}
       initial={programInfo}
       schema={UpdateProgramInfoInputSchema}
+      columnLabels={{ left: "Male Parent", right: "Female Parent" }}
       dateFields={PROGRAM_INFO_DATE_FIELDS}
       isSaving={mutation.isPending}
       onSave={(values) => mutation.mutateAsync(values as UpdateProgramInfoInput)}

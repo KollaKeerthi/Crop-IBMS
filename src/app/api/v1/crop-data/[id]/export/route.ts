@@ -89,7 +89,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       ["Block Prep End (Actual)", "", dateVal(pi, "blockPrepEndDate")],
       ["Production Year", "", val(pi, "productionYear")],
       ["Requested Quantity", val(pi, "maleRequestedQuantity"), val(pi, "femaleRequestedQuantity")],
-      ["Agreed Order From Customer (kg)", "", val(pi, "agreedOrderFromCustomerKg")],
+      ["Agreed Order (kg)", "", val(pi, "agreedOrderFromCustomerKg")],
       ["Requested Delivery Date (Customer)", "", dateVal(pi, "requestedDeliveryDate")],
       ["Archive Status", "", val(pi, "archiveStatus")],
       ["Remarks From Customer", "", val(pi, "remarksFromCustomer")],

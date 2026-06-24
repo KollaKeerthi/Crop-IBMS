@@ -1,6 +1,7 @@
 "use client";
 
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
+import { Layers, TestTube2 } from "lucide-react";
 import {
   UpdateSeedsQualityInputSchema,
   UpdateSqBreakdownInputSchema,
@@ -40,7 +41,10 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
   const mutation = useUpdateSection(cropDataId, farmId, "seeds_quality");
   return (
     <MetricForm
-      title="Seeds Quality"
+      title="Seeds Quality Assessment"
+      description="Log and manage germination metrics and laboratory testing results."
+      icon={<TestTube2 className="h-4 w-4" />}
+      editLabel="Edit Analysis"
       rows={SEEDS_QUALITY_ROWS}
       initial={initial}
       schema={UpdateSeedsQualityInputSchema}
@@ -97,7 +101,10 @@ export function SqBreakdownForm({ cropDataId, farmId, initial }: BaseProps) {
   const mutation = useUpdateSection(cropDataId, farmId, "sq_breakdown");
   return (
     <MetricForm
-      title="SQ Breakdown"
+      title="Quality Breakdown"
+      description="Manage seed categorizations and corresponding net weights."
+      icon={<Layers className="h-4 w-4" />}
+      editLabel="Add Category"
       rows={SQ_BREAKDOWN_ROWS}
       initial={initial}
       schema={UpdateSqBreakdownInputSchema}

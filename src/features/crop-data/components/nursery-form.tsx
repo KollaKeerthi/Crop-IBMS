@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { Sprout } from "lucide-react";
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
 import { UpdateNurseryInputSchema, NURSERY_DATE_FIELDS, type UpdateNurseryInput } from "../schema";
 import { useUpdateNursery } from "../hooks";
 import { computeNurseryDerivedFields, toNum, fmtNum } from "../compute";
+import { InlineImageUploader } from "./inline-image-uploader";
 
 const ROWS: MetricRow[] = [
   {
@@ -109,16 +111,22 @@ export function NurseryForm({ cropDataId, farmId, nursery, programInfo }: Props)
   }, [nursery, programInfo]);
 
   return (
-    <MetricForm
-      title="Nursery Status"
-      rows={ROWS}
-      initial={mergedInitial}
-      schema={UpdateNurseryInputSchema}
-      dateFields={NURSERY_DATE_FIELDS}
-      computeContext={programInfo ?? {}}
-      isSaving={mutation.isPending}
-      onSave={(values) => mutation.mutateAsync(values as UpdateNurseryInput)}
-      onValuesChange={(vals) => computeNurseryDerivedFields(vals, programInfo) as Vals}
-    />
+    <div className="space-y-5">
+      <MetricForm
+        title="Nursery Operations"
+        description="Manage early-stage planting and germination metrics."
+        icon={<Sprout className="h-4 w-4" />}
+        editLabel="Edit Operations"
+        rows={ROWS}
+        initial={mergedInitial}
+        schema={UpdateNurseryInputSchema}
+        dateFields={NURSERY_DATE_FIELDS}
+        computeContext={programInfo ?? {}}
+        isSaving={mutation.isPending}
+        onSave={(values) => mutation.mutateAsync(values as UpdateNurseryInput)}
+        onValuesChange={(vals) => computeNurseryDerivedFields(vals, programInfo) as Vals}
+      />
+      <InlineImageUploader cropDataId={cropDataId} farmId={farmId} title="Nursery Images" />
+    </div>
   );
 }

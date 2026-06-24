@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Filter, Pencil, Trash2, Plus, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -29,22 +30,72 @@ export function CropDataTable() {
   const deleteMutation = useDeleteCropData();
   const [createOpen, setCreateOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [blockFilter, setBlockFilter] = useState("");
+  const [sexFilter, setSexFilter] = useState("");
+
+  const typedRecords = useMemo(
+    () =>
+      (records ?? []) as Array<{
+        id: string;
+        cropName: string | null;
+        cropTypeName?: string | null;
+        varietyName: string | null;
+        seasonName: string | null;
+        block: string | null;
+        fieldName: string | null;
+        fieldCode?: string | null;
+        sexExpression: string | null;
+        contractNo: string | null;
+        headerNo?: string | null;
+        status: string | null;
+      }>,
+    [records]
+  );
+  const filteredRecords = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return typedRecords.filter((row) => {
+      const text = [
+        row.cropName,
+        row.cropTypeName,
+        row.varietyName,
+        row.seasonName,
+        row.block,
+        row.fieldName,
+        row.fieldCode,
+        row.sexExpression,
+        row.contractNo,
+        row.headerNo,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const matchesText = !q || text.includes(q);
+      const matchesBlock =
+        !blockFilter || row.block?.toLowerCase().includes(blockFilter.toLowerCase());
+      const matchesSex =
+        !sexFilter || row.sexExpression?.toLowerCase().includes(sexFilter.toLowerCase());
+      return matchesText && matchesBlock && matchesSex;
+    });
+  }, [blockFilter, query, sexFilter, typedRecords]);
+  const recordCount = filteredRecords.length;
 
   if (!selectedFarmId) {
     return <p className="text-sm text-muted-foreground">Select a farm to view crop data.</p>;
   }
 
+  const activeFarmId = selectedFarmId;
+
   async function handleDelete(id: string) {
     try {
-      await deleteMutation.mutateAsync({ id, farmId: selectedFarmId! });
+      await deleteMutation.mutateAsync({ id, farmId: activeFarmId });
       toast.success("Record deleted");
       setDeletingId(null);
     } catch {
       toast.error("Failed to delete record");
     }
   }
-
-  const recordCount = records?.length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -61,7 +112,7 @@ export function CropDataTable() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => setFiltersOpen((open) => !open)}>
               <Filter className="mr-2 h-4 w-4" />
               Filters
             </Button>
@@ -76,13 +127,46 @@ export function CropDataTable() {
         </div>
       </section>
 
+      {filtersOpen ? (
+        <section className="rounded-lg border bg-card p-5">
+          <div className="grid gap-3 md:grid-cols-4">
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search crop, field, contract..."
+            />
+            <Input
+              value={blockFilter}
+              onChange={(event) => setBlockFilter(event.target.value)}
+              placeholder="Block"
+            />
+            <Input
+              value={sexFilter}
+              onChange={(event) => setSexFilter(event.target.value)}
+              placeholder="Sex expression"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setQuery("");
+                setBlockFilter("");
+                setSexFilter("");
+              }}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
         </div>
-      ) : records && records.length > 0 ? (
+      ) : filteredRecords.length > 0 ? (
         <section className="overflow-hidden rounded-lg border bg-card">
           <div className="flex items-center justify-between border-b px-5 py-4">
             <div className="flex items-center gap-3">
@@ -115,22 +199,7 @@ export function CropDataTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(
-                  records as Array<{
-                    id: string;
-                    cropName: string | null;
-                    cropTypeName?: string | null;
-                    varietyName: string | null;
-                    seasonName: string | null;
-                    block: string | null;
-                    fieldName: string | null;
-                    fieldCode?: string | null;
-                    sexExpression: string | null;
-                    contractNo: string | null;
-                    headerNo?: string | null;
-                    status: string | null;
-                  }>
-                ).map((row) => (
+                {filteredRecords.map((row) => (
                   <TableRow
                     key={row.id}
                     className="cursor-pointer"

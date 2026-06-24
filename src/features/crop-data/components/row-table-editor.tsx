@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ZodType } from "zod";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, X } from "lucide-react";
+import { Download, Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,10 @@ type Mutations = {
 
 type Props = {
   title: string;
+  description?: string;
+  newLabel?: string;
+  showExport?: boolean;
+  showBulkUpload?: boolean;
   columns: RowColumn[];
   computed?: ComputedColumn[];
   dateFields?: readonly string[];
@@ -69,6 +73,10 @@ function displayCell(value: unknown, type: RowFieldType): string {
 
 export function RowTableEditor({
   title,
+  description,
+  newLabel = "New",
+  showExport = false,
+  showBulkUpload = false,
   columns,
   computed = [],
   dateFields = [],
@@ -177,13 +185,28 @@ export function RowTableEditor({
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b px-5 py-4">
-        <h3 className="text-base font-semibold">{title}</h3>
-        {!showForm && !readOnly && (
-          <Button size="sm" onClick={openNew}>
-            <Plus className="mr-1.5 h-4 w-4" /> New
-          </Button>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+        <div>
+          <h3 className="text-base font-semibold">{title}</h3>
+          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        </div>
+        <div className="flex items-center gap-2">
+          {showExport ? (
+            <Button size="sm" variant="outline">
+              <Download className="mr-1.5 h-4 w-4" /> Export
+            </Button>
+          ) : null}
+          {showBulkUpload ? (
+            <Button size="sm" variant="outline">
+              <Upload className="mr-1.5 h-4 w-4" /> Bulk Upload
+            </Button>
+          ) : null}
+          {!showForm && !readOnly && (
+            <Button size="sm" onClick={openNew}>
+              <Plus className="mr-1.5 h-4 w-4" /> {newLabel}
+            </Button>
+          )}
+        </div>
       </div>
 
       {showForm && (

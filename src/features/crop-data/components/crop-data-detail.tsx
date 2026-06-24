@@ -6,13 +6,8 @@ import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { ProgramInfoForm } from "./program-info-form";
 import { NurseryForm } from "./nursery-form";
 import { RevenueForm } from "./revenue-form";
-import {
-  ProductionForm,
-  PollinationForm,
-  PostHarvestForm,
-  PostHarvestSummaryForm,
-} from "./section-forms";
-import { SeedsQualityForm, SqBreakdownForm, GerminationTestForm } from "./seeds-forms";
+import { ProductionForm, PollinationForm, PostHarvestForm } from "./section-forms";
+import { SeedsQualityForm, SqBreakdownForm } from "./seeds-forms";
 import { HarvestDetailsTable, PerformanceTable } from "./collection-tables";
 import { MediaAttachments } from "./media-attachments";
 import { PlantingData } from "./planting-data";
@@ -79,13 +74,14 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
   }
 
   const triggerClassName = cn(
-    "uppercase tracking-wider font-bold text-[11px] px-5 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm cursor-pointer",
-    "data-active:bg-[#0284c7] data-active:text-white data-active:border-transparent data-active:shadow-md data-active:hover:bg-[#0284c7] data-active:hover:text-white"
+    "relative shrink-0 px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground",
+    "after:absolute after:inset-x-4 after:bottom-0 after:h-1 after:rounded-full after:bg-transparent",
+    "data-active:text-primary data-active:after:bg-primary"
   );
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={handleChange} className="w-full">
-      <TabsPrimitive.List className="flex flex-wrap gap-2.5 mb-6 bg-transparent p-0 w-full">
+      <TabsPrimitive.List className="mb-6 flex w-full overflow-x-auto border-b bg-background">
         <TabsPrimitive.Tab value="program-info" className={triggerClassName}>
           Program Info
         </TabsPrimitive.Tab>
@@ -121,12 +117,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         </TabsPrimitive.Tab>
         <TabsPrimitive.Tab value="performance" className={triggerClassName}>
           Performance
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="post_harvest_summary" className={triggerClassName}>
-          Harvest Summary
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="germination_test" className={triggerClassName}>
-          Germination Test
         </TabsPrimitive.Tab>
       </TabsPrimitive.List>
 
@@ -197,15 +187,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         />
       </TabsPrimitive.Panel>
 
-      {/* Post Harvest Summary */}
-      <TabsPrimitive.Panel value="post_harvest_summary" className="mt-0">
-        <PostHarvestSummaryForm
-          cropDataId={record.id}
-          farmId={farmId}
-          initial={record.sections.post_harvest_summary ?? null}
-        />
-      </TabsPrimitive.Panel>
-
       {/* Seeds Quality */}
       <TabsPrimitive.Panel value="seeds_quality" className="mt-0">
         <SeedsQualityForm
@@ -221,15 +202,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           cropDataId={record.id}
           farmId={farmId}
           initial={record.sections.sq_breakdown ?? null}
-        />
-      </TabsPrimitive.Panel>
-
-      {/* Germination Test */}
-      <TabsPrimitive.Panel value="germination_test" className="mt-0">
-        <GerminationTestForm
-          cropDataId={record.id}
-          farmId={farmId}
-          initial={record.sections.germination_test ?? null}
         />
       </TabsPrimitive.Panel>
 

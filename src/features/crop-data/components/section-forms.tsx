@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Activity, Flower2, Sprout, Truck } from "lucide-react";
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
 import {
   UpdateProductionInputSchema,
@@ -18,6 +19,7 @@ import {
   postHarvestComputations,
   computeProductionDerivedFields,
 } from "../compute";
+import { InlineImageUploader } from "./inline-image-uploader";
 
 type BaseProps = {
   cropDataId: string;
@@ -53,16 +55,24 @@ export function ProductionForm({
   }, [initial, nursery, programInfo]);
 
   return (
-    <MetricForm
-      title="Production"
-      rows={PRODUCTION_ROWS}
-      initial={mergedInitial}
-      schema={UpdateProductionInputSchema}
-      showGenderColumns={false}
-      isSaving={mutation.isPending}
-      onSave={(values) => mutation.mutateAsync(values)}
-      onValuesChange={(vals) => computeProductionDerivedFields(vals, nursery, programInfo) as Vals}
-    />
+    <div className="space-y-5">
+      <MetricForm
+        title="Production Details"
+        description="Manage crop cycle production metrics and environmental data."
+        icon={<Activity className="h-4 w-4" />}
+        editLabel="Edit Details"
+        rows={PRODUCTION_ROWS}
+        initial={mergedInitial}
+        schema={UpdateProductionInputSchema}
+        showGenderColumns={false}
+        isSaving={mutation.isPending}
+        onSave={(values) => mutation.mutateAsync(values)}
+        onValuesChange={(vals) =>
+          computeProductionDerivedFields(vals, nursery, programInfo) as Vals
+        }
+      />
+      <InlineImageUploader cropDataId={cropDataId} farmId={farmId} title="Production Images" />
+    </div>
   );
 }
 
@@ -110,17 +120,23 @@ export function PollinationForm({
 }: BaseProps & { production: Vals | null }) {
   const mutation = useUpdateSection(cropDataId, farmId, "pollination");
   return (
-    <MetricForm
-      title="Pollination"
-      rows={POLLINATION_ROWS}
-      initial={initial}
-      schema={UpdatePollinationInputSchema}
-      dateFields={POLLINATION_DATE_FIELDS}
-      computeContext={production ?? {}}
-      showGenderColumns={false}
-      isSaving={mutation.isPending}
-      onSave={(values) => mutation.mutateAsync(values)}
-    />
+    <div className="space-y-5">
+      <MetricForm
+        title="Pollination Lifecycle"
+        description="Manage yield estimation and environmental tracking."
+        icon={<Flower2 className="h-4 w-4" />}
+        editLabel="Edit Lifecycle"
+        rows={POLLINATION_ROWS}
+        initial={initial}
+        schema={UpdatePollinationInputSchema}
+        dateFields={POLLINATION_DATE_FIELDS}
+        computeContext={production ?? {}}
+        showGenderColumns={false}
+        isSaving={mutation.isPending}
+        onSave={(values) => mutation.mutateAsync(values)}
+      />
+      <InlineImageUploader cropDataId={cropDataId} farmId={farmId} title="Pollination Images" />
+    </div>
   );
 }
 
@@ -172,6 +188,9 @@ export function PostHarvestForm({
   return (
     <MetricForm
       title="Post Harvest"
+      description="Manage harvest timelines, yield performance, and recommendations."
+      icon={<Truck className="h-4 w-4" />}
+      editLabel="Edit Details"
       rows={POST_HARVEST_ROWS}
       initial={initial}
       schema={UpdatePostHarvestInputSchema}
@@ -196,7 +215,8 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
   const mutation = useUpdateSection(cropDataId, farmId, "post_harvest_summary");
   return (
     <MetricForm
-      title="Post Harvest Summary"
+      title="Harvest Summaries"
+      icon={<Sprout className="h-4 w-4" />}
       rows={POST_HARVEST_SUMMARY_ROWS}
       initial={initial}
       schema={UpdatePostHarvestSummaryInputSchema}

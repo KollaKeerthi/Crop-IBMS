@@ -35,7 +35,7 @@ type Vals = Record<string, unknown>;
 
 /**
  * Revenue derived figures for one side (male/female).
- * Contract Revenue = Agreed Unit Price × Agreed Order From Customer (kg).
+ * Contract Revenue = Agreed Unit Price times Agreed Order (kg).
  * Total Revenue    = Contract Revenue + Additional Revenue.
  * Total Revenue m2 = Total Revenue / Surface Area.
  * Total Rev m2/wk  = Total Revenue m2 / Total Weeks.
@@ -149,7 +149,7 @@ export function computeProgramInfoDerivedFields(
   // 3. grams / m2 = (agreed Gram per plant / base yield) * 100
   const gramsPerSqm = mul(div(agreedGramPerPlant, baseYieldKg), 100);
 
-  // 4. Agreed Order From Customer (kg) = (Planned No of Plants / 1000) * Agreed Gram per plant
+  // 4. Agreed Order (kg) = (Planned No of Plants / 1000) * Agreed Gram per plant
   const agreedOrderFromCustomerKg = mul(div(totalPlants, 1000), agreedGramPerPlant);
 
   return {

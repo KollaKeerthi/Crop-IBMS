@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import type { ZodType } from "zod";
 import { toast } from "sonner";
 import { Pencil, X } from "lucide-react";
@@ -42,6 +42,8 @@ export type Vals = Record<string, unknown>;
 type Props = {
   title: string;
   description?: string;
+  icon?: ReactNode;
+  editLabel?: string;
   rows: MetricRow[];
   /** Existing DB record (or null when nothing saved yet). */
   initial: Vals | null;
@@ -91,6 +93,8 @@ function editableFields(rows: MetricRow[]): { name: string; type: FieldType }[] 
 export function MetricForm({
   title,
   description,
+  icon,
+  editLabel = "Edit Details",
   rows,
   initial,
   schema,
@@ -245,10 +249,17 @@ export function MetricForm({
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b px-5 py-4">
-        <div>
-          <h3 className="text-base font-semibold">{title}</h3>
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <div className="flex items-center justify-between gap-4 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon ? (
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              {icon}
+            </div>
+          ) : null}
+          <div>
+            <h3 className="text-lg font-semibold">{title}</h3>
+            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          </div>
         </div>
         {editing ? (
           <div className="flex items-center gap-2">
@@ -261,7 +272,7 @@ export function MetricForm({
           </div>
         ) : (
           <Button variant="outline" size="sm" onClick={startEdit}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit Details
+            <Pencil className="mr-1.5 h-3.5 w-3.5" /> {editLabel}
           </Button>
         )}
       </div>
@@ -271,7 +282,7 @@ export function MetricForm({
           {showGenderColumns && (
             <thead>
               <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
-                <th className="px-5 py-2.5 text-left font-medium">Metric</th>
+                <th className="px-5 py-2.5 text-left font-medium">Metric Definition</th>
                 <th
                   className={`px-3 py-2.5 text-left font-medium ${columnLabels ? "" : "text-blue-600"}`}
                 >

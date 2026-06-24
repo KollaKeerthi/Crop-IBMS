@@ -60,6 +60,10 @@ export function HarvestDetailsTable({ cropDataId, farmId, rows, seedsQuality }: 
   return (
     <RowTableEditor
       title="Harvest Details"
+      description="Manage individual harvest records, blocks, and operator details."
+      newLabel="New Record"
+      showExport
+      showBulkUpload
       columns={HARVEST_COLUMNS}
       computed={[{ label: "Gr/m2", compute: (r) => fmtNum(harvestGrPerM2(r)) }]}
       dateFields={HARVEST_RECORD_DATE_FIELDS}
@@ -111,6 +115,9 @@ export function PerformanceTable({
   return (
     <RowTableEditor
       title="Performance Per Person"
+      description="Track and manage individual operator productivity and activities."
+      newLabel="New Record"
+      showBulkUpload
       columns={PERFORMANCE_COLUMNS}
       computed={[
         {

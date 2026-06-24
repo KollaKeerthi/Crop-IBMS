@@ -339,9 +339,9 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
             name="fieldCode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Field Code</FormLabel>
+                <FormLabel>Field/Code</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. FLD-001" />
+                  <Input {...field} value={field.value ?? ""} placeholder="Field/Code" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

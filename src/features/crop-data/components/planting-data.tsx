@@ -119,9 +119,11 @@ export function PlantingData({
       cropVariety: row.cropVariety || fallbackVariety || "",
     }));
   });
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const mutation = useUpdateModule(cropDataId, farmId, MODULE_TYPE);
 
   const sortedRows = useMemo(() => [...rows].sort((a, b) => b.rowNo - a.rowNo), [rows]);
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null;
   const plantedRows = rows.filter((row) => row.planted);
   const totalPlants = rows.reduce((sum, row) => sum + (row.noOfPlants ?? 0), 0);
   const malePlants = rows
@@ -402,7 +404,22 @@ export function PlantingData({
                   return (
                     <div
                       key={row.id}
-                      className="group grid min-h-12 grid-cols-[3rem_minmax(30rem,1fr)] items-center gap-3 rounded-md border bg-card px-3 py-2"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        setSelectedRowId(row.id);
+                        updateRow(row.id, { planted: !row.planted });
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedRowId(row.id);
+                          updateRow(row.id, { planted: !row.planted });
+                        }
+                      }}
+                      className={`group grid min-h-12 cursor-pointer grid-cols-[3rem_minmax(30rem,1fr)] items-center gap-3 rounded-md border bg-card px-3 py-2 transition ${
+                        selectedRowId === row.id ? "ring-2 ring-primary" : "hover:border-primary"
+                      }`}
                     >
                       <span
                         className={
@@ -443,6 +460,60 @@ export function PlantingData({
                   );
                 })}
               </div>
+              {selectedRow ? (
+                <div className="mt-4 rounded-lg border bg-card p-4">
+                  <div className="mb-3 text-sm font-semibold">
+                    Selected Row R{selectedRow.rowNo}
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-5">
+                    <Input
+                      type="number"
+                      value={numberValue(selectedRow.noOfPlants)}
+                      placeholder="Plants"
+                      onChange={(event) =>
+                        updateRow(selectedRow.id, {
+                          noOfPlants: event.target.value ? Number(event.target.value) : null,
+                          planted: Boolean(event.target.value),
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      value={numberValue(selectedRow.plantingSpaceCm)}
+                      placeholder="Space cm"
+                      onChange={(event) =>
+                        updateRow(selectedRow.id, {
+                          plantingSpaceCm: event.target.value ? Number(event.target.value) : null,
+                        })
+                      }
+                    />
+                    <Select
+                      value={selectedRow.type}
+                      onValueChange={(value) =>
+                        updateRow(selectedRow.id, { type: value === "Female" ? "Female" : "Male" })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant={selectedRow.planted ? "secondary" : "outline"}
+                      onClick={() => updateRow(selectedRow.id, { planted: !selectedRow.planted })}
+                    >
+                      {selectedRow.planted ? "Planted" : "Not planted"}
+                    </Button>
+                    <Button type="button" onClick={saveRows} disabled={mutation.isPending}>
+                      Save Row
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
 
