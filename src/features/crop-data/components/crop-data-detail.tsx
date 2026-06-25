@@ -160,8 +160,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           initialData={getModuleData("planting_records")}
           fallbackCrop={record.cropName}
           fallbackVariety={record.varietyName}
-          locationBlockId={record.locationBlockId}
-          locationBlockBoundary={record.locationBlockBoundary}
         />
       </TabsPrimitive.Panel>
 

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Filter, Pencil, Trash2, Plus, Info } from "lucide-react";
+import { Download, Filter, Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useFarm } from "@/lib/farm-context";
 import { useCropDataList, useDeleteCropData } from "../hooks";
@@ -79,8 +79,6 @@ export function CropDataTable() {
       return matchesText && matchesBlock && matchesSex;
     });
   }, [blockFilter, query, sexFilter, typedRecords]);
-  const recordCount = filteredRecords.length;
-
   if (!selectedFarmId) {
     return <p className="text-sm text-muted-foreground">Select a farm to view crop data.</p>;
   }
@@ -99,33 +97,19 @@ export function CropDataTable() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border bg-card px-6 py-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="max-w-2xl">
-            <Badge variant="secondary" className="mb-2 uppercase tracking-widest">
-              Operational Master
-            </Badge>
-            <h1 className="text-3xl font-semibold tracking-tight">Crop Programs</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Centralized management for crop cycles, field assignments, and operational tracking
-              parameters.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => setFiltersOpen((open) => !open)}>
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
-            <Button type="button" variant="outline" size="icon" aria-label="Export crop programs">
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Program
-            </Button>
-          </div>
-        </div>
-      </section>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button type="button" variant="outline" onClick={() => setFiltersOpen((open) => !open)}>
+          <Filter className="mr-2 h-4 w-4" />
+          Filters
+        </Button>
+        <Button type="button" variant="outline" size="icon" aria-label="Export crop programs">
+          <Download className="h-4 w-4" />
+        </Button>
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Program
+        </Button>
+      </div>
 
       {filtersOpen ? (
         <section className="rounded-lg border bg-card p-5">
@@ -168,18 +152,6 @@ export function CropDataTable() {
         </div>
       ) : filteredRecords.length > 0 ? (
         <section className="overflow-hidden rounded-lg border bg-card">
-          <div className="flex items-center justify-between border-b px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-md bg-primary/10 p-2 text-primary">
-                <Info className="h-4 w-4" />
-              </div>
-              <h2 className="text-base font-semibold">Crop Inventory Master</h2>
-            </div>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Entry
-            </Button>
-          </div>
           <div className="overflow-x-auto">
             <Table className="min-w-300">
               <TableHeader>
@@ -256,9 +228,6 @@ export function CropDataTable() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-          <div className="border-t px-5 py-4 text-sm font-semibold">
-            Operational Scope: {recordCount} Records
           </div>
         </section>
       ) : (

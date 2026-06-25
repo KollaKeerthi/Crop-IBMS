@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, Grid3X3, MapPinned, Plus, Save, Sprout, Trash2, Wand2 } from "lucide-react";
+import { Eye, Grid3X3, Plus, Save, Sprout, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { useUpdateBlock } from "@/features/locations/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -38,13 +37,6 @@ type Props = {
   initialData: Record<string, unknown> | null;
   fallbackCrop?: string | null;
   fallbackVariety?: string | null;
-  locationBlockId?: string | null;
-  locationBlockBoundary?: unknown;
-};
-
-type CoordinatePoint = {
-  lng: string;
-  lat: string;
 };
 
 const MODULE_TYPE = "planting_records";
@@ -111,54 +103,6 @@ function rowDensity(row: PlantingRow) {
   return plants / area;
 }
 
-function emptyCoordinatePoints(): CoordinatePoint[] {
-  return Array.from({ length: 4 }, () => ({ lng: "", lat: "" }));
-}
-
-function coordinatePointsFromBoundary(boundary: unknown): CoordinatePoint[] {
-  if (!boundary || typeof boundary !== "object") return emptyCoordinatePoints();
-  const polygon = boundary as { type?: unknown; coordinates?: unknown };
-  if (polygon.type !== "Polygon" || !Array.isArray(polygon.coordinates)) {
-    return emptyCoordinatePoints();
-  }
-  const ring = polygon.coordinates[0];
-  if (!Array.isArray(ring)) return emptyCoordinatePoints();
-  const points = ring.slice(0, 4).map((point) => {
-    if (!Array.isArray(point)) return { lng: "", lat: "" };
-    return {
-      lng: point[0] == null ? "" : String(point[0]),
-      lat: point[1] == null ? "" : String(point[1]),
-    };
-  });
-  while (points.length < 4) points.push({ lng: "", lat: "" });
-  return points;
-}
-
-function boundaryFromCoordinatePoints(points: CoordinatePoint[]) {
-  const hasAnyValue = points.some((point) => point.lng.trim() || point.lat.trim());
-  if (!hasAnyValue) return null;
-
-  const parsed = points.map((point, index) => {
-    const lng = Number(point.lng);
-    const lat = Number(point.lat);
-    if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
-      throw new Error(`Point ${index + 1} needs a valid longitude and latitude.`);
-    }
-    if (lng < -180 || lng > 180) {
-      throw new Error(`Point ${index + 1} longitude must be between -180 and 180.`);
-    }
-    if (lat < -90 || lat > 90) {
-      throw new Error(`Point ${index + 1} latitude must be between -90 and 90.`);
-    }
-    return [lng, lat] as [number, number];
-  });
-
-  return {
-    type: "Polygon",
-    coordinates: [[...parsed, parsed[0]]],
-  };
-}
-
 function generatedPlantCode(rowNo: number, plantNo: number) {
   return `R${rowNo}-P${plantNo}`;
 }
@@ -169,8 +113,6 @@ export function PlantingData({
   initialData,
   fallbackCrop,
   fallbackVariety,
-  locationBlockId,
-  locationBlockBoundary,
 }: Props) {
   const [mode, setMode] = useState<"data" | "visual">("data");
   const [rows, setRows] = useState<PlantingRow[]>(() => {
@@ -182,11 +124,11 @@ export function PlantingData({
     }));
   });
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
-  const [coordinatePoints, setCoordinatePoints] = useState<CoordinatePoint[]>(() =>
-    coordinatePointsFromBoundary(locationBlockBoundary)
-  );
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkSourceRowNo, setBulkSourceRowNo] = useState(1);
+  const [bulkStartRowNo, setBulkStartRowNo] = useState(1);
+  const [bulkEndRowNo, setBulkEndRowNo] = useState(DEFAULT_ROW_COUNT);
   const mutation = useUpdateModule(cropDataId, farmId, MODULE_TYPE);
-  const updateBlock = useUpdateBlock();
 
   const sortedRows = useMemo(() => [...rows].sort((a, b) => b.rowNo - a.rowNo), [rows]);
   const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null;
@@ -230,24 +172,6 @@ export function PlantingData({
     ]);
   }
 
-  function bulkFillSelection() {
-    const firstPlanted = rows.find((row) => row.planted);
-    const source = firstPlanted ?? rows[0];
-    if (!source) return;
-    setRows((current) =>
-      current.map((row) => ({
-        ...row,
-        crop: row.crop || source.crop,
-        cropVariety: row.cropVariety || source.cropVariety,
-        m2PerRow: row.m2PerRow ?? source.m2PerRow,
-        actualM2PerRow: row.actualM2PerRow ?? source.actualM2PerRow,
-        noOfPlants: row.noOfPlants ?? source.noOfPlants,
-        plantingSpaceCm: row.plantingSpaceCm ?? source.plantingSpaceCm,
-      }))
-    );
-    toast.success("Blank planting values filled");
-  }
-
   async function saveRows() {
     try {
       await mutation.mutateAsync({ rows });
@@ -257,30 +181,37 @@ export function PlantingData({
     }
   }
 
-  function setCoordinatePoint(index: number, field: keyof CoordinatePoint, value: string) {
-    setCoordinatePoints((current) =>
-      current.map((point, pointIndex) =>
-        pointIndex === index ? { ...point, [field]: value } : point
-      )
-    );
-  }
-
-  async function saveCoordinates() {
-    if (!locationBlockId) {
-      toast.error("Select a block from location masters before saving coordinates");
+  function duplicatePlantingSelection() {
+    const from = Math.min(bulkStartRowNo, bulkEndRowNo);
+    const to = Math.max(bulkStartRowNo, bulkEndRowNo);
+    const source = rows.find((row) => row.rowNo === bulkSourceRowNo);
+    if (!source) {
+      toast.error("Select an existing source row");
       return;
     }
-    try {
-      const boundary = boundaryFromCoordinatePoints(coordinatePoints);
-      await updateBlock.mutateAsync({
-        id: locationBlockId,
-        farmId,
-        input: { boundary },
-      });
-      toast.success(boundary ? "Block coordinates saved" : "Block coordinates cleared");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save block coordinates");
-    }
+
+    let changed = 0;
+    setRows((current) =>
+      current.map((row) => {
+        if (row.rowNo < from || row.rowNo > to || row.id === source.id) return row;
+        changed += 1;
+        const next = {
+          ...row,
+          m2PerRow: source.m2PerRow,
+          actualM2PerRow: source.actualM2PerRow,
+          noOfPlants: source.noOfPlants,
+          crop: source.crop,
+          cropVariety: source.cropVariety,
+          type: source.type,
+          plantingSpaceCm: source.plantingSpaceCm,
+          planted: source.planted,
+        };
+        return { ...next, density: rowDensity(next) };
+      })
+    );
+    toast.success(
+      changed ? `Duplicated row ${bulkSourceRowNo} to ${changed} rows` : "No rows changed"
+    );
   }
 
   return (
@@ -319,7 +250,12 @@ export function PlantingData({
                 Visual
               </Button>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={bulkFillSelection}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkOpen((open) => !open)}
+            >
               <Wand2 className="mr-1.5 h-4 w-4" />
               Bulk Fill Selection
             </Button>
@@ -335,74 +271,59 @@ export function PlantingData({
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="rounded-md bg-primary/10 p-2 text-primary">
-              <MapPinned className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold">Block Coordinates</h3>
-              <p className="text-sm text-muted-foreground">
-                Optional four-point longitude and latitude boundary for the selected block.
-              </p>
-            </div>
+      {bulkOpen ? (
+        <div className="rounded-lg border bg-card px-5 py-4">
+          <div className="mb-3">
+            <h3 className="text-base font-semibold">Bulk Fill Selection</h3>
+            <p className="text-sm text-muted-foreground">
+              Duplicate crop, variety, type, row length, plant count, spacing, and density inputs
+              from one row into a selected row range.
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setCoordinatePoints(emptyCoordinatePoints())}
-              disabled={updateBlock.isPending}
-            >
-              <Trash2 className="mr-1.5 h-4 w-4" />
-              Clear
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={saveCoordinates}
-              disabled={!locationBlockId || updateBlock.isPending}
-            >
-              <Save className="mr-1.5 h-4 w-4" />
-              {updateBlock.isPending ? "Saving..." : "Save Coordinates"}
-            </Button>
+          <div className="grid gap-3 md:grid-cols-[repeat(4,minmax(0,10rem))_auto]">
+            <label className="space-y-1 text-sm">
+              <span className="font-medium">Source Row</span>
+              <Input
+                type="number"
+                min={1}
+                value={bulkSourceRowNo}
+                onChange={(event) => setBulkSourceRowNo(Number(event.target.value) || 1)}
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="font-medium">From Row</span>
+              <Input
+                type="number"
+                min={1}
+                value={bulkStartRowNo}
+                onChange={(event) => setBulkStartRowNo(Number(event.target.value) || 1)}
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="font-medium">To Row</span>
+              <Input
+                type="number"
+                min={1}
+                value={bulkEndRowNo}
+                onChange={(event) => setBulkEndRowNo(Number(event.target.value) || 1)}
+              />
+            </label>
+            <div className="space-y-1 text-sm">
+              <span className="font-medium">Preview</span>
+              <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-muted-foreground">
+                R{bulkSourceRowNo} to R{Math.min(bulkStartRowNo, bulkEndRowNo)}-
+                {Math.max(bulkStartRowNo, bulkEndRowNo)}
+              </div>
+            </div>
+            <div className="flex items-end">
+              <Button type="button" onClick={duplicatePlantingSelection}>
+                <Wand2 className="mr-1.5 h-4 w-4" />
+                Duplicate
+              </Button>
+            </div>
           </div>
         </div>
-        {!locationBlockId ? (
-          <p className="mt-3 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-            Select a block from the location masters when creating the crop data record to save
-            coordinates.
-          </p>
-        ) : (
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {coordinatePoints.map((point, index) => (
-              <div key={index} className="rounded-md border bg-background p-3">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Point {index + 1}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="Longitude"
-                    value={point.lng}
-                    onChange={(event) => setCoordinatePoint(index, "lng", event.target.value)}
-                  />
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="Latitude"
-                    value={point.lat}
-                    onChange={(event) => setCoordinatePoint(index, "lat", event.target.value)}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      ) : null}
 
       {mode === "data" ? (
         <div className="overflow-x-auto rounded-lg border bg-card">
@@ -528,9 +449,6 @@ export function PlantingData({
               ))}
             </tbody>
           </table>
-          <div className="border-t px-5 py-3 text-sm font-medium">
-            Operational Scope: {rows.length} Records
-          </div>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/60">
