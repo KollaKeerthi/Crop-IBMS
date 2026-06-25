@@ -97,18 +97,21 @@ export function CropDataTable() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => setFiltersOpen((open) => !open)}>
-          <Filter className="mr-2 h-4 w-4" />
-          Filters
-        </Button>
-        <Button type="button" variant="outline" size="icon" aria-label="Export crop programs">
-          <Download className="h-4 w-4" />
-        </Button>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Program
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Crop Programs</h1>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => setFiltersOpen((open) => !open)}>
+            <Filter className="mr-2 h-4 w-4" />
+            Filters
+          </Button>
+          <Button type="button" variant="outline" size="icon" aria-label="Export crop programs">
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Program
+          </Button>
+        </div>
       </div>
 
       {filtersOpen ? (

@@ -167,10 +167,7 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
               <Info className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-xl font-bold tracking-tight">Program Parameters</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage sowing dates, plant counts, and yield targets.
-              </p>
+              <h3 className="text-base font-bold tracking-tight">Program Parameters</h3>
             </div>
           </div>
           {editing ? (

@@ -88,12 +88,9 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold tracking-tight">Revenue Projections</h3>
+                <h3 className="text-base font-bold tracking-tight">Revenue Projections</h3>
                 <RefreshCw className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Track and manage financial metrics and projections.
-              </p>
             </div>
           </div>
           {editing ? (

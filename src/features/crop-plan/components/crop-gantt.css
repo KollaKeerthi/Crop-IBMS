@@ -25,16 +25,16 @@
   --wx-background-hover: #f1f5f9;
   --wx-color-font: #1e293b;
   --wx-color-font-alt: #64748b;
-  --wx-border-color: #e9eef4;
-  --wx-border-light: #f1f5f9;
-  --wx-border-medium: #e2e8f0;
+  --wx-border-color: #f1f5f9;
+  --wx-border-light: rgba(226, 232, 240, 0.42);
+  --wx-border-medium: rgba(226, 232, 240, 0.62);
 
   /* Accent used by selection / links */
   --wx-color-primary: #0f766e;
   --wx-color-primary-selected: #ccfbf1;
 
   /* Gantt specifics */
-  --wx-gantt-border-color: #e9eef4;
+  --wx-gantt-border-color: rgba(226, 232, 240, 0.42);
   --wx-gantt-bar-border-radius: 7px;
   --wx-gantt-bar-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
   --wx-gantt-link-color: #94a3b8;
@@ -82,7 +82,7 @@
   border-bottom: 1px solid var(--wx-border-medium);
 }
 .cg-wrap .wx-scale .wx-cell {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--wx-color-font-alt);
   border-right: 1px solid var(--wx-border-light);
@@ -98,8 +98,11 @@
 .cg-wrap .wx-chart .wx-row {
   border-bottom: 1px solid var(--wx-border-light);
 }
+.cg-wrap .wx-chart .wx-cell {
+  border-color: var(--wx-border-light) !important;
+}
 .cg-wrap .wx-chart .wx-row:hover {
-  background: rgba(241, 245, 249, 0.5);
+  background: rgba(241, 245, 249, 0.25);
 }
 
 /* ── Group (block/crop) rows: slim neutral span, no dominating bar ────── */

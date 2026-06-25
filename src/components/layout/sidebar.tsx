@@ -45,7 +45,9 @@ const MANAGEMENT_ITEMS: NavItem[] = [
 
 const INTELLIGENCE_ITEMS: NavItem[] = [];
 
-const PLATFORM_ITEMS: NavItem[] = [{ label: "Farms", href: "/dashboard/farms", icon: Tractor }];
+const PLATFORM_ITEMS: NavItem[] = [
+  { label: "Farm Settings", href: "/dashboard/farms", icon: Tractor },
+];
 
 function getInitials(name: string | null, email: string): string {
   if (name) {
@@ -78,7 +80,7 @@ export function Sidebar({
   const sections: NavSection[] = [
     { label: "Management", items: managementItems },
     { label: "Intelligence", items: INTELLIGENCE_ITEMS },
-    { label: "Platform", items: PLATFORM_ITEMS },
+    { label: "Administration", items: PLATFORM_ITEMS },
   ].filter((s) => s.items.length > 0);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -119,7 +121,7 @@ export function Sidebar({
               <Leaf className="size-4 text-primary animate-pulse" />
             </div>
             <span className="font-heading text-sm font-bold tracking-wider uppercase bg-linear-to-r from-primary via-primary/95 to-emerald-500 bg-clip-text text-transparent truncate">
-              Agriplatform
+              iBMS-Crop
             </span>
           </div>
         )}
@@ -140,7 +142,7 @@ export function Sidebar({
       <div className={cn("relative border-b border-border/40 py-4 px-3", collapsed && "px-2 py-3")}>
         {!collapsed && (
           <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-            Operational Context
+            Farm
           </p>
         )}
         <button

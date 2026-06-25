@@ -97,10 +97,7 @@ export function NurseryForm({ cropDataId, farmId, nursery, programInfo }: Props)
               <Sprout className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold tracking-tight">Nursery Operations</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage early-stage planting and germination metrics.
-              </p>
+              <h3 className="text-base font-bold tracking-tight">Nursery Operations</h3>
             </div>
           </div>
           {editing ? (

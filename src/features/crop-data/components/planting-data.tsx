@@ -224,9 +224,6 @@ export function PlantingData({
             </div>
             <div>
               <h3 className="text-base font-semibold">Planting data</h3>
-              <p className="text-sm text-muted-foreground">
-                Track row-level planting density, spacing, and crop placement.
-              </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -235,7 +232,10 @@ export function PlantingData({
                 type="button"
                 size="sm"
                 variant={mode === "data" ? "secondary" : "ghost"}
-                onClick={() => setMode("data")}
+                onClick={() => {
+                  setMode("data");
+                  setBulkOpen(false);
+                }}
               >
                 <Grid3X3 className="mr-1.5 h-4 w-4" />
                 Data
@@ -276,38 +276,40 @@ export function PlantingData({
           <div className="mb-3">
             <h3 className="text-base font-semibold">Bulk Fill Selection</h3>
             <p className="text-sm text-muted-foreground">
-              Duplicate crop, variety, type, row length, plant count, spacing, and density inputs
-              from one row into a selected row range.
+              Fill crop, variety, type, row length, plant count, spacing, and density inputs from
+              one row into a selected row range.
             </p>
           </div>
-          <div className="grid gap-3 md:grid-cols-[repeat(4,minmax(0,10rem))_auto]">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,10rem)_minmax(0,22rem)_minmax(0,10rem)_auto]">
             <label className="space-y-1 text-sm">
-              <span className="font-medium">Source Row</span>
+              <span className="font-medium">Fill from</span>
               <Input
                 type="number"
                 min={1}
+                placeholder="Row number"
                 value={bulkSourceRowNo}
                 onChange={(event) => setBulkSourceRowNo(Number(event.target.value) || 1)}
               />
             </label>
-            <label className="space-y-1 text-sm">
-              <span className="font-medium">From Row</span>
-              <Input
-                type="number"
-                min={1}
-                value={bulkStartRowNo}
-                onChange={(event) => setBulkStartRowNo(Number(event.target.value) || 1)}
-              />
-            </label>
-            <label className="space-y-1 text-sm">
-              <span className="font-medium">To Row</span>
-              <Input
-                type="number"
-                min={1}
-                value={bulkEndRowNo}
-                onChange={(event) => setBulkEndRowNo(Number(event.target.value) || 1)}
-              />
-            </label>
+            <div className="space-y-1 text-sm">
+              <span className="font-medium">Fill to</span>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="1"
+                  value={bulkStartRowNo}
+                  onChange={(event) => setBulkStartRowNo(Number(event.target.value) || 1)}
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="10"
+                  value={bulkEndRowNo}
+                  onChange={(event) => setBulkEndRowNo(Number(event.target.value) || 1)}
+                />
+              </div>
+            </div>
             <div className="space-y-1 text-sm">
               <span className="font-medium">Preview</span>
               <div className="flex h-10 items-center rounded-md border bg-muted px-3 text-muted-foreground">
@@ -318,7 +320,7 @@ export function PlantingData({
             <div className="flex items-end">
               <Button type="button" onClick={duplicatePlantingSelection}>
                 <Wand2 className="mr-1.5 h-4 w-4" />
-                Duplicate
+                Fill
               </Button>
             </div>
           </div>
@@ -622,7 +624,7 @@ export function PlantingData({
             <span className="inline-flex items-center gap-1">
               <Sprout className="h-4 w-4 text-[#4b8dff]" /> Male
             </span>
-            <span>Empty Soil</span>
+            <span>Unassigned</span>
             <span>Planted Row</span>
             <span>Empty Row</span>
           </div>

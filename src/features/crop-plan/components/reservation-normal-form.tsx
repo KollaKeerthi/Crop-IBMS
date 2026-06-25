@@ -263,37 +263,35 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-      {/* ── Stakeholder ── */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Stakeholder</Label>
-        <Select
-          value={stakeholderId ?? NONE}
-          onValueChange={(v) => setStakeholderId(v === NONE ? null : v)}
-        >
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue>
-              {(v: string) => {
-                if (!v || v === NONE)
-                  return <span className="text-muted-foreground">— Select —</span>;
-                return stakeholders.find((s) => s.id === v)?.name ?? String(v);
-              }}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE} label="— None —">
-              — None —
-            </SelectItem>
-            {stakeholders.map((s) => (
-              <SelectItem key={s.id} value={s.id} label={s.name}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* ── Crop / Production Type ── */}
       <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">Stakeholder</Label>
+          <Select
+            value={stakeholderId ?? NONE}
+            onValueChange={(v) => setStakeholderId(v === NONE ? null : v)}
+          >
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue>
+                {(v: string) => {
+                  if (!v || v === NONE)
+                    return <span className="text-muted-foreground">Select</span>;
+                  return stakeholders.find((s) => s.id === v)?.name ?? String(v);
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE} label="None">
+                None
+              </SelectItem>
+              {stakeholders.map((s) => (
+                <SelectItem key={s.id} value={s.id} label={s.name}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">Production Type</Label>
           <Select
@@ -306,7 +304,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
                   v ? (
                     (productionTypes.find((pt) => pt.id === v)?.code ?? String(v))
                   ) : (
-                    <span className="text-muted-foreground">— Select —</span>
+                    <span className="text-muted-foreground">Select</span>
                   )
                 }
               </SelectValue>
@@ -336,7 +334,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
                   v ? (
                     (allCrops.find((c) => c.id === v)?.name ?? String(v))
                   ) : (
-                    <span className="text-muted-foreground">— Select —</span>
+                    <span className="text-muted-foreground">Select</span>
                   )
                 }
               </SelectValue>
@@ -351,7 +349,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           </Select>
         </div>
 
-        <div className="space-y-1.5 col-span-2">
+        <div className="space-y-1.5">
           <Label className="text-xs font-medium">Crop Type</Label>
           <Select
             value={form.watch("cropTypeId") ?? ""}
@@ -364,7 +362,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
                   v ? (
                     (cropTypes.find((ct) => ct.id === v)?.name ?? String(v))
                   ) : (
-                    <span className="text-muted-foreground">— Select —</span>
+                    <span className="text-muted-foreground">Select</span>
                   )
                 }
               </SelectValue>
@@ -380,7 +378,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         </div>
       </div>
 
-      {/* ── Pollination schedule inputs ── */}
+      {/* ── Reservation Reference ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">Pollination Year *</Label>
@@ -403,7 +401,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             type="number"
             min={1}
             max={52}
-            placeholder="1–52"
+            placeholder="1-52"
             className="h-9 text-sm"
             {...form.register("pollinationStartWeek", { valueAsNumber: true })}
           />
@@ -415,7 +413,6 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
         </div>
       </div>
 
-      {/* ── Reservation Reference ── */}
       <div className="space-y-1.5">
         <Label className="text-xs font-medium">Reservation Reference</Label>
         <Input

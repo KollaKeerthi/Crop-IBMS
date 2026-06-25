@@ -54,9 +54,9 @@ interface CropGanttProps {
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEAR_SPAN = 3; // show selected year ±3
-const MIN_CELL_WIDTH = 28; // below this "W52" labels collide
-const MAX_CELL_WIDTH = 72;
+const YEAR_SPAN = 0; // keep the selected year visible without spanning extra years
+const MIN_CELL_WIDTH = 14;
+const MAX_CELL_WIDTH = 56;
 
 // Real calendar Year ▸ Month ▸ Week. Bars use ISO-week (Monday) dates so they
 // line up with SVAR's week columns.
@@ -68,17 +68,8 @@ const SCALES: IScaleConfig[] = [
 
 const clampCell = (w: number) => Math.min(MAX_CELL_WIDTH, Math.max(MIN_CELL_WIDTH, w));
 
-const GRID_WIDTH = 248;
-const COLUMNS: IGanttColumn[] = [
-  { id: "text", header: "Block / Crop", width: 162 },
-  {
-    id: "_weeks",
-    header: "Weeks",
-    align: "center",
-    width: 86,
-    getter: (t) => (t as Record<string, unknown>)._weeks ?? "",
-  },
-];
+const GRID_WIDTH = 180;
+const COLUMNS: IGanttColumn[] = [{ id: "text", header: "Block / Crop", width: 180 }];
 
 export function CropGantt({
   blocks,
@@ -95,7 +86,7 @@ export function CropGantt({
   const [view, setView] = useState<GanttViewMode>("block");
   const [api, setApi] = useState<IApi | null>(null);
   const [gridOpen, setGridOpen] = useState(true);
-  const [cellWidth, setCellWidth] = useState(34);
+  const [cellWidth, setCellWidth] = useState(14);
   // SVAR draws a client-side background grid; render it only after mount to
   // avoid an SSR/client hydration mismatch.
   const [mounted, setMounted] = useState(false);

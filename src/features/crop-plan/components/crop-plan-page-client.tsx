@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type PointerEvent as ReactPointerEvent } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -42,6 +42,12 @@ type CalendarItem =
   | { kind: "reservation"; data: Reservation }
   | { kind: "contract"; data: Contract };
 
+function titleCaseLabel(value: React.ReactNode) {
+  if (typeof value !== "string") return value;
+  const firstLetter = value.at(0);
+  return firstLetter ? firstLetter.toUpperCase() + value.slice(1) : value;
+}
+
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_YEAR = CURRENT_YEAR - 3;
 const MAX_YEAR = CURRENT_YEAR + 3;
@@ -62,7 +68,7 @@ function SelectorSegment({
       onClick={onClick}
       className="flex min-w-0 items-center gap-1 rounded px-1.5 py-1 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
     >
-      <span className="truncate">{children}</span>
+      <span className="truncate">{titleCaseLabel(children)}</span>
       {badge != null && badge > 0 && (
         <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
           {badge}
@@ -117,6 +123,7 @@ export function CropPlanPageClient() {
   const [year, setYear] = useState(CURRENT_YEAR);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(336);
   const [mainTab, setMainTab] = useState<MainTab>("reservation");
   const [resSubTab, setResSubTab] = useState<ResSubTab>("manual");
   const [manualSubTab, setManualSubTab] = useState<ManualSubTab>("normal");
@@ -251,7 +258,28 @@ export function CropPlanPageClient() {
   }
 
   // ── Stats ──
-  const totalSurface = reservations.reduce((sum, r) => sum + (r.totalSurface ?? 0), 0);
+  function startPanelResize(event: ReactPointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = panelWidth;
+
+    function move(moveEvent: PointerEvent) {
+      const nextWidth = Math.min(560, Math.max(280, startWidth + moveEvent.clientX - startX));
+      setPanelWidth(nextWidth);
+    }
+
+    function stop() {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+  }
 
   // ── No farm guard ──
   if (!farmId) {
@@ -331,37 +359,6 @@ export function CropPlanPageClient() {
           </select>
         </div>
 
-        {/* Stats chips */}
-        <div className="flex items-center gap-2.5 ml-2">
-          <div className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5">
-            <span className="size-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[11px] font-semibold text-emerald-700">
-              {reservations.length} reservation{reservations.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5">
-            <span className="size-1.5 rounded-full bg-violet-500" />
-            <span className="text-[11px] font-semibold text-violet-700">
-              {contracts.length} contract{contracts.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-          {(unallocRes.length > 0 || unallocCon.length > 0) && (
-            <div className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5">
-              <span className="size-1.5 rounded-full bg-amber-500" />
-              <span className="text-[11px] font-semibold text-amber-700">
-                {unallocRes.length + unallocCon.length} unallocated
-              </span>
-            </div>
-          )}
-          {totalSurface > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-0.5">
-              <span className="text-[11px] font-semibold text-muted-foreground">
-                {totalSurface.toLocaleString(undefined, { maximumFractionDigits: 0 })} m² planned
-              </span>
-            </div>
-          )}
-        </div>
-
         {/* Action buttons */}
         <div className="ml-auto flex items-center gap-2">
           <Button
@@ -372,34 +369,6 @@ export function CropPlanPageClient() {
           >
             <ShieldCheck className="size-3.5" />
             Check Conflicts
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 text-xs"
-            onClick={() => {
-              setMainTab("reservation");
-              setResSubTab("manual");
-              setManualSubTab("normal");
-              setOpenSelector(null);
-              clearSelection();
-            }}
-          >
-            <Plus className="size-3.5" />
-            Reservation
-          </Button>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs"
-            onClick={() => {
-              setMainTab("contract");
-              setContractSubTab("manual");
-              setOpenSelector(null);
-              clearSelection();
-            }}
-          >
-            <Plus className="size-3.5" />
-            Contract
           </Button>
         </div>
       </div>
@@ -475,10 +444,42 @@ export function CropPlanPageClient() {
         )}
         <div
           className={cn(
-            "flex w-80 xl:w-85 shrink-0 flex-col border-r border-border bg-card overflow-hidden",
+            "relative flex shrink-0 flex-col border-r border-border bg-card overflow-hidden",
             panelCollapsed && "hidden"
           )}
+          style={{ width: panelWidth }}
         >
+          <div className="flex items-center gap-2 border-b border-border bg-background px-3 py-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 flex-1 gap-1.5 border-emerald-200 text-xs text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50"
+              onClick={() => {
+                setMainTab("reservation");
+                setResSubTab("manual");
+                setManualSubTab("normal");
+                setOpenSelector(null);
+                clearSelection();
+              }}
+            >
+              <Plus className="size-3.5" />
+              New Reservation
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 flex-1 gap-1.5 bg-violet-600 text-xs text-white hover:bg-violet-700"
+              onClick={() => {
+                setMainTab("contract");
+                setContractSubTab("manual");
+                setOpenSelector(null);
+                clearSelection();
+              }}
+            >
+              <Plus className="size-3.5" />
+              New Contract
+            </Button>
+          </div>
+
           {/* Main tabs */}
           <div className="border-b border-border bg-muted/25">
             <div className="flex min-h-11 items-center gap-1 px-3 py-2">
@@ -766,6 +767,13 @@ export function CropPlanPageClient() {
               </div>
             </div>
           )}
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            tabIndex={0}
+            onPointerDown={startPanelResize}
+            className="absolute right-0 top-0 z-20 h-full w-1 cursor-col-resize bg-transparent transition-colors hover:bg-primary/30"
+          />
         </div>
 
         {/* ─── Timeline (Gantt) ─────────────────────────────────────────────── */}

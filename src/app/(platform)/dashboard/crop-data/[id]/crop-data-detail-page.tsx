@@ -77,13 +77,10 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
   const record = data as FullRecord;
   const displayName = `${record.cropName ?? "Crop"} - ${record.varietyName ?? record.block ?? record.id.slice(0, 6)}`;
   const detailCode = record.customerCode ?? record.contractRef ?? record.id.slice(0, 6);
-  const breadcrumbParts = [
-    "Crop Data",
-    record.block,
-    record.cropName,
-    record.varietyName,
-    detailCode,
-  ].filter(Boolean);
+  const cropVarietyCode = [record.cropName, record.varietyName, detailCode]
+    .filter(Boolean)
+    .join("-");
+  const breadcrumbText = ["Crop Data", record.block, cropVarietyCode].filter(Boolean).join(" / ");
 
   return (
     <div className="w-full space-y-4 px-6 pb-6 pt-4">
@@ -98,15 +95,8 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-foreground">
-              {breadcrumbParts.map((part, index) => (
-                <span key={`${part}-${index}`} className="inline-flex items-center gap-2">
-                  {index > 0 ? <span className="text-muted-foreground">/</span> : null}
-                  <span className={index === 0 ? "text-muted-foreground" : "text-foreground"}>
-                    {part}
-                  </span>
-                </span>
-              ))}
+            <div className="text-sm font-semibold text-foreground">
+              <span>{breadcrumbText}</span>
             </div>
           </div>
 
@@ -120,25 +110,41 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
           </button>
         </div>
 
-        <div className="grid gap-8 pb-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div
+          className={
+            compact
+              ? "flex flex-wrap items-center gap-4 pb-5"
+              : "grid gap-8 pb-5 lg:grid-cols-[18rem_minmax(0,1fr)]"
+          }
+        >
           <div className="flex items-center gap-5">
-            {!compact ? (
-              <div className="h-28 w-28 shrink-0 overflow-hidden rounded-xl border bg-muted">
-                {record.cropImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={record.cropImageUrl}
-                    alt={record.cropName ?? "Crop"}
-                    className="h-full w-full object-cover"
-                  />
-                ) : null}
-              </div>
-            ) : null}
+            <div
+              className={
+                compact
+                  ? "h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-muted"
+                  : "h-28 w-28 shrink-0 overflow-hidden rounded-xl border bg-muted"
+              }
+            >
+              {record.cropImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={record.cropImageUrl}
+                  alt={record.cropName ?? "Crop"}
+                  className="h-full w-full object-cover"
+                />
+              ) : null}
+            </div>
             <div>
               <div className="mb-2 w-fit rounded-md bg-primary/10 px-2 py-1 text-xs font-bold uppercase tracking-widest text-primary">
                 Active Cycle
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+              <h1
+                className={
+                  compact ? "text-lg font-bold tracking-tight" : "text-2xl font-bold tracking-tight"
+                }
+              >
+                {displayName}
+              </h1>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-medium text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Box className="h-4 w-4" />
@@ -152,24 +158,28 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             </div>
           </div>
 
-          {!compact ? (
-            <div className="grid gap-x-12 gap-y-5 md:grid-cols-3">
-              <FactBlock
-                icon={<MapPin className="h-4 w-4" />}
-                label="Field Name"
-                value={record.fieldName}
-              />
-              <FactBlock label="Field Code" value={record.fieldCode} />
-              <FactBlock label="Crop Type" value={record.cropTypeName ?? record.block} />
-              <FactBlock
-                icon={<Tag className="h-4 w-4" />}
-                label="Contract No"
-                value={record.contractNo}
-              />
-              <FactBlock label="Header No" value={record.headerNo} />
-              <FactBlock label="Sex Expression" value={record.sexExpression} />
-            </div>
-          ) : null}
+          <div
+            className={
+              compact
+                ? "flex flex-wrap items-center gap-x-8 gap-y-3 text-sm"
+                : "grid gap-x-12 gap-y-5 md:grid-cols-3"
+            }
+          >
+            <FactBlock
+              icon={<MapPin className="h-4 w-4" />}
+              label="Field Name"
+              value={record.fieldName}
+            />
+            <FactBlock label="Field Code" value={record.fieldCode} />
+            <FactBlock label="Crop Type" value={record.cropTypeName ?? record.block} />
+            <FactBlock
+              icon={<Tag className="h-4 w-4" />}
+              label="Contract No"
+              value={record.contractNo}
+            />
+            <FactBlock label="Header No" value={record.headerNo} />
+            <FactBlock label="Sex Expression" value={record.sexExpression} />
+          </div>
         </div>
       </section>
 
