@@ -27,7 +27,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -36,6 +42,13 @@ type Props = {
   block?: BlockMaster;
   onSuccess?: () => void;
 };
+
+const directionOptions = [
+  { value: "left-right", label: "Left to Right" },
+  { value: "right-left", label: "Right to Left" },
+  { value: "top-bottom", label: "Top to Bottom" },
+  { value: "bottom-top", label: "Bottom to Top" },
+] as const;
 
 function normalizeSuitableCrops(block?: BlockMaster): SuitableCropInput[] {
   const suitableCrops = block?.suitableCrops ?? [];
@@ -86,6 +99,8 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
     defaultValues: {
       blockName: block?.blockName ?? "",
       areaSqm: block?.areaSqm ?? undefined,
+      plantingOrder: block?.plantingOrder ?? "left-right",
+      nextRowOrder: block?.nextRowOrder ?? "top-bottom",
       useInPlanning: block?.useInPlanning ?? true,
       suitableCrops: normalizeSuitableCrops(block),
     },
@@ -118,6 +133,8 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
             subBlockName: null,
             rowLengthM: null,
             rowWidthM: null,
+            plantingOrder: createInput.plantingOrder ?? "left-right",
+            nextRowOrder: createInput.nextRowOrder ?? "top-bottom",
             notes: null,
           },
         });
@@ -198,6 +215,58 @@ export function BlockForm({ farmId, block, onSuccess }: Props) {
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="plantingOrder"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Planting Order</FormLabel>
+                <Select value={field.value ?? "left-right"} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select planting order" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {directionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="nextRowOrder"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Next Row Order</FormLabel>
+                <Select value={field.value ?? "top-bottom"} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select next row order" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {directionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">

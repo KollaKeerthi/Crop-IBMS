@@ -3,7 +3,17 @@ import { logAudit } from "@/lib/audit";
 import type { ApiContext } from "@/lib/api/auth";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { farmMemberships, cropVarieties, cropTypes, blocks as locationBlocks } from "@/db/schema";
+import {
+  farmMemberships,
+  cropData,
+  cropDataModules,
+  cropVarieties,
+  cropTypes,
+  crops,
+  contracts,
+  blockMaster,
+  blocks as locationBlocks,
+} from "@/db/schema";
 import {
   listCropData,
   getCropDataById,
@@ -92,6 +102,181 @@ async function validateLocationBlock(farmId: string, locationBlockId?: string | 
   }
 }
 
+async function validateContract(farmId: string, contractId?: string | null) {
+  if (!contractId) return;
+  const [contract] = await db
+    .select({ id: contracts.id })
+    .from(contracts)
+    .where(and(eq(contracts.id, contractId), eq(contracts.farmId, farmId)))
+    .limit(1);
+  if (!contract) {
+    throw new ApiError(400, "invalid_contract", "Contract does not belong to this farm.");
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function numberFrom(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function stringFrom(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function plantingEntries(data: unknown) {
+  if (!isRecord(data)) return [];
+  const raw = Array.isArray(data.entries)
+    ? data.entries
+    : Array.isArray(data.rows)
+      ? data.rows
+      : [];
+  return raw.filter(isRecord);
+}
+
+function periodStart(contract: {
+  materialArrivalWeek: number | null;
+  plantingWeek: number | null;
+  pollinationStartWeek: number | null;
+}) {
+  return contract.materialArrivalWeek ?? contract.plantingWeek ?? contract.pollinationStartWeek;
+}
+
+function overlaps(
+  left: { year: number; start: number; end: number },
+  right: { year: number; start: number; end: number }
+) {
+  return left.year === right.year && left.start <= right.end && right.start <= left.end;
+}
+
+async function validatePlantingModule(cropDataId: string, farmId: string, data: unknown) {
+  const record = await getCropDataById(cropDataId, farmId);
+  if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  if (!record.contractId) {
+    throw new ApiError(
+      400,
+      "missing_contract",
+      "Link this crop data record to a contract before saving planting rows."
+    );
+  }
+
+  const [contract] = await db
+    .select({
+      id: contracts.id,
+      year: contracts.year,
+      materialArrivalWeek: contracts.materialArrivalWeek,
+      plantingWeek: contracts.plantingWeek,
+      pollinationStartWeek: contracts.pollinationStartWeek,
+      endWeek: contracts.endWeek,
+      absContractNo: contracts.absContractNo,
+      contractRef: contracts.contractRef,
+      blockId: contracts.blockId,
+      blockRows: blockMaster.rows,
+      blockName: blockMaster.blockName,
+    })
+    .from(contracts)
+    .leftJoin(blockMaster, eq(blockMaster.id, contracts.blockId))
+    .where(and(eq(contracts.id, record.contractId), eq(contracts.farmId, farmId)))
+    .limit(1);
+
+  const start = contract ? periodStart(contract) : null;
+  if (!contract || !contract.blockId || start == null || contract.endWeek == null) {
+    throw new ApiError(
+      400,
+      "incomplete_contract_period",
+      "The linked contract needs a block, start week, and end week before planting rows can be saved."
+    );
+  }
+
+  const maxRows = contract.blockRows;
+  const entries = plantingEntries(data);
+  for (const entry of entries) {
+    const rowNo = numberFrom(entry.rowNo ?? entry.rowNumber);
+    if (!rowNo || rowNo < 1 || !Number.isInteger(rowNo)) {
+      throw new ApiError(
+        400,
+        "invalid_row_number",
+        "Each planting detail row needs a valid row number."
+      );
+    }
+    if (maxRows && rowNo > maxRows) {
+      throw new ApiError(
+        400,
+        "row_exceeds_block_limit",
+        `Row ${rowNo} is outside ${contract.blockName ?? "the selected block"}, which has ${maxRows} rows.`
+      );
+    }
+  }
+
+  const rowsUsed = new Set(entries.map((entry) => numberFrom(entry.rowNo ?? entry.rowNumber)));
+  if (rowsUsed.size === 0) return;
+
+  const currentPeriod = { year: contract.year, start, end: contract.endWeek };
+  const otherRows = await db
+    .select({
+      cropDataId: cropData.id,
+      cropName: crops.name,
+      varietyName: cropVarieties.name,
+      contractNo: cropData.contractNo,
+      contractAbsNo: contracts.absContractNo,
+      contractRef: contracts.contractRef,
+      year: contracts.year,
+      materialArrivalWeek: contracts.materialArrivalWeek,
+      plantingWeek: contracts.plantingWeek,
+      pollinationStartWeek: contracts.pollinationStartWeek,
+      endWeek: contracts.endWeek,
+      moduleData: cropDataModules.data,
+    })
+    .from(cropData)
+    .innerJoin(contracts, eq(contracts.id, cropData.contractId))
+    .innerJoin(
+      cropDataModules,
+      and(
+        eq(cropDataModules.cropDataId, cropData.id),
+        eq(cropDataModules.moduleType, "planting_records")
+      )
+    )
+    .leftJoin(crops, eq(crops.id, cropData.cropId))
+    .leftJoin(cropVarieties, eq(cropVarieties.id, cropData.varietyId))
+    .where(
+      and(
+        eq(cropData.farmId, farmId),
+        eq(contracts.blockId, contract.blockId),
+        eq(cropData.status, "active")
+      )
+    );
+
+  for (const other of otherRows) {
+    if (other.cropDataId === cropDataId) continue;
+    const otherStart = periodStart(other);
+    if (otherStart == null || other.endWeek == null) continue;
+    if (!overlaps(currentPeriod, { year: other.year, start: otherStart, end: other.endWeek })) {
+      continue;
+    }
+    for (const entry of plantingEntries(other.moduleData)) {
+      const rowNo = numberFrom(entry.rowNo ?? entry.rowNumber);
+      if (!rowNo || !rowsUsed.has(rowNo)) continue;
+      const crop = stringFrom(entry.crop) ?? other.cropName ?? "another crop";
+      const variety =
+        stringFrom(entry.cropVariety ?? entry.variety) ?? other.varietyName ?? "unknown variety";
+      const gender = stringFrom(entry.gender ?? entry.type) ?? "unknown gender";
+      const ref = other.contractAbsNo ?? other.contractNo ?? other.contractRef ?? "linked contract";
+      throw new ApiError(
+        409,
+        "row_already_used",
+        `Row ${rowNo} is already used by ${crop} / ${variety} / ${gender} for ${ref}.`
+      );
+    }
+  }
+}
+
 export async function listCropDataHandler(ctx: ApiContext, farmId: string) {
   await verifyFarmAccess(ctx.userId, farmId);
   return listCropData(farmId);
@@ -138,6 +323,7 @@ export async function createCropDataHandler(ctx: ApiContext, input: CreateCropDa
   await verifyFarmAccess(ctx.userId, input.farmId);
   await validateCropLinks(input);
   await validateLocationBlock(input.farmId, input.locationBlockId);
+  await validateContract(input.farmId, input.contractId);
   const record = await createCropDataRecord(input);
   await logAudit({
     userId: ctx.userId,
@@ -171,6 +357,7 @@ export async function updateCropDataHandler(
     varietyId: input.varietyId,
   });
   await validateLocationBlock(farmId, input.locationBlockId);
+  await validateContract(farmId, input.contractId);
   const updated = await updateCropDataRecord(id, input);
   await logAudit({
     userId: ctx.userId,
@@ -426,6 +613,9 @@ export async function updateModuleHandler(
   await verifyFarmAccess(ctx.userId, farmId);
   const record = await getCropDataById(cropDataId, farmId);
   if (!record) throw new ApiError(404, "not_found", "Crop data record not found.");
+  if (moduleType === "planting_records") {
+    await validatePlantingModule(cropDataId, farmId, input.data);
+  }
   const result = await upsertModule(cropDataId, moduleType, input.data);
   await logAudit({
     userId: ctx.userId,

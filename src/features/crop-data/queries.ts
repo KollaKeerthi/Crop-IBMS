@@ -8,6 +8,8 @@ import {
   cropDataModules,
   mediaAttachments,
   blocks as locationBlocks,
+  blockMaster,
+  contracts,
   crops,
   cropTypes,
   cropVarieties,
@@ -26,6 +28,8 @@ export async function listCropData(farmId: string) {
       cropTypeName: cropTypes.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      contractId: cropData.contractId,
+      blockMasterId: cropData.blockMasterId,
       locationBlockId: cropData.locationBlockId,
       block: cropData.block,
       fieldName: cropData.fieldName,
@@ -62,6 +66,19 @@ export async function getCropDataById(id: string, farmId: string) {
       cropTypeName: cropTypes.name,
       varietyName: cropVarieties.name,
       seasonName: seasons.name,
+      contractId: cropData.contractId,
+      contractYear: contracts.year,
+      contractMaterialArrivalWeek: contracts.materialArrivalWeek,
+      contractPlantingWeek: contracts.plantingWeek,
+      contractPollinationStartWeek: contracts.pollinationStartWeek,
+      contractEndWeek: contracts.endWeek,
+      contractAbsNo: contracts.absContractNo,
+      contractDisplayRef: contracts.contractRef,
+      blockMasterId: cropData.blockMasterId,
+      contractBlockId: contracts.blockId,
+      blockMasterRows: blockMaster.rows,
+      blockMasterPlantingOrder: blockMaster.plantingOrder,
+      blockMasterNextRowOrder: blockMaster.nextRowOrder,
       locationBlockId: cropData.locationBlockId,
       locationBlockBoundary: locationBlocks.boundary,
       cropImageUrl: crops.imageUrl,
@@ -83,6 +100,8 @@ export async function getCropDataById(id: string, farmId: string) {
     .leftJoin(cropTypes, eq(cropTypes.id, cropData.cropTypeId))
     .leftJoin(cropVarieties, eq(cropVarieties.id, cropData.varietyId))
     .leftJoin(seasons, eq(seasons.id, cropData.seasonId))
+    .leftJoin(contracts, eq(contracts.id, cropData.contractId))
+    .leftJoin(blockMaster, eq(blockMaster.id, contracts.blockId))
     .leftJoin(locationBlocks, eq(locationBlocks.id, cropData.locationBlockId))
     .where(and(eq(cropData.id, id), eq(cropData.farmId, farmId)))
     .limit(1);

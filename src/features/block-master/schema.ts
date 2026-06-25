@@ -7,6 +7,13 @@ export const SuitableCropInputSchema = z.object({
   plantsPerRow: z.number().positive().optional(),
 });
 
+export const PlantingDirectionSchema = z.enum([
+  "top-bottom",
+  "bottom-top",
+  "left-right",
+  "right-left",
+]);
+
 export const CreateBlockMasterInputSchema = z.object({
   blockName: z
     .string({ message: "Block name is required" })
@@ -18,6 +25,8 @@ export const CreateBlockMasterInputSchema = z.object({
   rows: z.number().int().positive().optional(),
   rowLengthM: z.number().positive().optional(),
   rowWidthM: z.number().positive().optional(),
+  plantingOrder: PlantingDirectionSchema.optional(),
+  nextRowOrder: PlantingDirectionSchema.optional(),
   fieldId: z.string().uuid().optional(),
   greenhouseId: z.string().uuid().optional(),
   suitableCrops: z.array(SuitableCropInputSchema).optional(),
@@ -32,6 +41,8 @@ export const UpdateBlockMasterInputSchema = z.object({
   rows: z.number().int().positive().optional().nullable(),
   rowLengthM: z.number().positive().optional().nullable(),
   rowWidthM: z.number().positive().optional().nullable(),
+  plantingOrder: PlantingDirectionSchema.optional(),
+  nextRowOrder: PlantingDirectionSchema.optional(),
   fieldId: z.string().uuid().optional().nullable(),
   greenhouseId: z.string().uuid().optional().nullable(),
   suitableCrops: z.array(SuitableCropInputSchema).optional().nullable(),
@@ -48,6 +59,8 @@ export const BlockMasterSchema = z.object({
   rows: z.number().nullable(),
   rowLengthM: z.number().nullable(),
   rowWidthM: z.number().nullable(),
+  plantingOrder: PlantingDirectionSchema,
+  nextRowOrder: PlantingDirectionSchema,
   fieldId: z.string().uuid().nullable(),
   greenhouseId: z.string().uuid().nullable(),
   suitableCrops: z.array(z.union([SuitableCropInputSchema, z.string()])).nullable(),
@@ -62,3 +75,4 @@ export type CreateBlockMasterInput = z.infer<typeof CreateBlockMasterInputSchema
 export type UpdateBlockMasterInput = z.infer<typeof UpdateBlockMasterInputSchema>;
 export type BlockMaster = z.infer<typeof BlockMasterSchema>;
 export type SuitableCropInput = z.infer<typeof SuitableCropInputSchema>;
+export type PlantingDirection = z.infer<typeof PlantingDirectionSchema>;

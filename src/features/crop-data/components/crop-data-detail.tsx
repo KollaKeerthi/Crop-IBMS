@@ -29,6 +29,12 @@ type FullCropDataRecord = {
   cropId?: string | null;
   cropName?: string | null;
   varietyName?: string | null;
+  contractId?: string | null;
+  blockMasterId?: string | null;
+  contractBlockId?: string | null;
+  blockMasterRows?: number | null;
+  blockMasterPlantingOrder?: "top-bottom" | "bottom-top" | "left-right" | "right-left" | null;
+  blockMasterNextRowOrder?: "top-bottom" | "bottom-top" | "left-right" | "right-left" | null;
   locationBlockId?: string | null;
   locationBlockBoundary?: unknown;
   block?: string | null;
@@ -160,6 +166,10 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           initialData={getModuleData("planting_records")}
           fallbackCrop={record.cropName}
           fallbackVariety={record.varietyName}
+          maxRows={record.blockMasterRows}
+          contractId={record.contractId}
+          plantingOrder={record.blockMasterPlantingOrder}
+          nextRowOrder={record.blockMasterNextRowOrder}
         />
       </TabsPrimitive.Panel>
 

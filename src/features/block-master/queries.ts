@@ -15,6 +15,18 @@ function toBlock(row: BlockRow): BlockMaster {
     rows: row.rows ?? null,
     rowLengthM: row.rowLengthM ?? null,
     rowWidthM: row.rowWidthM ?? null,
+    plantingOrder:
+      row.plantingOrder === "top-bottom" ||
+      row.plantingOrder === "bottom-top" ||
+      row.plantingOrder === "right-left"
+        ? row.plantingOrder
+        : "left-right",
+    nextRowOrder:
+      row.nextRowOrder === "bottom-top" ||
+      row.nextRowOrder === "left-right" ||
+      row.nextRowOrder === "right-left"
+        ? row.nextRowOrder
+        : "top-bottom",
     fieldId: row.fieldId ?? null,
     greenhouseId: row.greenhouseId ?? null,
     suitableCrops: (row.suitableCrops as BlockMaster["suitableCrops"]) ?? null,

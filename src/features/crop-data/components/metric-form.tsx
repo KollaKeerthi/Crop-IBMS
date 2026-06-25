@@ -60,6 +60,7 @@ type Props = {
   isSaving?: boolean;
   onSave: (values: Vals) => Promise<unknown>;
   onValuesChange?: (values: Vals) => Vals;
+  initialEditing?: boolean;
 };
 
 function formatDateForInput(v: unknown): string {
@@ -105,6 +106,7 @@ export function MetricForm({
   isSaving = false,
   onSave,
   onValuesChange,
+  initialEditing = false,
 }: Props) {
   const fields = useMemo(() => editableFields(rows), [rows]);
 
@@ -122,7 +124,7 @@ export function MetricForm({
   );
 
   const [values, setValues] = useState<Vals>(buildState);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialEditing);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function setField(name: string, value: unknown) {

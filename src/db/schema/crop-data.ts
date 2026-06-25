@@ -19,6 +19,7 @@ import { plantings } from "./plantings";
 import { blockMaster } from "./block-master";
 import { blocks as locationBlocks } from "./blocks";
 import { activities } from "./activities";
+import { contracts } from "./contracts";
 
 export const sexExpressionEnum = pgEnum("sex_expression", [
   "Male",
@@ -46,6 +47,7 @@ export const cropData = pgTable(
     varietyId: uuid("variety_id").references(() => cropVarieties.id, { onDelete: "set null" }),
     seasonId: uuid("season_id").references(() => seasons.id, { onDelete: "set null" }),
     plantingId: uuid("planting_id").references(() => plantings.id, { onDelete: "set null" }),
+    contractId: uuid("contract_id").references(() => contracts.id, { onDelete: "set null" }),
     blockMasterId: uuid("block_master_id").references(() => blockMaster.id, {
       onDelete: "set null",
     }),
@@ -69,6 +71,7 @@ export const cropData = pgTable(
     index("crop_data_farm_id_idx").on(table.farmId),
     index("crop_data_crop_id_idx").on(table.cropId),
     index("crop_data_season_id_idx").on(table.seasonId),
+    index("crop_data_contract_id_idx").on(table.contractId),
     index("crop_data_location_block_id_idx").on(table.locationBlockId),
     index("crop_data_status_idx").on(table.status),
   ]

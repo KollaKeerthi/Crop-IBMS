@@ -30,6 +30,8 @@ export const blockMaster = pgTable(
     rows: integer("rows"),
     rowLengthM: real("row_length_m"),
     rowWidthM: real("row_width_m"),
+    plantingOrder: text("planting_order").notNull().default("left-right"),
+    nextRowOrder: text("next_row_order").notNull().default("top-bottom"),
     suitableCrops: jsonb("suitable_crops"),
     useInPlanning: boolean("use_in_planning").notNull().default(true),
     indexStarts: integer("index_starts").default(1),

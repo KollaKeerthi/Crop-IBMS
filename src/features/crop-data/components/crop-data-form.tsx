@@ -14,6 +14,7 @@ import {
 import { useCreateCropData } from "../hooks";
 import { listCrops, getCrop } from "@/features/crops/api";
 import { listSeasons } from "@/features/seasons/api";
+import { listContracts } from "@/features/contracts/api";
 import { useLocationHierarchy } from "@/features/locations/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,12 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   const { data: seasons = [] } = useQuery({
     queryKey: ["seasons", farmId],
     queryFn: () => listSeasons(farmId),
+    enabled: !!farmId,
+  });
+
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["contracts", farmId],
+    queryFn: () => listContracts(farmId),
     enabled: !!farmId,
   });
 
@@ -361,6 +368,56 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 <FormControl>
                   <Input {...field} value={field.value ?? ""} placeholder="Field/Code" />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="contractId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contract</FormLabel>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(value) => {
+                    const selected = contracts.find((contract) => contract.id === value);
+                    field.onChange(value);
+                    form.setValue(
+                      "contractNo",
+                      selected?.absContractNo ?? selected?.contractRef ?? ""
+                    );
+                    form.setValue("contractRef", selected?.contractRef ?? "");
+                    form.setValue("blockMasterId", selected?.blockId ?? null);
+                    if (selected?.blockName) form.setValue("block", selected.blockName);
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a contract">
+                        {(value) => {
+                          const selected = contracts.find((contract) => contract.id === value);
+                          if (!selected) return value ? "Select a contract" : null;
+                          return (
+                            selected.absContractNo ??
+                            selected.contractRef ??
+                            `${selected.cropName ?? "Contract"} W${selected.plantingWeek ?? selected.pollinationStartWeek ?? "?"}`
+                          );
+                        }}
+                      </SelectValue>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {contracts.map((contract) => (
+                      <SelectItem key={contract.id} value={contract.id}>
+                        {contract.absContractNo ?? contract.contractRef ?? contract.id.slice(0, 8)}
+                        {contract.blockName ? ` - ${contract.blockName}` : ""}
+                        {contract.cropName ? ` - ${contract.cropName}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
