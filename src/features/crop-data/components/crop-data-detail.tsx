@@ -33,6 +33,7 @@ type FullCropDataRecord = {
   blockMasterId?: string | null;
   contractBlockId?: string | null;
   blockMasterRows?: number | null;
+  blockMasterSuitableCrops?: unknown;
   blockMasterPlantingOrder?: "top-bottom" | "bottom-top" | "left-right" | "right-left" | null;
   blockMasterNextRowOrder?: "top-bottom" | "bottom-top" | "left-right" | "right-left" | null;
   locationBlockId?: string | null;
@@ -85,6 +86,16 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     if (next === activeTab) return;
     router.push(`/dashboard/crop-data/${record.id}/${next}`);
   }
+
+  const suitableCropCapacity = Array.isArray(record.blockMasterSuitableCrops)
+    ? record.blockMasterSuitableCrops.find(
+        (item): item is { cropId?: string; rows?: number; plantsPerRow?: number } =>
+          !!item &&
+          typeof item === "object" &&
+          "cropId" in item &&
+          (item as { cropId?: unknown }).cropId === record.cropId
+      )
+    : null;
 
   const triggerClassName = cn(
     "relative shrink-0 px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground",
@@ -166,7 +177,8 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           initialData={getModuleData("planting_records")}
           fallbackCrop={record.cropName}
           fallbackVariety={record.varietyName}
-          maxRows={record.blockMasterRows}
+          maxRows={suitableCropCapacity?.rows ?? record.blockMasterRows}
+          plantCapacity={suitableCropCapacity?.plantsPerRow ?? null}
           contractId={record.contractId}
           plantingOrder={record.blockMasterPlantingOrder}
           nextRowOrder={record.blockMasterNextRowOrder}

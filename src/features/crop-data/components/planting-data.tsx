@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, Eye, Grid3X3, Plus, Save, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowDownUp, Eye, Grid3X3, Plus, Save, Shuffle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ type Props = {
   fallbackCrop?: string | null;
   fallbackVariety?: string | null;
   maxRows?: number | null;
+  plantCapacity?: number | null;
   contractId?: string | null;
   plantingOrder?: PlantingDirection | null;
   nextRowOrder?: PlantingDirection | null;
@@ -72,6 +73,7 @@ type SummaryRow = {
   plantedPlantSpace: number | null;
   plantedDensity: number | null;
   plantedRows: number;
+  realizedMeters: number | null;
   realizedPlants: number | null;
   realizedPlantSpace: number | null;
   realizedDensity: number | null;
@@ -111,6 +113,10 @@ function status(value: unknown): EntryStatus {
 function density(plants: number | null, meters: number | null) {
   if (!plants || !meters) return null;
   return plants / meters;
+}
+
+function plantCount(entry: PlantingEntry) {
+  return entry.plannedPlants ?? entry.plantedPlants ?? entry.realizedPlants ?? 0;
 }
 
 function parseEntry(
@@ -190,14 +196,33 @@ function initialViewGroups(data: Record<string, unknown> | null): ViewGroups {
   };
 }
 
-function sortedEntries(entries: PlantingEntry[], direction: PlantingDirection | null | undefined) {
-  const withIndex = entries.map((entry, index) => ({ entry, index }));
-  withIndex.sort((a, b) => {
-    const order = a.entry.rowNo - b.entry.rowNo;
-    return order === 0 ? a.index - b.index : order;
-  });
-  if (direction === "bottom-top" || direction === "right-left") withIndex.reverse();
-  return withIndex.map((item) => item.entry);
+function initialSubtab(data: Record<string, unknown> | null): PlantingSubtab {
+  return data?.selectedSubtab === "detail" || data?.selectedSubtab === "visual"
+    ? data.selectedSubtab
+    : "summary";
+}
+
+function sortEntries(entries: PlantingEntry[]) {
+  return entries
+    .map((entry, index) => ({ entry, index }))
+    .sort((left, right) => {
+      const rowOrder = left.entry.rowNo - right.entry.rowNo;
+      return rowOrder === 0 ? left.index - right.index : rowOrder;
+    })
+    .map((item) => item.entry);
+}
+
+function directionalRows(
+  entries: PlantingEntry[],
+  direction: PlantingDirection | null | undefined
+) {
+  const grouped = new Map<number, PlantingEntry[]>();
+  for (const entry of sortEntries(entries)) {
+    grouped.set(entry.rowNo, [...(grouped.get(entry.rowNo) ?? []), entry]);
+  }
+  const rows = Array.from(grouped.entries());
+  if (direction === "bottom-top" || direction === "right-left") rows.reverse();
+  return rows;
 }
 
 function sum(values: Array<number | null>) {
@@ -240,6 +265,7 @@ function summarize(entries: PlantingEntry[]): SummaryRow[] {
       plantedPlantSpace: avg(rows.map((row) => row.plantedPlantSpace)),
       plantedDensity: avg(rows.map((row) => row.plantedDensity)),
       plantedRows: countRows(rows, "plantedPlants"),
+      realizedMeters: sum(rows.map((row) => row.plantedMeters)),
       realizedPlants: sum(rows.map((row) => row.realizedPlants)),
       realizedPlantSpace: avg(rows.map((row) => row.plantedPlantSpace)),
       realizedDensity: avg(rows.map((row) => row.plantedDensity)),
@@ -260,6 +286,33 @@ function plantDots(count: number | null) {
   return Math.max(0, Math.min(40, Math.round(count ?? 0)));
 }
 
+function rowCapacityError(entries: PlantingEntry[], plantCapacity: number | null | undefined) {
+  if (!plantCapacity) return null;
+  const totals = new Map<number, number>();
+  for (const entry of entries) {
+    totals.set(entry.rowNo, (totals.get(entry.rowNo) ?? 0) + plantCount(entry));
+  }
+  for (const [rowNo, total] of totals) {
+    if (total > plantCapacity) {
+      return `Row ${rowNo} can fit ${plantCapacity} plants. Current entries use ${total}.`;
+    }
+  }
+  return null;
+}
+
+function moveWithinRow(entries: PlantingEntry[], draggedId: string, targetId: string) {
+  if (draggedId === targetId) return entries;
+  const dragged = entries.find((entry) => entry.id === draggedId);
+  const target = entries.find((entry) => entry.id === targetId);
+  if (!dragged || !target || dragged.rowNo !== target.rowNo) return entries;
+
+  const others = entries.filter((entry) => entry.id !== draggedId);
+  const targetIndex = others.findIndex((entry) => entry.id === targetId);
+  if (targetIndex < 0) return entries;
+
+  return [...others.slice(0, targetIndex), dragged, ...others.slice(targetIndex)];
+}
+
 export function PlantingData({
   cropDataId,
   farmId,
@@ -267,29 +320,31 @@ export function PlantingData({
   fallbackCrop,
   fallbackVariety,
   maxRows,
+  plantCapacity,
   contractId,
   plantingOrder,
   nextRowOrder,
 }: Props) {
-  const [subtab, setSubtab] = useState<PlantingSubtab>("summary");
+  const [subtab, setSubtab] = useState<PlantingSubtab>(() => initialSubtab(initialData));
+  const [showBulkFill, setShowBulkFill] = useState(false);
+  const [fillFromRow, setFillFromRow] = useState(1);
+  const [fillToStart, setFillToStart] = useState(1);
+  const [fillToEnd, setFillToEnd] = useState(10);
+  const [draggedEntryId, setDraggedEntryId] = useState<string | null>(null);
   const [entries, setEntries] = useState<PlantingEntry[]>(() =>
     initialEntries(initialData, fallbackCrop, fallbackVariety)
   );
   const [viewGroups, setViewGroups] = useState<ViewGroups>(() => initialViewGroups(initialData));
   const mutation = useUpdateModule(cropDataId, farmId, MODULE_TYPE);
 
-  const detailEntries = useMemo(
-    () => sortedEntries(entries, subtab === "visual" ? nextRowOrder : "top-bottom"),
-    [entries, nextRowOrder, subtab]
-  );
-  const summaryRows = useMemo(() => summarize(sortedEntries(entries, "top-bottom")), [entries]);
-  const visualRows = useMemo(() => {
-    const grouped = new Map<number, PlantingEntry[]>();
-    for (const entry of sortedEntries(entries, nextRowOrder)) {
-      grouped.set(entry.rowNo, [...(grouped.get(entry.rowNo) ?? []), entry]);
-    }
-    return Array.from(grouped.entries());
-  }, [entries, nextRowOrder]);
+  const detailEntries = useMemo(() => sortEntries(entries), [entries]);
+  const summaryRows = useMemo(() => summarize(sortEntries(entries)), [entries]);
+  const visualRows = useMemo(() => directionalRows(entries, nextRowOrder), [entries, nextRowOrder]);
+
+  function setTab(next: PlantingSubtab) {
+    setSubtab(next);
+    if (next !== "detail") setShowBulkFill(false);
+  }
 
   function patchEntry(id: string, patch: Partial<PlantingEntry>) {
     setEntries((current) =>
@@ -298,6 +353,8 @@ export function PlantingData({
         const next = { ...entry, ...patch };
         return {
           ...next,
+          crop: fallbackCrop ?? next.crop,
+          cropVariety: fallbackVariety ?? next.cropVariety,
           plannedDensity: density(next.plannedPlants, next.plannedMeters),
           plantedDensity: density(next.plantedPlants, next.plantedMeters),
         };
@@ -311,92 +368,93 @@ export function PlantingData({
       toast.error(`This block only has ${maxRows} rows.`);
       return;
     }
-    setEntries((current) => [
-      ...current,
-      {
-        id: newId(),
-        rowNo: nextRow,
-        crop: fallbackCrop ?? "",
-        cropVariety: fallbackVariety ?? "",
-        gender: "Female",
-        status: "Planned",
-        plannedMeters: DEFAULT_METERS,
-        plannedPlants: null,
-        plannedPlantSpace: null,
-        plannedDensity: null,
-        plantedMeters: null,
-        plantedPlants: null,
-        plantedPlantSpace: null,
-        plantedDensity: null,
-        realizedPlants: null,
-      },
-    ]);
-    setSubtab("detail");
+    setEntries((current) =>
+      sortEntries([
+        ...current,
+        {
+          id: newId(),
+          rowNo: nextRow,
+          crop: fallbackCrop ?? "",
+          cropVariety: fallbackVariety ?? "",
+          gender: "Female",
+          status: "Planned",
+          plannedMeters: DEFAULT_METERS,
+          plannedPlants: null,
+          plannedPlantSpace: null,
+          plannedDensity: null,
+          plantedMeters: null,
+          plantedPlants: null,
+          plantedPlantSpace: null,
+          plantedDensity: null,
+          realizedPlants: null,
+        },
+      ])
+    );
+    setTab("detail");
   }
 
   function removeEntry(id: string) {
     setEntries((current) => current.filter((entry) => entry.id !== id));
   }
 
-  async function saveEntries() {
-    if (!contractId) {
-      toast.error("Link this crop data record to a contract before saving planting rows.");
+  function fillRows() {
+    const sourceEntries = sortEntries(entries).filter((entry) => entry.rowNo === fillFromRow);
+    if (sourceEntries.length === 0) {
+      toast.error(`Row ${fillFromRow} has no entries to fill from.`);
       return;
     }
+    if (fillToStart > fillToEnd) {
+      toast.error("Fill to start row must be before the end row.");
+      return;
+    }
+    if (maxRows && fillToEnd > maxRows) {
+      toast.error(`This block only has ${maxRows} rows.`);
+      return;
+    }
+    const rows = Array.from(
+      { length: fillToEnd - fillToStart + 1 },
+      (_, index) => fillToStart + index
+    );
+    const cloned = rows.flatMap((rowNo) =>
+      sourceEntries.map((entry) => ({
+        ...entry,
+        id: newId(),
+        rowNo,
+      }))
+    );
+    setEntries((current) => {
+      const untouched = current.filter((entry) => !rows.includes(entry.rowNo));
+      return sortEntries([...untouched, ...cloned]);
+    });
+    toast.success("Rows filled");
+  }
+
+  async function saveEntries() {
     const invalid = entries.find((entry) => maxRows && entry.rowNo > maxRows);
     if (invalid) {
       toast.error(`Row ${invalid.rowNo} is outside the selected block row limit of ${maxRows}.`);
       return;
     }
+    const capacityError = rowCapacityError(entries, plantCapacity);
+    if (capacityError) {
+      toast.error(capacityError);
+      return;
+    }
     try {
       await mutation.mutateAsync({
-        entries: sortedEntries(entries, "top-bottom"),
+        entries: sortEntries(entries),
         viewGroups,
+        selectedSubtab: subtab,
       });
-      toast.success("Planting data saved");
+      if (!contractId) {
+        toast.warning("Saved with warning: contract linkage is required for reliable conflicts.");
+      } else {
+        toast.success("Planting data saved");
+      }
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to save planting data");
     }
   }
-
-  const headerButton = (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button
-        type="button"
-        size="sm"
-        variant={subtab === "summary" ? "secondary" : "ghost"}
-        onClick={() => setSubtab("summary")}
-      >
-        Summary
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={subtab === "detail" ? "secondary" : "ghost"}
-        onClick={() => setSubtab("detail")}
-      >
-        <Grid3X3 className="mr-1.5 h-4 w-4" />
-        Detail
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={subtab === "visual" ? "secondary" : "ghost"}
-        onClick={() => setSubtab("visual")}
-      >
-        <Eye className="mr-1.5 h-4 w-4" />
-        Visual
-      </Button>
-      <Button type="button" size="sm" onClick={addEntry}>
-        <Plus className="mr-1.5 h-4 w-4" />
-        New Entry
-      </Button>
-      <Button type="button" size="sm" variant="outline" onClick={saveEntries}>
-        <Save className="mr-1.5 h-4 w-4" />
-        Save
-      </Button>
-    </div>
-  );
 
   return (
     <div className="space-y-5">
@@ -413,7 +471,54 @@ export function PlantingData({
               </p>
             </div>
           </div>
-          {headerButton}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={subtab === "summary" ? "secondary" : "ghost"}
+              onClick={() => setTab("summary")}
+            >
+              Planting Summary
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={subtab === "detail" ? "secondary" : "ghost"}
+              onClick={() => setTab("detail")}
+            >
+              <Grid3X3 className="mr-1.5 h-4 w-4" />
+              Planting Detail
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={subtab === "visual" ? "secondary" : "ghost"}
+              onClick={() => setTab("visual")}
+            >
+              <Eye className="mr-1.5 h-4 w-4" />
+              Visual
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={showBulkFill ? "secondary" : "outline"}
+              onClick={() => {
+                setSubtab("detail");
+                setShowBulkFill((value) => !value);
+              }}
+            >
+              <Shuffle className="mr-1.5 h-4 w-4" />
+              Bulk Fill Selection
+            </Button>
+            <Button type="button" size="sm" onClick={addEntry}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              New Entry
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={saveEntries}>
+              <Save className="mr-1.5 h-4 w-4" />
+              Save
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -438,7 +543,10 @@ export function PlantingData({
           Planted + Realized
         </label>
         {maxRows ? (
-          <span className="ml-auto text-muted-foreground">Block row limit: {maxRows}</span>
+          <span className="ml-auto text-muted-foreground">
+            Block row limit: {maxRows}
+            {plantCapacity ? ` / ${plantCapacity} plants per row` : ""}
+          </span>
         ) : (
           <span className="ml-auto flex items-center gap-2 text-amber-700">
             <AlertCircle className="h-4 w-4" />
@@ -446,6 +554,54 @@ export function PlantingData({
           </span>
         )}
       </div>
+
+      {showBulkFill && subtab === "detail" ? (
+        <div className="rounded-lg border bg-card p-5">
+          <h3 className="text-base font-semibold">Bulk Fill Selection</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Fill crop, variety, gender, row length, plant count, spacing, and density inputs from
+            one row into a selected row range.
+          </p>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr_auto] md:items-end">
+            <label className="space-y-2 text-sm font-medium">
+              Fill from
+              <Input
+                type="number"
+                min={1}
+                max={maxRows ?? undefined}
+                value={fillFromRow}
+                placeholder="Row number"
+                onChange={(event) => setFillFromRow(Number(event.target.value) || 1)}
+              />
+            </label>
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Fill to</span>
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  type="number"
+                  min={1}
+                  max={maxRows ?? undefined}
+                  value={fillToStart}
+                  placeholder="1"
+                  onChange={(event) => setFillToStart(Number(event.target.value) || 1)}
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  max={maxRows ?? undefined}
+                  value={fillToEnd}
+                  placeholder="10"
+                  onChange={(event) => setFillToEnd(Number(event.target.value) || 1)}
+                />
+              </div>
+            </div>
+            <Button type="button" onClick={fillRows}>
+              <ArrowDownUp className="mr-1.5 h-4 w-4" />
+              Fill
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {subtab === "summary" ? (
         <div className="overflow-x-auto rounded-lg border bg-card">
@@ -475,27 +631,11 @@ export function PlantingData({
                 <th className="px-3 py-2 text-left">Crop</th>
                 <th className="px-3 py-2 text-left">Variety</th>
                 <th className="px-3 py-2 text-left">Gender</th>
-                {viewGroups.planned ? (
-                  <>
-                    <th className="px-3 py-2 text-left">Meters</th>
-                    <th className="px-3 py-2 text-left">No of Plants</th>
-                    <th className="px-3 py-2 text-left">Plant Space</th>
-                    <th className="px-3 py-2 text-left">Density</th>
-                    <th className="px-3 py-2 text-left">No of Rows</th>
-                  </>
-                ) : null}
+                {viewGroups.planned ? <MetricHead /> : null}
                 {viewGroups.actual ? (
                   <>
-                    <th className="px-3 py-2 text-left">Meters</th>
-                    <th className="px-3 py-2 text-left">No of Plants</th>
-                    <th className="px-3 py-2 text-left">Plant Space</th>
-                    <th className="px-3 py-2 text-left">Density</th>
-                    <th className="px-3 py-2 text-left">No of Rows</th>
-                    <th className="px-3 py-2 text-left">Meters</th>
-                    <th className="px-3 py-2 text-left">No of Plants</th>
-                    <th className="px-3 py-2 text-left">Plant Space</th>
-                    <th className="px-3 py-2 text-left">Density</th>
-                    <th className="px-3 py-2 text-left">No of Rows</th>
+                    <MetricHead />
+                    <MetricHead />
                   </>
                 ) : null}
               </tr>
@@ -507,26 +647,30 @@ export function PlantingData({
                   <td className="px-3 py-3">{row.cropVariety || "-"}</td>
                   <td className="px-3 py-3">{row.gender}</td>
                   {viewGroups.planned ? (
-                    <>
-                      <td className="px-3 py-3">{display(row.plannedMeters)}</td>
-                      <td className="px-3 py-3">{display(row.plannedPlants, 0)}</td>
-                      <td className="px-3 py-3">{display(row.plannedPlantSpace)}</td>
-                      <td className="px-3 py-3">{display(row.plannedDensity)}</td>
-                      <td className="px-3 py-3">{row.plannedRows || "-"}</td>
-                    </>
+                    <MetricCells
+                      meters={row.plannedMeters}
+                      plants={row.plannedPlants}
+                      plantSpace={row.plannedPlantSpace}
+                      densityValue={row.plannedDensity}
+                      rows={row.plannedRows}
+                    />
                   ) : null}
                   {viewGroups.actual ? (
                     <>
-                      <td className="px-3 py-3">{display(row.plantedMeters)}</td>
-                      <td className="px-3 py-3">{display(row.plantedPlants, 0)}</td>
-                      <td className="px-3 py-3">{display(row.plantedPlantSpace)}</td>
-                      <td className="px-3 py-3">{display(row.plantedDensity)}</td>
-                      <td className="px-3 py-3">{row.plantedRows || "-"}</td>
-                      <td className="px-3 py-3">{display(row.plantedMeters)}</td>
-                      <td className="px-3 py-3">{display(row.realizedPlants, 0)}</td>
-                      <td className="px-3 py-3">{display(row.realizedPlantSpace)}</td>
-                      <td className="px-3 py-3">{display(row.realizedDensity)}</td>
-                      <td className="px-3 py-3">{row.realizedRows || "-"}</td>
+                      <MetricCells
+                        meters={row.plantedMeters}
+                        plants={row.plantedPlants}
+                        plantSpace={row.plantedPlantSpace}
+                        densityValue={row.plantedDensity}
+                        rows={row.plantedRows}
+                      />
+                      <MetricCells
+                        meters={row.realizedMeters}
+                        plants={row.realizedPlants}
+                        plantSpace={row.realizedPlantSpace}
+                        densityValue={row.realizedDensity}
+                        rows={row.realizedRows}
+                      />
                     </>
                   ) : null}
                 </tr>
@@ -609,20 +753,10 @@ export function PlantingData({
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <Input
-                      className="h-8 w-32"
-                      value={entry.crop}
-                      onChange={(event) => patchEntry(entry.id, { crop: event.target.value })}
-                    />
+                    <Input className="h-8 w-32" value={entry.crop} readOnly />
                   </td>
                   <td className="px-3 py-2">
-                    <Input
-                      className="h-8 w-32"
-                      value={entry.cropVariety}
-                      onChange={(event) =>
-                        patchEntry(entry.id, { cropVariety: event.target.value })
-                      }
-                    />
+                    <Input className="h-8 w-32" value={entry.cropVariety} readOnly />
                   </td>
                   <td className="px-3 py-2">
                     <Select
@@ -713,7 +847,7 @@ export function PlantingData({
             <span>{fallbackCrop ?? "Crop"}</span>
             <span className="text-muted-foreground">Rows: {visualRows.length}</span>
             <span className="text-muted-foreground">
-              Plants: {sum(entries.map((entry) => entry.plantedPlants)) ?? 0}
+              Plants: {sum(entries.map((entry) => entry.plantedPlants ?? entry.plannedPlants)) ?? 0}
             </span>
           </div>
           <div className="min-w-220 rounded-lg border border-emerald-900/20 bg-emerald-100 p-3">
@@ -725,29 +859,43 @@ export function PlantingData({
                 <div
                   className={
                     plantingOrder === "right-left" || plantingOrder === "bottom-top"
-                      ? "flex flex-1 flex-row-reverse gap-1"
-                      : "flex flex-1 gap-1"
+                      ? "flex flex-1 flex-row-reverse gap-2"
+                      : "flex flex-1 gap-2"
                   }
                 >
-                  {rowEntries.flatMap((entry) =>
-                    Array.from(
-                      { length: plantDots(entry.plantedPlants ?? entry.plannedPlants) },
-                      (_, index) => (
-                        <span
-                          key={`${entry.id}-${index}`}
-                          title={`R${entry.rowNo} ${entry.crop} ${entry.cropVariety} ${entry.gender}`}
-                          className={
-                            entry.gender === "Female"
-                              ? "h-3 w-3 rounded-full bg-emerald-500"
-                              : "h-3 w-3 rounded-full bg-sky-500"
-                          }
-                        />
-                      )
-                    )
-                  )}
-                  {rowEntries.every((entry) => !entry.plantedPlants && !entry.plannedPlants) ? (
-                    <span className="text-xs text-muted-foreground">Unassigned</span>
-                  ) : null}
+                  {rowEntries.map((entry) => {
+                    const dots = plantDots(entry.plantedPlants ?? entry.plannedPlants);
+                    return (
+                      <div
+                        key={entry.id}
+                        draggable
+                        onDragStart={() => setDraggedEntryId(entry.id)}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() => {
+                          if (!draggedEntryId) return;
+                          setEntries((current) => moveWithinRow(current, draggedEntryId, entry.id));
+                          setDraggedEntryId(null);
+                        }}
+                        title={`R${entry.rowNo} ${entry.crop} ${entry.cropVariety} ${entry.gender}`}
+                        className="flex cursor-move items-center gap-1 rounded-md border bg-background/80 px-2 py-1"
+                      >
+                        {dots > 0 ? (
+                          Array.from({ length: dots }, (_, index) => (
+                            <span
+                              key={`${entry.id}-${index}`}
+                              className={
+                                entry.gender === "Female"
+                                  ? "h-3 w-3 rounded-full bg-emerald-500"
+                                  : "h-3 w-3 rounded-full bg-sky-500"
+                              }
+                            />
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Unassigned</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -767,6 +915,42 @@ export function PlantingData({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function MetricHead() {
+  return (
+    <>
+      <th className="px-3 py-2 text-left">Meters</th>
+      <th className="px-3 py-2 text-left">No of Plants</th>
+      <th className="px-3 py-2 text-left">Plant Space</th>
+      <th className="px-3 py-2 text-left">Density</th>
+      <th className="px-3 py-2 text-left">No of Rows</th>
+    </>
+  );
+}
+
+function MetricCells({
+  meters,
+  plants,
+  plantSpace,
+  densityValue,
+  rows,
+}: {
+  meters: number | null;
+  plants: number | null;
+  plantSpace: number | null;
+  densityValue: number | null;
+  rows: number;
+}) {
+  return (
+    <>
+      <td className="px-3 py-3">{display(meters)}</td>
+      <td className="px-3 py-3">{display(plants, 0)}</td>
+      <td className="px-3 py-3">{display(plantSpace)}</td>
+      <td className="px-3 py-3">{display(densityValue)}</td>
+      <td className="px-3 py-3">{rows || "-"}</td>
+    </>
   );
 }
 

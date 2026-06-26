@@ -77,6 +77,7 @@ export async function getCropDataById(id: string, farmId: string) {
       blockMasterId: cropData.blockMasterId,
       contractBlockId: contracts.blockId,
       blockMasterRows: blockMaster.rows,
+      blockMasterSuitableCrops: blockMaster.suitableCrops,
       blockMasterPlantingOrder: blockMaster.plantingOrder,
       blockMasterNextRowOrder: blockMaster.nextRowOrder,
       locationBlockId: cropData.locationBlockId,
@@ -101,7 +102,7 @@ export async function getCropDataById(id: string, farmId: string) {
     .leftJoin(cropVarieties, eq(cropVarieties.id, cropData.varietyId))
     .leftJoin(seasons, eq(seasons.id, cropData.seasonId))
     .leftJoin(contracts, eq(contracts.id, cropData.contractId))
-    .leftJoin(blockMaster, eq(blockMaster.id, contracts.blockId))
+    .leftJoin(blockMaster, eq(blockMaster.id, cropData.blockMasterId))
     .leftJoin(locationBlocks, eq(locationBlocks.id, cropData.locationBlockId))
     .where(and(eq(cropData.id, id), eq(cropData.farmId, farmId)))
     .limit(1);

@@ -6,6 +6,7 @@ import {
   nursery,
   revenue,
   cropDataModules,
+  cropDataAllocationSegments,
   mediaAttachments,
   production,
   postHarvest,
@@ -300,4 +301,59 @@ export async function upsertModule(
     .values({ cropDataId, moduleType, data })
     .returning();
   return rows[0]!;
+}
+
+export type AllocationSegmentInput = {
+  cropDataId: string;
+  contractLineId: string | null;
+  blockMasterId: string | null;
+  cropId: string | null;
+  varietyId: string | null;
+  rowNo: number;
+  gender: string;
+  plantCount: number;
+  startPlantNo: number;
+  endPlantNo: number;
+  sequence: number;
+  periodYear: number | null;
+  periodStartWeek: number | null;
+  periodEndWeek: number | null;
+  userId: string;
+};
+
+export async function replaceAllocationSegments(
+  cropDataId: string,
+  segments: AllocationSegmentInput[]
+) {
+  await db
+    .delete(cropDataAllocationSegments)
+    .where(eq(cropDataAllocationSegments.cropDataId, cropDataId));
+
+  if (segments.length === 0) return [];
+
+  const rows = await db
+    .insert(cropDataAllocationSegments)
+    .values(
+      segments.map((segment) => ({
+        cropDataId: segment.cropDataId,
+        contractLineId: segment.contractLineId,
+        blockMasterId: segment.blockMasterId,
+        cropId: segment.cropId,
+        varietyId: segment.varietyId,
+        rowNo: segment.rowNo,
+        gender: segment.gender,
+        plantCount: segment.plantCount,
+        startPlantNo: segment.startPlantNo,
+        endPlantNo: segment.endPlantNo,
+        sequence: segment.sequence,
+        periodYear: segment.periodYear,
+        periodStartWeek: segment.periodStartWeek,
+        periodEndWeek: segment.periodEndWeek,
+        createdBy: segment.userId,
+        updatedBy: segment.userId,
+      }))
+    )
+    .returning();
+
+  return rows;
 }

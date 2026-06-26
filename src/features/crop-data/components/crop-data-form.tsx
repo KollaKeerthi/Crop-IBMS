@@ -1,21 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { useWatch } from "react-hook-form";
+import { useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
-import {
-  CreateCropDataInputSchema,
-  SexExpressionSchema,
-  type CreateCropDataInput,
-} from "../schema";
-import { useCreateCropData } from "../hooks";
+import { listBlockMaster } from "@/features/block-master/api";
+import { listContracts } from "@/features/contracts/api";
 import { listCrops, getCrop } from "@/features/crops/api";
 import { listSeasons } from "@/features/seasons/api";
-import { listContracts } from "@/features/contracts/api";
-import { useLocationHierarchy } from "@/features/locations/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,19 +28,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CreateCropDataInputSchema,
+  SexExpressionSchema,
+  type CreateCropDataInput,
+} from "../schema";
+import { useCreateCropData } from "../hooks";
 
 type Props = {
   farmId: string;
   onSuccess?: () => void;
 };
 
+function emptyProgram(farmId: string): Partial<CreateCropDataInput> {
+  return { farmId };
+}
+
+function contractLabel(contract: {
+  id: string;
+  contractRef?: string | null;
+  absContractNo?: string | null;
+  cropName?: string | null;
+  blockName?: string | null;
+}) {
+  const ref = contract.contractRef ?? contract.absContractNo ?? contract.id.slice(0, 8);
+  return [ref, contract.cropName, contract.blockName].filter(Boolean).join(" / ");
+}
+
 export function CropDataForm({ farmId, onSuccess }: Props) {
   const form = useForm<CreateCropDataInput>({
     resolver: zodResolver(CreateCropDataInputSchema),
-    defaultValues: { farmId },
+    defaultValues: emptyProgram(farmId),
   });
 
+  const selectedContractId = useWatch({ control: form.control, name: "contractId" });
   const selectedCropId = useWatch({ control: form.control, name: "cropId" });
+
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["contracts", farmId],
+    queryFn: () => listContracts(farmId),
+    enabled: !!farmId,
+  });
+
+  const { data: blocks = [] } = useQuery({
+    queryKey: ["block-master", farmId],
+    queryFn: () => listBlockMaster(farmId),
+    enabled: !!farmId,
+  });
 
   const { data: crops = [] } = useQuery({
     queryKey: ["crops"],
@@ -59,31 +87,64 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
     enabled: !!farmId,
   });
 
-  const { data: contracts = [] } = useQuery({
-    queryKey: ["contracts", farmId],
-    queryFn: () => listContracts(farmId),
-    enabled: !!farmId,
-  });
-
   const { data: selectedCrop } = useQuery({
     queryKey: ["crops", selectedCropId],
-    queryFn: () => getCrop(selectedCropId!),
+    queryFn: () => getCrop(selectedCropId),
     enabled: !!selectedCropId,
   });
 
-  const { data: hierarchy } = useLocationHierarchy(farmId);
-  const fieldsInDb = hierarchy?.fields ?? [];
-
+  const activeContracts = useMemo(
+    () => contracts.filter((contract) => contract.status === "active"),
+    [contracts]
+  );
+  const selectedContract = activeContracts.find((contract) => contract.id === selectedContractId);
   const types = selectedCrop?.types ?? [];
   const varieties = selectedCrop?.varieties ?? [];
+  const blockOptions = selectedContract?.blockId
+    ? blocks.filter((block) => block.id === selectedContract.blockId)
+    : blocks;
+  const seasonOptions = selectedContract?.seasonId
+    ? seasons.filter((season) => season.id === selectedContract.seasonId)
+    : seasons;
 
   const createMutation = useCreateCropData();
+
+  function applyContract(contractId: string | null) {
+    if (!contractId) return;
+    const contract = activeContracts.find((item) => item.id === contractId);
+    form.setValue("contractId", contractId, { shouldValidate: true });
+    form.setValue("contractNo", contract?.absContractNo ?? contract?.contractRef ?? "");
+    form.setValue("contractRef", contract?.contractRef ?? contract?.absContractNo ?? "");
+    form.setValue("headerNo", contract?.absHeaderNo ?? "");
+
+    if (contract?.cropId) form.setValue("cropId", contract.cropId, { shouldValidate: true });
+    if (contract?.cropTypeId) {
+      form.setValue("cropTypeId", contract.cropTypeId, { shouldValidate: true });
+    } else {
+      form.resetField("cropTypeId");
+    }
+    if (contract?.seasonId) form.setValue("seasonId", contract.seasonId, { shouldValidate: true });
+    if (contract?.blockId) {
+      const block = blocks.find((item) => item.id === contract.blockId);
+      form.setValue("blockMasterId", contract.blockId, { shouldValidate: true });
+      form.setValue("block", block?.blockName ?? contract.blockName ?? "", {
+        shouldValidate: true,
+      });
+    }
+  }
+
+  function applyBlock(blockId: string | null) {
+    if (!blockId) return;
+    const block = blocks.find((item) => item.id === blockId);
+    form.setValue("blockMasterId", blockId, { shouldValidate: true });
+    form.setValue("block", block?.blockName ?? "", { shouldValidate: true });
+  }
 
   async function onSubmit(values: CreateCropDataInput) {
     try {
       await createMutation.mutateAsync(values);
-      toast.success("Crop data record created");
-      form.reset({ farmId });
+      toast.success("Crop program created");
+      form.reset(emptyProgram(farmId));
       onSuccess?.();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -96,8 +157,62 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={form.control}
+          name="contractId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contract Ref Number</FormLabel>
+              <Select value={field.value ?? ""} onValueChange={applyContract}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select contract ref number" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {activeContracts.map((contract) => (
+                    <SelectItem key={contract.id} value={contract.id}>
+                      {contractLabel(contract)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="blockMasterId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Block</FormLabel>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={applyBlock}
+                  disabled={!selectedContractId}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select block" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {blockOptions.map((block) => (
+                      <SelectItem key={block.id} value={block.id}>
+                        {block.blockName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="cropId"
@@ -108,24 +223,20 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                   value={field.value ?? ""}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    form.setValue("cropTypeId", undefined);
-                    form.setValue("varietyId", undefined);
+                    form.resetField("cropTypeId");
+                    form.resetField("varietyId");
                   }}
+                  disabled={!selectedContractId || !!selectedContract?.cropId}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a crop">
-                        {(value) =>
-                          crops.find((c) => c.id === value)?.name ??
-                          (value ? "Select a crop" : null)
-                        }
-                      </SelectValue>
+                      <SelectValue placeholder="Select crop" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {crops.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
+                    {crops.map((crop) => (
+                      <SelectItem key={crop.id} value={crop.id}>
+                        {crop.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -143,23 +254,18 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 <FormLabel>Crop Type</FormLabel>
                 <Select
                   value={field.value ?? ""}
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    form.setValue("varietyId", undefined);
-                  }}
-                  disabled={!selectedCropId || types.length === 0}
+                  onValueChange={field.onChange}
+                  disabled={!selectedCropId || !!selectedContract?.cropTypeId}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={selectedCropId ? "Select a type" : "Select a crop first"}
-                      />
+                      <SelectValue placeholder="Select crop type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {types.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
+                    {types.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -174,58 +280,21 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
             name="varietyId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Variety</FormLabel>
+                <FormLabel>Variety / Product Code</FormLabel>
                 <Select
                   value={field.value ?? ""}
                   onValueChange={field.onChange}
-                  disabled={!selectedCropId || varieties.length === 0}
+                  disabled={!selectedCropId}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={selectedCropId ? "Select a variety" : "Select a crop first"}
-                      >
-                        {(value) =>
-                          varieties.find((v) => v.id === value)?.name ??
-                          (value ? "Select a variety" : null)
-                        }
-                      </SelectValue>
+                      <SelectValue placeholder="Select variety/product code" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {varieties.map((v) => (
-                      <SelectItem key={v.id} value={v.id}>
-                        {v.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="seasonId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Season</FormLabel>
-                <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a season">
-                        {(value) =>
-                          seasons.find((s) => s.id === value)?.name ??
-                          (value ? "Select a season" : null)
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {seasons.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
+                    {varieties.map((variety) => (
+                      <SelectItem key={variety.id} value={variety.id}>
+                        {variety.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -241,12 +310,14 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Sex Expression</FormLabel>
-                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  disabled={!selectedContractId}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select sex expression">
-                        {(value) => (value ? String(value) : null)}
-                      </SelectValue>
+                      <SelectValue placeholder="Select sex expression" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -264,40 +335,28 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
 
           <FormField
             control={form.control}
-            name="fieldName"
+            name="seasonId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Field Name</FormLabel>
-                {fieldsInDb.length > 0 ? (
-                  <Select
-                    value={field.value ?? ""}
-                    onValueChange={(val) => {
-                      field.onChange(val);
-                      // Clear block when field changes
-                      form.setValue("block", "");
-                      form.setValue("locationBlockId", null);
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select field from DB">
-                          {(value) => value || "Select field from DB"}
-                        </SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {fieldsInDb.map((f) => (
-                        <SelectItem key={f.id} value={f.name}>
-                          {f.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
+                <FormLabel>Season</FormLabel>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  disabled={!selectedContractId}
+                >
                   <FormControl>
-                    <Input {...field} value={field.value ?? ""} placeholder="e.g. North Field" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select season" />
+                    </SelectTrigger>
                   </FormControl>
-                )}
+                  <SelectContent>
+                    {seasonOptions.map((season) => (
+                      <SelectItem key={season.id} value={season.id}>
+                        {season.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -305,58 +364,16 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
 
           <FormField
             control={form.control}
-            name="block"
-            render={({ field }) => {
-              const selectedFieldName = form.watch("fieldName");
-              const selectedField = fieldsInDb.find((f) => f.name === selectedFieldName);
-              const blocksInDb = selectedField?.blocks ?? [];
-
-              return (
-                <FormItem>
-                  <FormLabel>Block</FormLabel>
-                  {blocksInDb.length > 0 ? (
-                    <Select
-                      value={form.watch("locationBlockId") ?? ""}
-                      onValueChange={(blockId) => {
-                        const selectedBlock = blocksInDb.find((b) => b.id === blockId);
-                        field.onChange(selectedBlock?.name ?? "");
-                        form.setValue("locationBlockId", selectedBlock?.id ?? null);
-                      }}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select block from DB">
-                            {(value) =>
-                              blocksInDb.find((b) => b.id === value)?.name ?? "Select block from DB"
-                            }
-                          </SelectValue>
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {blocksInDb.map((b) => (
-                          <SelectItem key={b.id} value={b.id}>
-                            {b.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="e.g. Block A"
-                        onChange={(event) => {
-                          field.onChange(event);
-                          form.setValue("locationBlockId", null);
-                        }}
-                      />
-                    </FormControl>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
+            name="fieldName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Field Name</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} placeholder="Optional field name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
 
           <FormField
@@ -366,58 +383,8 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>Field/Code</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="Field/Code" />
+                  <Input {...field} value={field.value ?? ""} placeholder="Optional field/code" />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="contractId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contract</FormLabel>
-                <Select
-                  value={field.value ?? ""}
-                  onValueChange={(value) => {
-                    const selected = contracts.find((contract) => contract.id === value);
-                    field.onChange(value);
-                    form.setValue(
-                      "contractNo",
-                      selected?.absContractNo ?? selected?.contractRef ?? ""
-                    );
-                    form.setValue("contractRef", selected?.contractRef ?? "");
-                    form.setValue("blockMasterId", selected?.blockId ?? null);
-                    if (selected?.blockName) form.setValue("block", selected.blockName);
-                  }}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a contract">
-                        {(value) => {
-                          const selected = contracts.find((contract) => contract.id === value);
-                          if (!selected) return value ? "Select a contract" : null;
-                          return (
-                            selected.absContractNo ??
-                            selected.contractRef ??
-                            `${selected.cropName ?? "Contract"} W${selected.plantingWeek ?? selected.pollinationStartWeek ?? "?"}`
-                          );
-                        }}
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {contracts.map((contract) => (
-                      <SelectItem key={contract.id} value={contract.id}>
-                        {contract.absContractNo ?? contract.contractRef ?? contract.id.slice(0, 8)}
-                        {contract.blockName ? ` - ${contract.blockName}` : ""}
-                        {contract.cropName ? ` - ${contract.cropName}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -430,7 +397,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>Contract No</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. CTR-001" />
+                  <Input {...field} value={field.value ?? ""} readOnly />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -444,35 +411,7 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
               <FormItem>
                 <FormLabel>Header No</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. HDR-001" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customerCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Code</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. CUST-001" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="contractRef"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contract Ref</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ""} placeholder="e.g. REF-001" />
+                  <Input {...field} value={field.value ?? ""} readOnly />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -494,9 +433,9 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
           )}
         />
 
-        {form.formState.errors.root && (
+        {form.formState.errors.root ? (
           <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
-        )}
+        ) : null}
 
         <Button type="submit" disabled={createMutation.isPending} className="w-full">
           {createMutation.isPending ? "Creating..." : "Create Program"}

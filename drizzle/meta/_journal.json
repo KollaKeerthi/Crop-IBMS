@@ -57,6 +57,13 @@
       "when": 1782395177928,
       "tag": "0024_cooing_bloodstorm",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1782467394922,
+      "tag": "0025_yellow_tarantula",
+      "breakpoints": true
     }
   ]
 }

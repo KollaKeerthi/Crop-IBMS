@@ -344,6 +344,44 @@ export const cropDataModules = pgTable(
   (table) => [index("crop_data_modules_crop_data_id_idx").on(table.cropDataId)]
 );
 
+// Structured row/plant-position allocation generated from Planting Detail.
+// This is segment-level storage, not per-plant storage.
+export const cropDataAllocationSegments = pgTable(
+  "crop_data_allocation_segments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    cropDataId: uuid("crop_data_id")
+      .notNull()
+      .references(() => cropData.id, { onDelete: "cascade" }),
+    contractLineId: uuid("contract_line_id").references(() => contracts.id, {
+      onDelete: "set null",
+    }),
+    blockMasterId: uuid("block_master_id").references(() => blockMaster.id, {
+      onDelete: "set null",
+    }),
+    cropId: uuid("crop_id").references(() => crops.id, { onDelete: "set null" }),
+    varietyId: uuid("variety_id").references(() => cropVarieties.id, { onDelete: "set null" }),
+    rowNo: integer("row_no").notNull(),
+    gender: text("gender").notNull(),
+    plantCount: integer("plant_count").notNull(),
+    startPlantNo: integer("start_plant_no").notNull(),
+    endPlantNo: integer("end_plant_no").notNull(),
+    sequence: integer("sequence").notNull(),
+    periodYear: integer("period_year"),
+    periodStartWeek: integer("period_start_week"),
+    periodEndWeek: integer("period_end_week"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("crop_data_alloc_segments_crop_data_id_idx").on(table.cropDataId),
+    index("crop_data_alloc_segments_contract_line_id_idx").on(table.contractLineId),
+    index("crop_data_alloc_segments_block_row_idx").on(table.blockMasterId, table.rowNo),
+  ]
+);
+
 // Harvest Records — one row per harvest event
 export const harvestRecords = pgTable(
   "harvest_records",
