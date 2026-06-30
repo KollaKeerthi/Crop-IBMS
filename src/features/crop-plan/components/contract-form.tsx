@@ -22,6 +22,8 @@ import { useBlockMaster } from "@/features/block-master/hooks";
 import { useDensityMaster } from "@/features/density-master/hooks";
 import { useCreateContract, useUpdateContract } from "@/features/contracts/hooks";
 import type { Contract } from "@/features/contracts/schema";
+import { useReservations } from "@/features/reservations/hooks";
+import type { Reservation } from "@/features/reservations/schema";
 import { apiFetch } from "@/lib/api/client";
 
 const NONE = "__none__";
@@ -38,6 +40,7 @@ const FormSchema = z.object({
   blockId: z.string().uuid().optional().nullable(),
   activeTimeId: z.string().uuid().optional().nullable(),
   seasonId: z.string().uuid().optional().nullable(),
+  reservationId: z.string().uuid().optional().nullable(),
   pollinationStartWeek: z.number().int().min(1).max(52).optional().nullable(),
   materialArrivalWeek: z.number().int().min(1).max(52).optional().nullable(),
   plantingWeek: z.number().int().min(1).max(52).optional().nullable(),
@@ -75,6 +78,7 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
   const { data: seasons = [] } = useSeasons(farmId);
   const { data: blocks = [] } = useBlockMaster(farmId);
   const { data: densities = [] } = useDensityMaster(farmId);
+  const { data: reservations = [] } = useReservations(farmId, year);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema) as Resolver<FormValues>,
@@ -85,6 +89,7 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
       blockId: contract?.blockId ?? null,
       activeTimeId: contract?.activeTimeId ?? null,
       seasonId: contract?.seasonId ?? null,
+      reservationId: contract?.reservationId ?? null,
       pollinationStartWeek: contract?.pollinationStartWeek ?? null,
       materialArrivalWeek: contract?.materialArrivalWeek ?? null,
       plantingWeek: contract?.plantingWeek ?? null,
@@ -112,12 +117,58 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
   const watchUnitPrice = form.watch("unitPrice");
   const watchSurfaceMale = form.watch("surfaceMale");
   const watchMfSameBlock = form.watch("mfSameBlock");
+  const watchReservationId = form.watch("reservationId");
 
   const selectedCrop = useMemo(
     () => allCrops.find((c) => c.id === watchCropId),
     [allCrops, watchCropId]
   );
   const cropTypes = selectedCrop?.types ?? [];
+  const selectedReservation = useMemo(
+    () => reservations.find((reservation) => reservation.id === watchReservationId),
+    [reservations, watchReservationId]
+  );
+
+  function reservationLabel(reservation: Reservation) {
+    const ref = reservation.reservationRef ?? reservation.id.slice(0, 8);
+    return [
+      ref,
+      reservation.cropName,
+      reservation.cropTypeName,
+      reservation.blockName ?? "Unallocated",
+      reservation.stakeholderName,
+    ]
+      .filter(Boolean)
+      .join(" / ");
+  }
+
+  function applyReservation(reservationId: string | null) {
+    if (!reservationId) {
+      form.setValue("reservationId", null, { shouldValidate: true });
+      form.setValue("reservationRef", null);
+      return;
+    }
+
+    const reservation = reservations.find((item) => item.id === reservationId);
+    form.setValue("reservationId", reservationId, { shouldValidate: true });
+    if (!reservation) return;
+
+    form.setValue("reservationRef", reservation.reservationRef ?? reservation.id.slice(0, 8));
+    form.setValue("productionTypeId", reservation.productionTypeId);
+    form.setValue("cropId", reservation.cropId);
+    form.setValue("cropTypeId", reservation.cropTypeId);
+    form.setValue("blockId", reservation.blockId);
+    form.setValue("activeTimeId", reservation.activeTimeId);
+    form.setValue("seasonId", reservation.seasonId);
+    form.setValue("pollinationStartWeek", reservation.pollinationStartWeek);
+    form.setValue("materialArrivalWeek", reservation.materialArrivalWeek);
+    form.setValue("plantingWeek", reservation.plantingWeek);
+    form.setValue("endWeek", reservation.endWeek);
+    form.setValue("noOfPlantsFemale", reservation.noOfPlantsFemale);
+    form.setValue("plantsPerM2", reservation.plantsPerM2);
+    form.setValue("surfaceMale", reservation.surfaceMale);
+    form.setValue("mfSameBlock", reservation.mfSameBlock);
+  }
 
   useEffect(() => {
     if (!watchCropId || !watchPollinationWeek) return;
@@ -160,14 +211,15 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
 
   useEffect(() => {
     if (!watchPollinationWeek || !seasons.length) return;
-    const match = seasons.find(
-      (s) =>
-        s.year === year &&
-        s.startWeek != null &&
-        s.endWeek != null &&
-        s.startWeek <= watchPollinationWeek &&
-        s.endWeek >= watchPollinationWeek
-    );
+    const absoluteWeek = year * 52 + watchPollinationWeek;
+    const match = seasons.find((s) => {
+      if (s.startWeek == null || s.endWeek == null) return false;
+      const sameYear = s.year === year || s.year === 0;
+      const localWeekMatch =
+        sameYear && s.startWeek <= watchPollinationWeek && s.endWeek >= watchPollinationWeek;
+      const absoluteWeekMatch = s.startWeek <= absoluteWeek && s.endWeek >= absoluteWeek;
+      return localWeekMatch || absoluteWeekMatch;
+    });
     if (match) form.setValue("seasonId", match.id);
   }, [watchPollinationWeek, year, seasons, form]);
 
@@ -234,6 +286,46 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Load Existing Reservation</Label>
+        <Select
+          value={form.watch("reservationId") ?? NONE}
+          onValueChange={(value) => applyReservation(value === NONE ? null : value)}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue>
+              {(value) =>
+                !value || value === NONE ? (
+                  <span className="text-muted-foreground">Select reservation</span>
+                ) : selectedReservation ? (
+                  reservationLabel(selectedReservation)
+                ) : (
+                  "Select reservation"
+                )
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE} label="Select reservation">
+              Select reservation
+            </SelectItem>
+            {reservations.map((reservation) => (
+              <SelectItem
+                key={reservation.id}
+                value={reservation.id}
+                label={reservationLabel(reservation)}
+              >
+                {reservationLabel(reservation)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-[11px] text-muted-foreground">
+          Selecting a reservation loads its details into the contract. You can still edit them
+          before saving.
+        </p>
+      </div>
+
       {/* ── Identification ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
@@ -401,10 +493,7 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
 
       {/* ── Block ── */}
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium">
-          Block{" "}
-          <span className="text-muted-foreground font-normal">(leave empty → Unallocated)</span>
-        </Label>
+        <Label className="text-xs font-medium">Block</Label>
         <Select
           value={form.watch("blockId") ?? NONE}
           onValueChange={(v) => form.setValue("blockId", v === NONE ? null : v)}
@@ -412,7 +501,7 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
           <SelectTrigger className="h-9 text-sm">
             <SelectValue>
               {(v) => {
-                if (!v || v === NONE) return "— Unallocated —";
+                if (!v || v === NONE) return "Unallocated";
                 const b = blocks.find((bl) => bl.id === v);
                 return b
                   ? `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`
@@ -421,8 +510,8 @@ export function ContractForm({ farmId, year, contract, onSaved, onCancel }: Prop
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NONE} label="— Unallocated —">
-              — Unallocated —
+            <SelectItem value={NONE} label="Unallocated">
+              Unallocated
             </SelectItem>
             {blocks.map((b) => {
               const blockLabel = `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`;

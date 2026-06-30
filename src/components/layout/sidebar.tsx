@@ -7,11 +7,14 @@ import {
   Leaf,
   BookOpen,
   Database,
+  LayoutDashboard,
   ChevronDown,
   ChevronRight,
   CheckSquare,
   Check,
   Tractor,
+  Map,
+  Settings,
   Layers,
   PanelLeftClose,
   PanelLeftOpen,
@@ -37,17 +40,16 @@ type NavSection = {
 };
 
 const MANAGEMENT_ITEMS: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Crop Plan", href: "/dashboard/crop-plan", icon: Layers },
   { label: "Crop Info", href: "/dashboard/crop-information", icon: BookOpen },
   { label: "Crop Data", href: "/dashboard/crop-data", icon: Database },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
+  { label: "Farm Map", href: "/dashboard/map", icon: Map },
 ];
 
 const INTELLIGENCE_ITEMS: NavItem[] = [];
-
-const PLATFORM_ITEMS: NavItem[] = [
-  { label: "Farm Settings", href: "/dashboard/farms", icon: Tractor },
-];
+const PLATFORM_ITEMS: NavItem[] = [];
 
 function getInitials(name: string | null, email: string): string {
   if (name) {
@@ -120,8 +122,8 @@ export function Sidebar({
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm transition-transform hover:scale-105 duration-200">
               <Leaf className="size-4 text-primary animate-pulse" />
             </div>
-            <span className="font-heading text-sm font-bold tracking-wider uppercase bg-linear-to-r from-primary via-primary/95 to-emerald-500 bg-clip-text text-transparent truncate">
-              iBMS-Crop
+            <span className="font-heading text-sm font-bold tracking-wider bg-linear-to-r from-sky-600 via-cyan-600 to-emerald-600 bg-clip-text text-transparent truncate">
+              iBMS Crop
             </span>
           </div>
         )}
@@ -339,8 +341,26 @@ export function Sidebar({
         ))}
       </nav>
 
-      {/* User section */}
-      <div className={cn("border-t border-border/40 p-3", collapsed && "px-2 py-4")}>
+      {/* Footer navigation + user section */}
+      <div className={cn("border-t border-border/40 p-3 space-y-3", collapsed && "px-2 py-4")}>
+        <Link
+          href="/dashboard/settings"
+          title={collapsed ? "Settings" : undefined}
+          className={cn(
+            "flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer relative group",
+            collapsed ? "h-10 w-10 mx-auto justify-center" : "px-3.5 py-2.5",
+            pathname.startsWith("/dashboard/settings")
+              ? "bg-primary/8 text-primary font-semibold ring-1 ring-primary/10"
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+          )}
+        >
+          {pathname.startsWith("/dashboard/settings") && (
+            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary" />
+          )}
+          <Settings className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:text-primary" />
+          {!collapsed && <span>Settings</span>}
+        </Link>
+
         <div
           className={cn(
             "flex items-center gap-3 rounded-2xl transition-all duration-200",

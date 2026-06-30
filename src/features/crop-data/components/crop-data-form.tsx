@@ -55,6 +55,10 @@ function contractLabel(contract: {
   return [ref, contract.cropName, contract.blockName].filter(Boolean).join(" / ");
 }
 
+function selectedLabel(value: string | null | undefined, fallback: string) {
+  return value ? fallback : <span className="text-muted-foreground">{fallback}</span>;
+}
+
 export function CropDataForm({ farmId, onSuccess }: Props) {
   const form = useForm<CreateCropDataInput>({
     resolver: zodResolver(CreateCropDataInputSchema),
@@ -106,6 +110,11 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
   const seasonOptions = selectedContract?.seasonId
     ? seasons.filter((season) => season.id === selectedContract.seasonId)
     : seasons;
+  const selectedBlock = blocks.find((block) => block.id === form.watch("blockMasterId"));
+  const selectedCropOption = crops.find((crop) => crop.id === form.watch("cropId"));
+  const selectedType = types.find((type) => type.id === form.watch("cropTypeId"));
+  const selectedVariety = varieties.find((variety) => variety.id === form.watch("varietyId"));
+  const selectedSeason = seasons.find((season) => season.id === form.watch("seasonId"));
 
   const createMutation = useCreateCropData();
 
@@ -167,7 +176,15 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
               <Select value={field.value ?? ""} onValueChange={applyContract}>
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select contract ref number" />
+                    <SelectValue>
+                      {(value) => {
+                        const contract = activeContracts.find((item) => item.id === value);
+                        return selectedLabel(
+                          value,
+                          contract ? contractLabel(contract) : "Select contract ref number"
+                        );
+                      }}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -197,7 +214,11 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select block" />
+                      <SelectValue>
+                        {(value) =>
+                          selectedLabel(value, selectedBlock?.blockName ?? "Select block")
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -230,7 +251,14 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select crop" />
+                      <SelectValue>
+                        {(value) =>
+                          selectedLabel(
+                            value,
+                            selectedCropOption?.name ?? selectedCrop?.name ?? "Select crop"
+                          )
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -259,7 +287,9 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select crop type" />
+                      <SelectValue>
+                        {(value) => selectedLabel(value, selectedType?.name ?? "Select crop type")}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -288,7 +318,14 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select variety/product code" />
+                      <SelectValue>
+                        {(value) =>
+                          selectedLabel(
+                            value,
+                            selectedVariety?.name ?? "Select variety/product code"
+                          )
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -317,7 +354,11 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select sex expression" />
+                      <SelectValue>
+                        {(value) =>
+                          selectedLabel(value, value ? String(value) : "Select sex expression")
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -346,7 +387,9 @@ export function CropDataForm({ farmId, onSuccess }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select season" />
+                      <SelectValue>
+                        {(value) => selectedLabel(value, selectedSeason?.name ?? "Select season")}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
