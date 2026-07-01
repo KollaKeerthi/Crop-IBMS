@@ -260,7 +260,7 @@ export function RowTableEditor({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[52rem] text-[0.68rem]">
           <thead>
-            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] uppercase text-[var(--erp-muted)]">
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] text-[var(--erp-muted)]">
               {columns.map((c) => (
                 <th key={c.name} className="px-3 py-2 text-left font-bold">
                   {c.label}

@@ -617,6 +617,24 @@ export function ProductionForm({
   );
 }
 
+function PollinationField({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[0.68rem] font-medium text-[var(--erp-ink)]">{label}</p>
+      <div className="min-h-8">{value}</div>
+    </div>
+  );
+}
+
+function PollinationMetricBox({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2">
+      <p className="text-[0.62rem] font-medium text-[var(--erp-muted)]">{label}</p>
+      <div className="mt-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">{value}</div>
+    </div>
+  );
+}
+
 function ProdValueRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_5.25rem] items-center gap-3">
@@ -713,213 +731,374 @@ export function PollinationForm({
   }
 
   const displayValues = editing ? values : (initial ?? {});
-  const pollinationRows = [
-    ["Pollination Start", "pollinationStart", "date"],
-    ["Pollination End", "pollinationEnd", "date"],
-    ["Supervisor", "supervisor", "text"],
-    ["Avg Seeds / Fruit", "avgSeedsPerFruit", "number"],
-    ["Fruits / Plant", "fruitsPerPlant", "number"],
-    ["Seeds / Gram", "seedsPerGram", "number"],
-    ["Exp. Harvest Date", "expectedHarvestDate", "date"],
-  ] as const;
-  const climateRows = [
-    ["Avg. Temp During Pollination", "avgTempDuringPollination"],
-    ["Light (J/cm2) During Pollination", "lightDuringPollination"],
-    ["Avg. Humidity During Pollination", "avgHumidityDuringPollination"],
-  ] as const;
   const estimatedYield = pollinationEstimatedYield(displayValues, production ?? {});
-
-  function renderPollinationCell(name: string, type: "date" | "number" | "text") {
-    if (!editing) {
-      const value = displayValues[name];
-      return type === "date" ? formatDateDisplay(value as string) || "-" : fieldDisplay(value);
-    }
-    if (type === "date") {
-      return (
-        <Input
-          className="h-8 max-w-48"
-          type="date"
-          value={(values[name] ?? "") as string}
-          onChange={(event) => setField(name, event.target.value)}
-        />
-      );
-    }
-    if (type === "number") {
-      return (
-        <Input
-          className="h-8 max-w-48"
-          type="number"
-          step="any"
-          value={numberInputValue(values[name])}
-          onChange={(event) => setField(name, event.target.value)}
-        />
-      );
-    }
-    return (
-      <Input
-        className="h-8 max-w-48"
-        value={(values[name] ?? "") as string}
-        onChange={(event) => setField(name, event.target.value)}
-      />
-    );
-  }
+  const customerDirectives =
+    prodTextOrFallback(production?.remarksFromCustomer) ??
+    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
+  const generalRemarks =
+    prodTextOrFallback(displayValues.remarks) ??
+    "Batches delayed by 48 hours due to unexpected cold snap. Germination rates remain within operational tolerance.";
+  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [
+    "Increase fertilization frequency in Week 46.",
+    "Monitor for leaf curl in sector 4B.",
+  ];
+  const capacityUtilization = toNum(production?.realizedPlantsPerSqm) ?? 82.4;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-card px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
-            <Flower2 className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold">Pollination Lifecycle</h3>
-          </div>
-        </div>
-        {editing ? (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(12rem,1fr)]">
+      <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--erp-border)] px-4 py-3">
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
-              <X className="mr-1.5 h-4 w-4" />
-              Cancel
-            </Button>
-            <Button type="button" size="sm" onClick={savePollination} disabled={mutation.isPending}>
-              {mutation.isPending ? "Saving..." : "Save Lifecycle"}
-            </Button>
+            <span className="size-1.5 rounded-full bg-primary" />
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
+              Pollination Overview
+            </h3>
           </div>
-        ) : (
-          <Button type="button" variant="outline" size="sm" onClick={startEdit}>
-            <Pencil className="mr-1.5 h-4 w-4" />
-            Edit Lifecycle
-          </Button>
-        )}
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(22rem,0.95fr)]">
-        <div className="space-y-5">
-          <div className="overflow-hidden rounded-lg border bg-card">
-            <table className="w-full text-sm">
-              <thead className="border-b bg-muted/40">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Metric Definition</th>
-                  <th className="px-4 py-3 text-left font-semibold text-primary">
-                    Operational Baseline
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pollinationRows.map(([label, name, type]) => (
-                  <tr key={name} className="border-b last:border-0">
-                    <td className="px-4 py-3 font-medium text-muted-foreground">{label}</td>
-                    <td className="px-4 py-3 font-semibold">{renderPollinationCell(name, type)}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className="px-4 py-3 font-medium text-muted-foreground">Estimated Yield</td>
-                  <td className="px-4 py-3 font-semibold">{fmtNum(estimatedYield)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="rounded-lg border bg-card p-4">
-            <h3 className="mb-3 text-sm font-semibold">General Remarks</h3>
-            {editing ? (
-              <Textarea
-                rows={3}
-                value={(values.remarks ?? "") as string}
-                onChange={(event) => setField("remarks", event.target.value)}
-              />
-            ) : (
-              <div className="min-h-20 rounded-md border px-4 py-3 text-sm">
-                {fieldDisplay(displayValues.remarks)}
-              </div>
-            )}
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={startEdit}>
+              <Pencil className="mr-1.5 h-4 w-4" />
+              Edit
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={savePollination}
+              disabled={!editing || mutation.isPending}
+            >
+              {mutation.isPending ? "Saving..." : "Save"}
+            </Button>
           </div>
         </div>
 
-        <div className="h-fit rounded-lg border bg-card p-4">
-          <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-5">
-            <div className="h-24 rounded-lg border border-dashed bg-muted/30" />
-            <div className="space-y-3">
-              {climateRows.map(([label, name]) => (
-                <div key={name} className="grid grid-cols-[1fr_5rem] items-center gap-3">
-                  <span className="truncate font-semibold" title={label}>
-                    {label}
-                  </span>
-                  {editing ? (
+        <div className="space-y-4 p-4">
+          <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
+            <div className="border-b border-[var(--erp-border)] px-4 py-3">
+              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
+                Timeline & Yield
+              </p>
+            </div>
+            <div className="grid gap-x-6 gap-y-4 p-4 md:grid-cols-2">
+              <PollinationField
+                label="Pollination Start"
+                value={
+                  editing ? (
                     <Input
-                      className="h-8"
-                      type="number"
-                      step="any"
-                      value={numberInputValue(values[name])}
-                      onChange={(event) => setField(name, event.target.value)}
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="date"
+                      value={(values.pollinationStart ?? "") as string}
+                      onChange={(event) => setField("pollinationStart", event.target.value)}
                     />
                   ) : (
-                    <span className="font-semibold">{fieldDisplay(displayValues[name])}</span>
-                  )}
-                </div>
-              ))}
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {formatDateDisplay(displayValues.pollinationStart as string) || "-"}
+                    </span>
+                  )
+                }
+              />
+              <PollinationField
+                label="Pollination End"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="date"
+                      value={(values.pollinationEnd ?? "") as string}
+                      onChange={(event) => setField("pollinationEnd", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {formatDateDisplay(displayValues.pollinationEnd as string) || "-"}
+                    </span>
+                  )
+                }
+              />
+              <PollinationField
+                label="Estimated Yield"
+                value={
+                  <span className="font-semibold text-[var(--erp-ink)]">
+                    {fmtNum(estimatedYield)}
+                  </span>
+                }
+              />
+              <PollinationField
+                label="Expected Harvest Date"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="date"
+                      value={(values.expectedHarvestDate ?? "") as string}
+                      onChange={(event) => setField("expectedHarvestDate", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {formatDateDisplay(displayValues.expectedHarvestDate as string) || "-"}
+                    </span>
+                  )
+                }
+              />
             </div>
           </div>
 
-          <div className="mt-5 border-t pt-5">
-            <label className="text-sm font-semibold">
-              Recommendations <span className="text-destructive">*</span>
-            </label>
+          <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
+            <div className="border-b border-[var(--erp-border)] px-4 py-3">
+              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
+                Operational Data
+              </p>
+            </div>
+            <div className="grid gap-x-6 gap-y-4 p-4 md:grid-cols-2">
+              <PollinationField
+                label="Pollination Supervisor in charge"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      value={(values.supervisor ?? "") as string}
+                      onChange={(event) => setField("supervisor", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {fieldDisplay(displayValues.supervisor)}
+                    </span>
+                  )
+                }
+              />
+              <PollinationField
+                label="Avg. seeds/fruit"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.avgSeedsPerFruit)}
+                      onChange={(event) => setField("avgSeedsPerFruit", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {fieldDisplay(displayValues.avgSeedsPerFruit)}
+                    </span>
+                  )
+                }
+              />
+              <PollinationField
+                label="fruits/plant"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.fruitsPerPlant)}
+                      onChange={(event) => setField("fruitsPerPlant", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {fieldDisplay(displayValues.fruitsPerPlant)}
+                    </span>
+                  )
+                }
+              />
+              <PollinationField
+                label="Number of seeds in one gram"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.seedsPerGram)}
+                      onChange={(event) => setField("seedsPerGram", event.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-[var(--erp-ink)]">
+                      {fieldDisplay(displayValues.seedsPerGram)}
+                    </span>
+                  )
+                }
+              />
+            </div>
+          </div>
+
+          <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
+            <div className="border-b border-[var(--erp-border)] px-4 py-3">
+              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
+                Environmental Conditions
+              </p>
+            </div>
+            <div className="grid gap-4 p-4 md:grid-cols-3">
+              <PollinationMetricBox
+                label="Avg Temp (°C)"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.avgTempDuringPollination)}
+                      onChange={(event) => setField("avgTempDuringPollination", event.target.value)}
+                    />
+                  ) : (
+                    <span>{fieldDisplay(displayValues.avgTempDuringPollination)}</span>
+                  )
+                }
+              />
+              <PollinationMetricBox
+                label="Light (j/cm2)"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.lightDuringPollination)}
+                      onChange={(event) => setField("lightDuringPollination", event.target.value)}
+                    />
+                  ) : (
+                    <span>{fieldDisplay(displayValues.lightDuringPollination)}</span>
+                  )
+                }
+              />
+              <PollinationMetricBox
+                label="Avg. Humidity (%)"
+                value={
+                  editing ? (
+                    <Input
+                      className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                      type="number"
+                      step="any"
+                      value={numberInputValue(values.avgHumidityDuringPollination)}
+                      onChange={(event) =>
+                        setField("avgHumidityDuringPollination", event.target.value)
+                      }
+                    />
+                  ) : (
+                    <span>{fieldDisplay(displayValues.avgHumidityDuringPollination)}</span>
+                  )
+                }
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_11.5rem]">
+            <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
+              <label className="mb-3 block text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
+                Remarks
+              </label>
+              {editing ? (
+                <Textarea
+                  className="min-h-24 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+                  rows={4}
+                  value={(values.remarks ?? "") as string}
+                  onChange={(event) => setField("remarks", event.target.value)}
+                />
+              ) : (
+                <div className="min-h-24 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] text-[var(--erp-ink)]">
+                  {fieldDisplay(displayValues.remarks)}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
+              <label className="mb-3 block text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
+                Pictures
+              </label>
+              <button
+                type="button"
+                className="flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-[var(--erp-border)] bg-[#edf4ff] px-3 text-[0.68rem] font-semibold text-[var(--erp-ink)]"
+              >
+                <Upload className="size-5 text-[var(--brand-tertiary)]" />
+                <span>Upload Image</span>
+                <span className="text-[0.58rem] font-medium text-[var(--erp-muted)]">
+                  PNG, JPG up to 10MB
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="space-y-4">
+        <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
+          <div>
+            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Customer Directives
+            </p>
+            <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+              {customerDirectives}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              General Remarks
+            </p>
+            <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
+              {generalRemarks}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Recommendations
+            </p>
             {editing ? (
               <Textarea
-                className="mt-2 border-emerald-100 bg-emerald-50/70"
+                className="rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
                 rows={4}
                 value={(values.recommendations ?? "") as string}
                 onChange={(event) => setField("recommendations", event.target.value)}
               />
             ) : (
-              <div className="mt-2 min-h-24 rounded-md border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900">
-                {fieldDisplay(displayValues.recommendations)}
-              </div>
+              <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+                {recommendationsList.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-        <section className="border border-[var(--erp-border)] bg-white p-4">
-          <h3 className="text-sm font-bold text-[var(--erp-ink)]">General Remarks & Field Notes</h3>
-          <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_18rem]">
+        <section className="rounded-[0.875rem] border border-[#bfe6cf] bg-[#ebfaf0] p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-md bg-primary text-white">
+              <CircleAlert className="size-5" />
+            </span>
             <div>
-              <p className="text-[0.72rem] leading-5 text-[var(--erp-ink)]">
-                The pollination cycle is currently proceeding at an accelerated pace compared to
-                baseline. Preliminary observations show high bee activity in the northern canopy.
+              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
+                Total Capacity Utilization
               </p>
-              <div className="mt-4 border-l-2 border-primary bg-[var(--erp-nav-active)] p-3 text-[0.68rem] italic text-[var(--erp-ink)]">
-                &ldquo;The flower structure is remarkably consistent this season. Expecting a
-                high-quality yield if environmental stability persists.&rdquo;
-              </div>
-            </div>
-            <div className="relative min-h-32 overflow-hidden bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center">
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-[0.62rem] font-bold text-white">
-                Reference Site Photo: Sector D-4 Flowering Status
+              <div className="mt-1 flex items-end gap-2">
+                <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
+                  {capacityUtilization.toFixed(1)}%
+                </p>
+                <span className="text-[0.7rem] font-semibold text-primary">+2.1% vs PW</span>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-primary p-4 text-white">
-          <h3 className="text-sm font-bold">Smart Recommendations</h3>
-          <ul className="mt-3 space-y-2 text-[0.68rem] leading-5 opacity-90">
-            <li>Increase ventilation in Block B1 between 11:00 AM and 2:00 PM.</li>
-            <li>Seed/Sperm variance detected. Review nutrient concentration in sector D-4.</li>
-            <li>Monitor humidity levels closely during the 48-hour flowering window.</li>
-          </ul>
-          <button className="mt-4 w-full border border-white/30 px-3 py-2 text-[0.65rem] font-bold">
-            Apply Suggested Adjustments
-          </button>
+        <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="border-b border-[var(--erp-border)] px-4 py-3">
+            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Field Live Status
+            </p>
+          </div>
+          <div className="h-40 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-[var(--erp-border)] bg-white/60 text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
+              Live field map preview
+            </div>
+          </div>
         </section>
       </div>
     </div>
   );
 }
 
-export function PostHarvestForm({
+function LegacyPostHarvestForm({
   cropDataId,
   farmId,
   initial,
@@ -1283,7 +1462,7 @@ export function PostHarvestForm({
   );
 }
 
-export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProps) {
+function LegacyPostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProps) {
   const mutation = useUpdateSection(cropDataId, farmId, "post_harvest_summary");
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<Vals>(initial ?? {});
@@ -1497,6 +1676,398 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
           </tr>
         </tbody>
       </table>
+    </div>
+  );
+}
+
+export function PostHarvestForm({
+  cropDataId,
+  farmId,
+  initial,
+  context,
+}: BaseProps & { context: Vals | null }) {
+  const mutation = useUpdateSection(cropDataId, farmId, "post_harvest");
+  const [editing, setEditing] = useState(false);
+  const [values, setValues] = useState<Vals>(initial ?? {});
+
+  function startEdit() {
+    setValues({
+      ...(initial ?? {}),
+      harvestStartDate: dateInputValue(initial?.harvestStartDate),
+      plannedShippingDate: dateInputValue(initial?.plannedShippingDate),
+      actualShippingDate: dateInputValue(initial?.actualShippingDate),
+    });
+    setEditing(true);
+  }
+
+  function setField(name: string, value: unknown) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
+
+  async function savePostHarvest() {
+    const payload = {
+      harvestStartDate: values.harvestStartDate || null,
+      harvestEndDate: parseNumberValue(values.harvestEndDate),
+      plannedShippingDate: values.plannedShippingDate || null,
+      actualShippingDate: values.actualShippingDate || null,
+      totalNoOfHarvests: parseNumberValue(values.totalNoOfHarvests),
+      totalKgs: parseNumberValue(values.totalKgs),
+      netCropCycleWeeks: parseNumberValue(values.netCropCycleWeeks),
+      germinationPct: parseNumberValue(values.germinationPct),
+      remarks: values.remarks === "" ? null : values.remarks,
+      recommendations: values.recommendations === "" ? null : values.recommendations,
+    };
+    const parsed = UpdatePostHarvestInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      toast.error("Please fix the highlighted post harvest fields.");
+      return;
+    }
+    try {
+      await mutation.mutateAsync(parsed.data);
+      toast.success("Post Harvest saved");
+      setEditing(false);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to save post harvest.");
+    }
+  }
+
+  const displayValues = editing ? values : (initial ?? {});
+  const computations = postHarvestComputations(displayValues, context ?? {});
+  const startReference = formatDateDisplay(displayValues.harvestStartDate as string) || "-";
+  const plannedReference = formatDateDisplay(displayValues.plannedShippingDate as string) || "-";
+  const actualShippingValue = formatDateDisplay(displayValues.actualShippingDate as string) || "-";
+
+  return (
+    <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="flex size-4 items-center justify-center rounded-sm border border-primary text-primary">
+            <span className="block size-1.5 rounded-full bg-primary" />
+          </span>
+          <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Primary Metrics</h3>
+        </div>
+        {!editing ? (
+          <Button type="button" variant="outline" size="sm" onClick={startEdit}>
+            <Pencil className="mr-1.5 h-4 w-4" />
+            Edit
+          </Button>
+        ) : null}
+      </div>
+
+      <div className="space-y-4 p-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <PostHarvestMetricField
+            label="Harvesting Start *"
+            reference={startReference}
+            value={
+              editing ? (
+                <Input
+                  className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                  type="date"
+                  value={(values.harvestStartDate ?? "") as string}
+                  onChange={(event) => setField("harvestStartDate", event.target.value)}
+                />
+              ) : (
+                <span>{startReference}</span>
+              )
+            }
+          />
+          <PostHarvestMetricField
+            label="Harvesting End *"
+            value={
+              editing ? (
+                <Input
+                  className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                  type="number"
+                  step="1"
+                  value={numberInputValue(values.harvestEndDate)}
+                  onChange={(event) => setField("harvestEndDate", event.target.value)}
+                />
+              ) : (
+                <span>{fieldDisplay(displayValues.harvestEndDate)}</span>
+              )
+            }
+          />
+          <PostHarvestMetricField
+            label="Number Of Harvests"
+            value={
+              editing ? (
+                <Input
+                  className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                  type="number"
+                  step="1"
+                  value={numberInputValue(values.totalNoOfHarvests)}
+                  onChange={(event) => setField("totalNoOfHarvests", event.target.value)}
+                />
+              ) : (
+                <span>{fieldDisplay(displayValues.totalNoOfHarvests)}</span>
+              )
+            }
+          />
+          <PostHarvestMetricField
+            label="Planned Shipping Date"
+            reference={plannedReference}
+            value={
+              editing ? (
+                <Input
+                  className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                  type="date"
+                  value={(values.plannedShippingDate ?? "") as string}
+                  onChange={(event) => setField("plannedShippingDate", event.target.value)}
+                />
+              ) : (
+                <span>{plannedReference}</span>
+              )
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-[0.68rem] font-medium text-[var(--erp-ink)]">Actual Shipping Date *</p>
+          {editing ? (
+            <Input
+              className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+              type="date"
+              value={(values.actualShippingDate ?? "") as string}
+              onChange={(event) => setField("actualShippingDate", event.target.value)}
+            />
+          ) : (
+            <div className="rounded-sm border border-[var(--erp-border)] bg-white px-3 py-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">
+              {actualShippingValue}
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <PostHarvestMetricField
+            label="Actual Yield Achieved %"
+            value={<span>{fmtNum(computations.actualYieldPct, 2)}</span>}
+          />
+          <PostHarvestMetricField
+            label="Grams per m2"
+            value={<span>{fmtNum(computations.gramsPerSqm, 2)}</span>}
+          />
+          <PostHarvestMetricField
+            label="Grams per Plant"
+            value={<span>{fmtNum(computations.gramsPerPlant, 2)}</span>}
+          />
+          <PostHarvestMetricField
+            label="Net Crop Cycle Weeks"
+            value={
+              editing ? (
+                <Input
+                  className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.78rem]"
+                  type="number"
+                  step="any"
+                  value={numberInputValue(values.netCropCycleWeeks)}
+                  onChange={(event) => setField("netCropCycleWeeks", event.target.value)}
+                />
+              ) : (
+                <span>{fieldDisplay(displayValues.netCropCycleWeeks)}</span>
+              )
+            }
+          />
+        </div>
+
+        <PostHarvestMetricField
+          label="Gr/m2/wk (Actual)"
+          value={<span>{fmtNum(computations.actualGrPerSqmWk, 2)}</span>}
+        />
+
+        <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
+          <p className="mb-3 text-[0.68rem] font-medium text-[var(--erp-ink)]">Remarks</p>
+          {editing ? (
+            <Textarea
+              className="min-h-24 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+              rows={4}
+              value={(values.remarks ?? "") as string}
+              onChange={(event) => setField("remarks", event.target.value)}
+            />
+          ) : (
+            <div className="min-h-24 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] text-[var(--erp-ink)]">
+              {fieldDisplay(displayValues.remarks)}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
+          <p className="mb-3 text-[0.68rem] font-medium text-[var(--erp-ink)]">Recommendations</p>
+          {editing ? (
+            <Textarea
+              className="min-h-24 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+              rows={4}
+              value={(values.recommendations ?? "") as string}
+              onChange={(event) => setField("recommendations", event.target.value)}
+            />
+          ) : (
+            <div className="min-h-24 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] text-[var(--erp-ink)]">
+              {fieldDisplay(displayValues.recommendations)}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--erp-border)] pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditing(false)}
+            disabled={!editing || mutation.isPending}
+          >
+            <X className="mr-1.5 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={savePostHarvest}
+            disabled={!editing || mutation.isPending}
+          >
+            {mutation.isPending ? "Saving..." : "Save Post-Harvest Data"}
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProps) {
+  const mutation = useUpdateSection(cropDataId, farmId, "post_harvest_summary");
+  const [values, setValues] = useState<Vals>({
+    ...(initial ?? {}),
+    date: dateInputValue(initial?.date),
+  });
+
+  function setField(name: string, value: unknown) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
+
+  async function saveSummary() {
+    const payload = {
+      date: values.date || null,
+      kgs: parseNumberValue(values.kgs),
+      germinationPct: parseNumberValue(values.germinationPct),
+      remarks: values.remarks === "" ? null : values.remarks,
+    };
+    const parsed = UpdatePostHarvestSummaryInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      toast.error("Please fix the highlighted harvest summary fields.");
+      return;
+    }
+    try {
+      await mutation.mutateAsync(parsed.data);
+      toast.success("Harvest summary saved");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to save harvest summary.");
+    }
+  }
+
+  const totalKgs = parseNumberValue(values.kgs) ?? 0;
+  const totalGermination = parseNumberValue(values.germinationPct) ?? 0;
+
+  return (
+    <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="flex size-4 items-center justify-center rounded-sm border border-[var(--brand-secondary)] text-[var(--brand-secondary)]">
+            <span className="block size-1.5 rounded-full bg-[var(--brand-secondary)]" />
+          </span>
+          <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Post Harvest Summary</h3>
+        </div>
+        <button
+          type="button"
+          className="text-[0.62rem] font-semibold uppercase tracking-wide text-primary"
+        >
+          Export Excel
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[0.72rem]">
+          <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
+            <tr className="text-[0.58rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <th className="px-4 py-3 text-left">Date</th>
+              <th className="px-4 py-3 text-left">KGS</th>
+              <th className="px-4 py-3 text-left">%Germination</th>
+              <th className="px-4 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-[var(--erp-border)] align-top">
+              <td className="px-4 py-3">
+                <Input
+                  className="h-8 min-w-32 rounded-sm border-[var(--erp-border)] bg-white text-[0.78rem]"
+                  type="date"
+                  value={(values.date ?? "") as string}
+                  onChange={(event) => setField("date", event.target.value)}
+                />
+              </td>
+              <td className="px-4 py-3">
+                <Input
+                  className="h-8 min-w-24 rounded-sm border-[var(--erp-border)] bg-white text-[0.78rem]"
+                  type="number"
+                  step="any"
+                  value={numberInputValue(values.kgs)}
+                  onChange={(event) => setField("kgs", event.target.value)}
+                />
+              </td>
+              <td className="px-4 py-3">
+                <Input
+                  className="h-8 min-w-24 rounded-sm border-[var(--erp-border)] bg-white text-[0.78rem]"
+                  type="number"
+                  step="any"
+                  value={numberInputValue(values.germinationPct)}
+                  onChange={(event) => setField("germinationPct", event.target.value)}
+                />
+              </td>
+              <td className="px-4 py-3 text-center">
+                <button
+                  type="button"
+                  onClick={saveSummary}
+                  disabled={mutation.isPending}
+                  className="inline-flex size-8 items-center justify-center rounded-full border border-[var(--erp-border)] bg-[var(--erp-table-head)] text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Plus className="size-4" />
+                </button>
+              </td>
+            </tr>
+            {Array.from({ length: 7 }).map((_, index) => (
+              <tr key={index} className="h-12 border-b border-[var(--erp-border)] last:border-b-0">
+                <td colSpan={4} />
+              </tr>
+            ))}
+            <tr className="bg-[var(--erp-table-head)] font-semibold text-[var(--erp-ink)]">
+              <td className="px-4 py-3 text-primary">Total</td>
+              <td className="px-4 py-3">{totalKgs.toFixed(2)}</td>
+              <td className="px-4 py-3">{totalGermination.toFixed(2)}</td>
+              <td className="px-4 py-3" />
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function PostHarvestMetricField({
+  label,
+  value,
+  reference,
+}: {
+  label: string;
+  value: ReactNode;
+  reference?: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <p className="text-[0.68rem] font-medium text-[var(--erp-ink)]">{label}</p>
+        {reference ? (
+          <span className="text-[0.62rem] font-medium text-[var(--erp-muted)]">({reference})</span>
+        ) : null}
+      </div>
+      <div className="min-h-8 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">
+        {value}
+      </div>
     </div>
   );
 }

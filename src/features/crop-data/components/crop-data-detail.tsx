@@ -228,7 +228,7 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
 
       {/* Post Harvest */}
       <TabsPrimitive.Panel value="post_harvest" className="mt-0">
-        <div className="space-y-5">
+        <div className="grid gap-4 xl:grid-cols-[18rem_minmax(0,1fr)]">
           <PostHarvestForm
             cropDataId={record.id}
             farmId={farmId}
@@ -249,6 +249,9 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           cropDataId={record.id}
           farmId={farmId}
           initial={record.sections.seeds_quality ?? null}
+          programInfo={record.programInfo}
+          nursery={record.nursery}
+          production={record.sections.production ?? null}
         />
       </TabsPrimitive.Panel>
 

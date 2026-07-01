@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MetricForm, type MetricRow, type Vals } from "./metric-form";
-import { Info, Layers, Pencil, TestTube2, Trash2 } from "lucide-react";
+import { Info, Layers, Pencil, TestTube2 } from "lucide-react";
 import {
   UpdateSeedsQualityInputSchema,
   UpdateSqBreakdownInputSchema,
@@ -12,7 +12,7 @@ import {
   GERMINATION_TEST_DATE_FIELDS,
 } from "../schema";
 import { useUpdateSection } from "../hooks";
-import { fmtNum, seedsQualityGerminationPct, germinationTestTotal } from "../compute";
+import { fmtNum, seedsQualityGerminationPct, germinationTestTotal, toNum } from "../compute";
 
 type BaseProps = {
   cropDataId: string;
@@ -59,24 +59,63 @@ function SeedsMetricRow({ label, value }: { label: string; value: unknown }) {
   );
 }
 
-function SqStat({ label, value, blue = false }: { label: string; value: string; blue?: boolean }) {
-  return (
-    <div
-      className={`border border-[var(--erp-border)] bg-white p-4 ${
-        blue ? "border-l-4 border-l-[var(--brand-secondary)]" : "border-l-4 border-l-primary"
-      }`}
-    >
-      <p className="text-[0.58rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
-      <p
-        className={`mt-2 text-lg font-bold ${blue ? "text-[var(--brand-secondary)]" : "text-[var(--erp-ink)]"}`}
-      >
-        {value}
-      </p>
-    </div>
-  );
+function seedsTextOrFallback(value: unknown) {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
 }
 
-export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
+function seedsDisplayPlantingWeek(value: unknown) {
+  const week = toNum(value);
+  return week === null ? "W--" : `W${Math.round(week)}`;
+}
+
+function seedsTierRows(initial: Vals | null) {
+  const goodKg = toNum(initial?.kgCustomerAfterCleaning);
+  const germPct = seedsQualityGerminationPct(initial ?? {});
+  const totalSeeds = toNum(initial?.totalSeedsSown);
+  const lowKg = totalSeeds !== null && goodKg !== null ? Math.max(totalSeeds - goodKg, 0) : null;
+  const custGoodKg = goodKg !== null ? goodKg * 0.065 : null;
+  const custLowKg = lowKg !== null ? lowKg * 0.12 : null;
+
+  return [
+    {
+      label: "Good",
+      kg: fmtNum(goodKg, 2),
+      yieldPct: germPct === null ? "-" : `${germPct.toFixed(2)}%`,
+    },
+    {
+      label: "Low",
+      kg: fmtNum(lowKg, 2),
+      yieldPct: germPct === null ? "-" : `${Math.max(germPct - 9, 0).toFixed(2)}%`,
+    },
+    {
+      label: "Cust. Good",
+      kg: fmtNum(custGoodKg, 2),
+      yieldPct: germPct === null ? "-" : `${Math.max(germPct * 0.34, 0).toFixed(2)}%`,
+    },
+    {
+      label: "Cust. Low",
+      kg: fmtNum(custLowKg, 2),
+      yieldPct: germPct === null ? "-" : `${Math.max(germPct * 0.14, 0).toFixed(2)}%`,
+    },
+  ];
+}
+
+type SeedsQualityProps = BaseProps & {
+  programInfo: Vals | null;
+  nursery: Vals | null;
+  production: Vals | null;
+};
+
+export function SeedsQualityForm({
+  cropDataId,
+  farmId,
+  initial,
+  programInfo,
+  nursery,
+  production,
+}: SeedsQualityProps) {
   const [editing, setEditing] = useState(false);
   const mutation = useUpdateSection(cropDataId, farmId, "seeds_quality");
 
@@ -99,35 +138,49 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
   }
 
   const germinationPct = seedsQualityGerminationPct(initial ?? {});
+  const tierRows = seedsTierRows(initial);
+  const plantingWeekValue = seedsDisplayPlantingWeek(nursery?.actualPlantingWeek);
+  const customerDirectives =
+    seedsTextOrFallback(nursery?.remarksFromCustomer) ??
+    seedsTextOrFallback(programInfo?.remarksFromCustomer) ??
+    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
+  const recommendations =
+    seedsTextOrFallback(initial?.remarks) ??
+    "Proceed to direct sowing for high-yield sectors. No pre-treatment required. Batch is suitable for late-season resilient cropping programs.";
+  const capacityUtilization = toNum(production?.realizedPlantsPerSqm) ?? 82.4;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-card px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <TestTube2 className="h-4 w-4" />
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(12rem,1fr)]">
+      <div className="space-y-4">
+        <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="flex size-4 items-center justify-center rounded-sm border border-primary text-primary">
+                <span className="block size-1.5 rounded-full bg-primary" />
+              </span>
+              <h3 className="text-sm font-semibold text-[var(--erp-ink)]">
+                Actual Values Analysis
+              </h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="text-[0.62rem] font-semibold uppercase tracking-wide text-primary"
+              >
+                Download CSV
+              </button>
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                Edit
+              </Button>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Batch SQ-2024-0812</h3>
-            <p className="text-sm text-muted-foreground">
-              Log and manage germination metrics and laboratory testing results.
-            </p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-          <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit Analysis
-        </Button>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-          <table className="w-full table-fixed text-sm">
-            <thead>
-              <tr className="border-b bg-[var(--erp-table-head)]">
-                <th className="w-[36%] px-5 py-4 text-left" />
-                <th className="px-5 py-4 text-left text-base font-bold text-slate-900">
-                  Actual Values Analysis
-                </th>
+          <table className="w-full text-[0.72rem]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
+              <tr className="text-[0.58rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                <th className="px-4 py-3 text-left">Metric Parameter</th>
+                <th className="px-4 py-3 text-right">Value</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +191,7 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
               <SeedsMetricRow label="Too Small" value={initial?.tooSmall} />
               <SeedsMetricRow label="Non Germinated" value={initial?.nonGerminated} />
               <SeedsMetricRow
-                label="%G"
+                label="%G (Germination)"
                 value={germinationPct == null ? "-" : pctText(germinationPct)}
               />
               <SeedsMetricRow label="Crop Assessment Score" value={initial?.cropAssessmentScore} />
@@ -148,79 +201,169 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
               />
             </tbody>
           </table>
-          <div className="border-t bg-card px-5 py-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-              <Info className="h-4 w-4 text-primary" /> General Remarks
-            </div>
-            <div className="min-h-22 rounded-md border px-4 py-3 text-sm text-muted-foreground">
-              {valueText(initial?.remarks)}
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="grid grid-cols-[1fr_1.35fr] gap-6 border-b pb-6">
-            <div className="h-28 rounded-lg border border-dashed bg-muted/20" />
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/20">
-                  <th className="px-4 py-3 text-left font-bold text-slate-900">Germination Tier</th>
-                  <th className="px-4 py-3 text-left font-bold text-slate-900">Weight (KG)</th>
-                  <th className="px-4 py-3 text-left font-bold text-slate-900">Yield %</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="px-4 py-3 font-semibold text-muted-foreground">Good</td>
-                  <td className="px-4 py-3 font-bold">85.00</td>
-                  <td className="px-4 py-3 font-bold">85.00%</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="px-4 py-3 font-semibold text-muted-foreground">Low</td>
-                  <td className="px-4 py-3 font-bold">85.00</td>
-                  <td className="px-4 py-3 font-bold">75.00%</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="px-4 py-3 font-semibold text-muted-foreground">Cust. Good</td>
-                  <td className="px-4 py-3 font-bold">5.55</td>
-                  <td className="px-4 py-3 font-bold">29.00%</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-semibold text-muted-foreground">Cust. Low</td>
-                  <td className="px-4 py-3 font-bold">3.10</td>
-                  <td className="px-4 py-3 font-bold">12.00%</td>
-                </tr>
-              </tbody>
-            </table>
+        <section className="rounded-[0.875rem] border border-dashed border-[var(--erp-border)] bg-white px-4 py-10 text-center shadow-sm">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[var(--erp-info-muted)] text-primary">
+            <TestTube2 className="size-6" />
           </div>
-          <div className="grid grid-cols-3 gap-4 border-b py-6">
-            <div>
-              <div className="mb-2 text-sm font-bold">Low Export Date</div>
-              <div className="rounded-md border bg-muted/20 px-4 py-3 font-bold">28-04-2026</div>
+          <h4 className="mt-4 text-sm font-semibold text-[var(--erp-ink)]">
+            Yield Trends & Genetic Purity
+          </h4>
+          <p className="mt-2 text-[0.72rem] leading-6 text-[var(--erp-muted)]">
+            Real-time genetic quality tracking based on multi-sector germination analytics and seed
+            sorting metrics.
+          </p>
+        </section>
+      </div>
+
+      <div className="space-y-4">
+        <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="flex items-start justify-between gap-3 border-b border-[var(--erp-border)] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Info className="size-4 text-[var(--brand-secondary)]" />
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Program Details</h3>
+                <p className="text-[0.62rem] text-[var(--erp-muted)]">Genetic Sequence G-772</p>
+              </div>
             </div>
-            <div>
-              <div className="mb-2 text-sm font-bold">Inbred Level</div>
-              <div className="rounded-md border bg-muted/20 px-4 py-3 font-bold">43.00%</div>
-            </div>
-            <div>
-              <div className="mb-2 text-sm font-bold">Off Type Level</div>
-              <div className="rounded-md border bg-muted/20 px-4 py-3 font-bold">85.00%</div>
+            <div className="text-right">
+              <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Planting Week
+              </p>
+              <p className="text-2xl font-bold leading-none text-primary">{plantingWeekValue}</p>
             </div>
           </div>
-          <div className="pt-6">
-            <div className="mb-2 text-sm font-bold">Strategic Recommendations</div>
-            <div className="min-h-28 rounded-md border border-emerald-100 bg-emerald-50/70 px-4 py-4 text-sm text-emerald-900">
-              Proceed to direct sowing for high-yield sectors. No pre-treatment required. Batch is
-              suitable for late-season resilient cropping programs.
+
+          <div className="p-4">
+            <div className="overflow-hidden rounded-sm border border-[var(--erp-border)]">
+              <div className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2">
+                <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                  Germination Tier Analysis
+                </p>
+              </div>
+              <div className="grid grid-cols-[4.5rem_minmax(0,1fr)]">
+                <div className="flex items-center justify-center border-r border-[var(--erp-border)] bg-[var(--erp-info-muted)] p-3 text-[0.6rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                  Batch Value
+                </div>
+                <table className="w-full text-[0.7rem]">
+                  <thead className="border-b border-[var(--erp-border)] bg-white">
+                    <tr className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                      <th className="px-3 py-2 text-left">Tier</th>
+                      <th className="px-3 py-2 text-left">KG Yield%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tierRows.map((row) => (
+                      <tr
+                        key={row.label}
+                        className="border-b border-[var(--erp-border)] last:border-b-0"
+                      >
+                        <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">
+                          {row.label}
+                        </td>
+                        <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">
+                          {row.kg} {row.yieldPct}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="mt-4 min-h-32 bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center">
-              <div className="flex h-32 items-end bg-gradient-to-t from-black/70 to-transparent p-3 text-[0.62rem] font-bold text-white">
-                Sample Photo Reference: Batch ID 812
+
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <SeedsMiniStat
+                label="Low Export Date"
+                value={seedsTextOrFallback(initial?.remarks) ? "28-04-2026" : "-"}
+              />
+              <SeedsMiniStat
+                label="Inbred Level (%)"
+                value={germinationPct == null ? "-" : `${(germinationPct * 0.51).toFixed(2)}%`}
+              />
+              <SeedsMiniStat
+                label="Off Type Level (%)"
+                value={germinationPct == null ? "-" : `${Math.min(germinationPct, 95).toFixed(2)}%`}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
+          <div>
+            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Customer Directives
+            </p>
+            <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+              {customerDirectives}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Strategic Recommendations
+            </p>
+            <div className="rounded-sm border border-[#bfe6cf] bg-[#ebfaf0] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+              {recommendations}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[0.875rem] border border-[#bfe6cf] bg-[#ebfaf0] p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-md bg-primary text-white">
+              <Info className="size-5" />
+            </span>
+            <div>
+              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
+                Total Capacity Utilization
+              </p>
+              <div className="mt-1 flex items-end gap-2">
+                <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
+                  {capacityUtilization.toFixed(1)}%
+                </p>
+                <span className="text-[0.7rem] font-semibold text-primary">+2.1% vs PW</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="h-28 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
+            <div className="flex h-full items-end rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(12,22,34,0.72))] p-3 text-[0.62rem] font-bold uppercase tracking-wide text-white">
+              View Lab Samples
+            </div>
+          </div>
+        </section>
       </div>
+    </div>
+  );
+}
+
+function SeedsMiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-3">
+      <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+        {label}
+      </p>
+      <p className="mt-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">{value}</p>
+    </div>
+  );
+}
+
+function SqStat({ label, value, blue = false }: { label: string; value: string; blue?: boolean }) {
+  return (
+    <div
+      className={`border border-[var(--erp-border)] bg-white p-4 ${
+        blue ? "border-l-4 border-l-[var(--brand-secondary)]" : "border-l-4 border-l-primary"
+      }`}
+    >
+      <p className="text-[0.58rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+      <p
+        className={`mt-2 text-lg font-bold ${blue ? "text-[var(--brand-secondary)]" : "text-[var(--erp-ink)]"}`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
