@@ -106,288 +106,227 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "flex h-screen shrink-0 flex-col border-r border-border/40 bg-linear-to-b from-card via-card/98 to-muted/20 shadow-xs transition-[width] duration-200 ease-out relative z-30",
-        collapsed ? "w-16" : "w-64"
+        "shrink-0 p-3 pr-0 transition-[width] duration-200 ease-out",
+        collapsed ? "w-24" : "w-80"
       )}
     >
-      {/* Brand + collapse toggle */}
-      <div
-        className={cn(
-          "flex h-16 items-center px-4 border-b border-border/40 gap-2",
-          collapsed && "justify-center px-2"
-        )}
-      >
-        {!collapsed && (
-          <div className="flex items-center gap-2.5 overflow-hidden flex-1">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 shadow-sm transition-transform hover:scale-105 duration-200">
-              <Leaf className="size-4 text-primary animate-pulse" />
-            </div>
-            <span className="font-heading text-sm font-bold tracking-wider bg-linear-to-r from-sky-600 via-cyan-600 to-emerald-600 bg-clip-text text-transparent truncate">
-              iBMS Crop
-            </span>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 cursor-pointer shadow-xs hover:shadow-sm",
-            collapsed ? "mx-auto" : "ml-auto"
-          )}
-        >
-          {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
-        </button>
-      </div>
-
-      {/* Farm selector */}
-      <div className={cn("relative border-b border-border/40 py-4 px-3", collapsed && "px-2 py-3")}>
-        {!collapsed && (
-          <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-            Farm
-          </p>
-        )}
-        <button
-          type="button"
-          onClick={() => setFarmDropdownOpen((o) => !o)}
-          className={cn(
-            "group flex w-full items-center gap-3 rounded-xl border border-border/40 text-sm font-medium transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer",
-            collapsed
-              ? "h-10 w-10 justify-center bg-muted/20 hover:bg-primary/10 hover:border-primary/20"
-              : "px-3 py-2.5 bg-card hover:bg-muted/40"
-          )}
-          title={collapsed ? (selectedFarm?.name ?? "Select a farm") : undefined}
-        >
-          {collapsed ? (
-            <Tractor className="size-4 text-muted-foreground group-hover:text-primary transition-colors group-hover:scale-105 duration-200" />
-          ) : (
-            <>
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                <Tractor className="size-3.5" />
+      <div className="app-frame flex h-full flex-col overflow-hidden rounded-[2rem] p-3">
+        <div className={cn("flex items-center gap-3 px-2 pb-4", collapsed && "justify-center")}>
+          {!collapsed && (
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-sm">
+                <Leaf className="size-5" />
               </div>
-              <span className="min-w-0 flex-1 truncate text-left text-foreground/90 font-semibold group-hover:text-foreground">
-                {selectedFarm?.name ?? "Select a farm"}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "size-4 text-muted-foreground shrink-0 transition-transform duration-200 group-hover:text-foreground",
-                  farmDropdownOpen && "rotate-180"
-                )}
-              />
-            </>
+              <div className="min-w-0">
+                <p className="app-kicker">Core Template</p>
+                <p className="truncate font-heading text-sm font-semibold text-foreground">
+                  iBMS Crop
+                </p>
+              </div>
+            </div>
           )}
-        </button>
-
-        {farmDropdownOpen && farms.length > 0 && !collapsed && (
-          <div className="absolute left-3 right-3 top-full z-50 mt-1.5 rounded-xl border border-border bg-popover/95 backdrop-blur-md p-1 shadow-md transition-all animate-in fade-in slide-in-from-top-1 duration-150">
-            {farms.map((farm) => (
-              <button
-                key={farm.id}
-                type="button"
-                onClick={() => {
-                  setSelectedFarmId(farm.id);
-                  setFarmDropdownOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors cursor-pointer",
-                  farm.id === selectedFarmId
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                  <Tractor className="size-3" />
-                </div>
-                <span className="min-w-0 flex-1 truncate text-left">{farm.name}</span>
-                {farm.id === selectedFarmId && <Check className="size-3.5 text-primary shrink-0" />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {sections.map((section) => (
-          <div key={section.label} className="space-y-1.5">
-            {!collapsed && (
-              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-                {section.label}
-              </p>
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={cn(
+              "app-pill inline-flex size-10 items-center justify-center text-muted-foreground transition hover:text-foreground",
+              collapsed && "mx-auto"
             )}
-            {section.items.map((item) => {
-              if (item.children) {
-                const isGroupActive = item.children.some((c) => pathname.startsWith(c.href));
-                const isOpen = (openGroups[item.label] ?? false) && !collapsed;
-                return (
-                  <div key={item.label} className="relative group">
-                    <button
-                      type="button"
-                      onClick={() => !collapsed && toggleGroup(item.label)}
-                      title={collapsed ? item.label : undefined}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer relative",
-                        collapsed ? "h-10 justify-center" : "px-3.5 py-2.5",
-                        isGroupActive
-                          ? "bg-primary/8 text-primary font-semibold"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                      )}
-                    >
-                      {/* Left indicator for parent item in group */}
-                      {isGroupActive && (
-                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary" />
-                      )}
-                      <item.icon
-                        className={cn(
-                          "size-4 shrink-0 transition-transform duration-200",
-                          !collapsed && "group-hover:scale-105"
-                        )}
-                      />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 text-left transition-transform duration-200 group-hover:translate-x-0.5">
-                            {item.label}
-                          </span>
-                          {isOpen ? (
-                            <ChevronDown className="size-3.5 shrink-0" />
-                          ) : (
-                            <ChevronRight className="size-3.5 shrink-0" />
-                          )}
-                        </>
-                      )}
-                    </button>
-                    {isOpen && (
-                      <div className="ml-5 mt-1 pl-3.5 border-l border-border/40 space-y-1">
-                        {item.children.map((child) => {
-                          const isActive = pathname === child.href;
-                          return (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              className={cn(
-                                "block rounded-lg px-3 py-2 text-xs transition-all duration-200 cursor-pointer relative",
-                                isActive
-                                  ? "bg-primary/8 font-semibold text-primary"
-                                  : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                              )}
-                            >
-                              {isActive && (
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full bg-primary" />
-                              )}
-                              <span
-                                className={cn(
-                                  "transition-transform duration-200 block",
-                                  isActive ? "pl-2" : "hover:translate-x-0.5"
-                                )}
-                              >
-                                {child.label}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="size-4" />
+            ) : (
+              <PanelLeftClose className="size-4" />
+            )}
+          </button>
+        </div>
 
-              const isActive =
-                item.href === "/dashboard"
-                  ? pathname === "/dashboard"
-                  : item.href === "/dashboard/map"
-                    ? pathname === "/dashboard/map"
-                    : pathname.startsWith(item.href!);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href!}
-                  title={collapsed ? item.label : undefined}
+        <div className={cn("relative px-1 pb-4", collapsed && "px-0")}>
+          {!collapsed && <p className="app-kicker px-3 pb-2">Selected Farm</p>}
+          <button
+            type="button"
+            onClick={() => setFarmDropdownOpen((o) => !o)}
+            className={cn(
+              "app-panel flex w-full items-center gap-3 px-3 py-3 text-sm font-medium transition",
+              collapsed ? "justify-center px-0" : "hover:bg-[var(--app-panel-strong)]"
+            )}
+            title={collapsed ? (selectedFarm?.name ?? "Select a farm") : undefined}
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
+              <Tractor className="size-4" />
+            </span>
+            {!collapsed && (
+              <>
+                <span className="min-w-0 flex-1 truncate text-left font-semibold text-foreground">
+                  {selectedFarm?.name ?? "Select a farm"}
+                </span>
+                <ChevronDown
                   className={cn(
-                    "flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer relative group",
-                    collapsed ? "h-10 w-10 mx-auto justify-center" : "px-3.5 py-2.5",
-                    isActive
-                      ? "bg-primary/8 text-primary font-semibold ring-1 ring-primary/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    "size-4 text-muted-foreground transition-transform",
+                    farmDropdownOpen && "rotate-180"
+                  )}
+                />
+              </>
+            )}
+          </button>
+
+          {farmDropdownOpen && farms.length > 0 && !collapsed && (
+            <div className="app-panel-strong absolute left-1 right-1 top-full z-50 mt-2 p-1">
+              {farms.map((farm) => (
+                <button
+                  key={farm.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedFarmId(farm.id);
+                    setFarmDropdownOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-sm transition",
+                    farm.id === selectedFarmId
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  {isActive && (
-                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary animate-in fade-in zoom-in duration-200" />
-                  )}
-                  <item.icon
-                    className={cn(
-                      "size-4 shrink-0 transition-transform duration-200",
-                      isActive
-                        ? "text-primary scale-105"
-                        : "group-hover:scale-110 group-hover:text-primary"
-                    )}
-                  />
-                  {!collapsed && (
-                    <span
-                      className={cn(
-                        "transition-transform duration-200",
-                        isActive
-                          ? "text-foreground font-semibold"
-                          : "group-hover:translate-x-0.5 group-hover:text-foreground"
-                      )}
-                    >
-                      {item.label}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      {/* Footer navigation + user section */}
-      <div className={cn("border-t border-border/40 p-3 space-y-3", collapsed && "px-2 py-4")}>
-        <Link
-          href="/dashboard/settings"
-          title={collapsed ? "Settings" : undefined}
-          className={cn(
-            "flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer relative group",
-            collapsed ? "h-10 w-10 mx-auto justify-center" : "px-3.5 py-2.5",
-            pathname.startsWith("/dashboard/settings")
-              ? "bg-primary/8 text-primary font-semibold ring-1 ring-primary/10"
-              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-          )}
-        >
-          {pathname.startsWith("/dashboard/settings") && (
-            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-primary" />
-          )}
-          <Settings className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:text-primary" />
-          {!collapsed && <span>Settings</span>}
-        </Link>
-
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-2xl transition-all duration-200",
-            collapsed
-              ? "flex-col gap-2 justify-center"
-              : "p-2.5 bg-muted/40 hover:bg-muted/70 border border-border/20 shadow-2xs hover:shadow-xs"
-          )}
-        >
-          <div className="relative">
-            <Avatar className="h-8 w-8 ring-1 ring-border shadow-sm">
-              {user.image && <AvatarImage src={user.image} alt={user.name ?? user.email} />}
-              <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                {getInitials(user.name, user.email)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-foreground/90 leading-tight">
-                {user.name ?? "User"}
-              </p>
-              <p className="truncate text-[10px] text-muted-foreground/80 font-medium leading-tight mt-0.5">
-                {user.email}
-              </p>
+                  <Tractor className="size-4 shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{farm.name}</span>
+                  {farm.id === selectedFarmId && <Check className="size-4 shrink-0" />}
+                </button>
+              ))}
             </div>
           )}
+        </div>
+
+        <nav className="flex-1 space-y-6 overflow-y-auto px-1 py-1">
+          {sections.map((section) => (
+            <div key={section.label} className="space-y-1.5">
+              {!collapsed && <p className="app-kicker px-3 pb-1">{section.label}</p>}
+              {section.items.map((item) => {
+                if (item.children) {
+                  const isGroupActive = item.children.some((c) => pathname.startsWith(c.href));
+                  const isOpen = (openGroups[item.label] ?? false) && !collapsed;
+                  return (
+                    <div key={item.label} className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => !collapsed && toggleGroup(item.label)}
+                        title={collapsed ? item.label : undefined}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-2xl text-sm font-medium transition relative",
+                          collapsed ? "h-12 justify-center" : "px-3.5 py-3",
+                          isGroupActive
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        )}
+                      >
+                        <item.icon className="size-4 shrink-0" />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 text-left">{item.label}</span>
+                            {isOpen ? (
+                              <ChevronDown className="size-3.5 shrink-0" />
+                            ) : (
+                              <ChevronRight className="size-3.5 shrink-0" />
+                            )}
+                          </>
+                        )}
+                      </button>
+                      {isOpen && (
+                        <div className="ml-5 mt-2 space-y-1 border-l border-border/80 pl-3.5">
+                          {item.children.map((child) => {
+                            const isActive = pathname === child.href;
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className={cn(
+                                  "block rounded-2xl px-3 py-2 text-xs transition relative",
+                                  isActive
+                                    ? "bg-secondary font-semibold text-secondary-foreground"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                )}
+                              >
+                                <span>{child.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                const isActive =
+                  item.href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : item.href === "/dashboard/map"
+                      ? pathname === "/dashboard/map"
+                      : pathname.startsWith(item.href!);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href!}
+                    title={collapsed ? item.label : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl text-sm font-medium transition relative",
+                      collapsed ? "mx-auto h-12 w-12 justify-center" : "px-3.5 py-3",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="size-4 shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        <div className={cn("space-y-3 border-t border-border/70 px-1 pt-4", collapsed && "px-0")}>
+          <Link
+            href="/dashboard/settings"
+            title={collapsed ? "Settings" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-2xl text-sm font-medium transition",
+              collapsed ? "mx-auto h-12 w-12 justify-center" : "px-3.5 py-3",
+              pathname.startsWith("/dashboard/settings")
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            )}
+          >
+            <Settings className="size-4 shrink-0" />
+            {!collapsed && <span>Settings</span>}
+          </Link>
+
+          <div
+            className={cn(
+              "app-panel flex items-center gap-3 transition",
+              collapsed ? "flex-col justify-center px-0 py-3" : "px-3 py-3"
+            )}
+          >
+            <div className="relative shrink-0">
+              <Avatar className="h-10 w-10 ring-1 ring-border/70 shadow-sm">
+                {user.image && <AvatarImage src={user.image} alt={user.name ?? user.email} />}
+                <AvatarFallback className="bg-secondary text-xs font-semibold text-secondary-foreground">
+                  {getInitials(user.name, user.email)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
+            </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                  {user.name ?? "User"}
+                </p>
+                <p className="mt-0.5 truncate text-xs font-medium leading-tight text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </aside>

@@ -23,7 +23,7 @@ export function PageShell({ children, maxWidth = "6xl", className }: Props) {
   return (
     <div
       className={cn(
-        "mx-auto w-full space-y-6 px-6 py-6 sm:px-8 sm:py-8",
+        "mx-auto w-full space-y-6 px-4 py-4 sm:px-6 sm:py-6 xl:px-8",
         MAX_W[maxWidth],
         className
       )}

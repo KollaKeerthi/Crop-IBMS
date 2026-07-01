@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { Onest, Inter, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 import "./globals.css";
-
-const fontHeading = Onest({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["700", "800"],
-});
 
 const fontBody = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
+const fontHeading = Inter({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["600", "700", "800"],
+});
+
+const fontMono = JetBrains_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600"],
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -71,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontHeading.variable} ${fontBody.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
