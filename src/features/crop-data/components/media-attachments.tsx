@@ -87,8 +87,8 @@ function AttachmentKpi({
         <Icon className="size-4" />
       </span>
       <div>
-        <p className="text-[0.56rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
-        <p className="mt-1 text-sm font-bold text-[var(--erp-ink)]">{value}</p>
+        <p className="crop-field-label uppercase">{label}</p>
+        <p className="crop-body-text mt-1 font-semibold">{value}</p>
       </div>
     </div>
   );
@@ -182,11 +182,11 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="crop-form-shell crop-table-shell space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-lg font-bold text-primary">Media Attachments</h3>
-          <p className="text-[0.68rem] text-[var(--erp-muted)]">
+          <h3 className="crop-page-title text-primary">Media Attachments</h3>
+          <p className="crop-helper-text">
             Documentation and visual assets for Maize Program 2024-Q3.
           </p>
         </div>
@@ -194,7 +194,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
           <Button
             size="sm"
             variant="outline"
-            className="h-7 rounded-sm text-[0.65rem]"
+            className="crop-button-text h-7 rounded-sm"
             onClick={() => setLinkOpen(true)}
           >
             <LinkIcon className="mr-1.5 size-3.5" />
@@ -202,7 +202,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
           </Button>
           <Button
             size="sm"
-            className="h-7 rounded-sm text-[0.65rem]"
+            className="crop-button-text h-7 rounded-sm"
             onClick={() => inputRef.current?.click()}
             disabled={upload.isPending}
           >
@@ -228,7 +228,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
 
       <div className="border border-[var(--erp-border)] bg-white">
         <div className="flex items-center justify-between gap-3 border-b border-[var(--erp-border)] bg-[var(--erp-nav-active)] px-3 py-2">
-          <div className="flex h-8 min-w-72 items-center gap-2 border border-[var(--erp-border-strong)] bg-white px-2 text-[0.68rem] text-[var(--erp-muted)]">
+          <div className="crop-helper-text flex h-8 min-w-72 items-center gap-2 border border-[var(--erp-border-strong)] bg-white px-2">
             <Search className="size-3.5" />
             <span>Filter by section or name...</span>
           </div>
@@ -239,14 +239,14 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[48rem] text-[0.68rem]">
-            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+          <table className="w-full min-w-[48rem]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
               <tr>
-                <th className="px-3 py-2 text-left font-bold">Section</th>
-                <th className="px-3 py-2 text-left font-bold">File Name</th>
-                <th className="px-3 py-2 text-left font-bold">Type</th>
-                <th className="px-3 py-2 text-left font-bold">Storage Path</th>
-                <th className="px-3 py-2 text-right font-bold">Action</th>
+                <th className="crop-table-head px-3 py-2 text-left">Section</th>
+                <th className="crop-table-head px-3 py-2 text-left">File Name</th>
+                <th className="crop-table-head px-3 py-2 text-left">Type</th>
+                <th className="crop-table-head px-3 py-2 text-left">Storage Path</th>
+                <th className="crop-table-head px-3 py-2 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -255,11 +255,11 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                 return (
                   <tr key={item.id} className="border-b border-[var(--erp-border)] last:border-0">
                     <td className="px-3 py-2">
-                      <span className="bg-[var(--erp-info-muted)] px-2 py-1 text-[0.55rem] font-bold uppercase text-[var(--brand-secondary)]">
+                      <span className="crop-badge bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
                         {item.mimeType === "sample/irrigation" ? "Irrigation" : "Soil Analysis"}
                       </span>
                     </td>
-                    <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">
+                    <td className="crop-body-text px-3 py-2 font-semibold text-[var(--erp-ink)]">
                       <span className="inline-flex items-center gap-2">
                         {isImage(item) ? (
                           <Paperclip className="size-3.5 text-destructive" />
@@ -268,14 +268,12 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                         )}
                         {item.name ?? "Attachment"}
                         {item.sizeBytes ? (
-                          <span className="text-[0.58rem] text-[var(--erp-muted)]">
-                            {formatBytes(item.sizeBytes)}
-                          </span>
+                          <span className="crop-helper-text">{formatBytes(item.sizeBytes)}</span>
                         ) : null}
                       </span>
                     </td>
                     <td className="px-3 py-2">{attachmentType(item)}</td>
-                    <td className="px-3 py-2 text-[var(--erp-muted)]">
+                    <td className="crop-helper-text px-3 py-2">
                       {item.url ? item.url.slice(0, 28) : "/reports/soil/2024/..."}
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -285,7 +283,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-semibold text-primary"
+                            className="crop-body-text font-semibold text-primary"
                           >
                             Open
                             <ExternalLink className="ml-1 inline size-3" />
@@ -301,7 +299,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                           </button>
                         </span>
                       ) : (
-                        <span className="font-semibold text-primary">Open</span>
+                        <span className="crop-body-text font-semibold text-primary">Open</span>
                       )}
                     </td>
                   </tr>
@@ -310,7 +308,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between px-3 py-2 text-[0.58rem] font-semibold text-[var(--erp-muted)]">
+        <div className="crop-helper-text flex items-center justify-between px-3 py-2 font-semibold">
           <span>Showing 5 of {media.length || 24} documents</span>
           <span>Rows per page: 10</span>
         </div>
@@ -320,10 +318,10 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex min-h-36 flex-col items-center justify-center border border-dashed border-[var(--erp-border-strong)] bg-white text-[0.68rem] text-[var(--erp-muted)] transition-colors hover:border-primary hover:text-[var(--erp-ink)]"
+          className="crop-helper-text flex min-h-36 flex-col items-center justify-center border border-dashed border-[var(--erp-border-strong)] bg-white transition-colors hover:border-primary hover:text-[var(--erp-ink)]"
         >
           <Upload className="size-6 text-primary" />
-          <span className="mt-3 font-bold text-[var(--erp-ink)]">
+          <span className="crop-card-title mt-3 font-bold text-[var(--erp-ink)]">
             Click or drag files to upload
           </span>
           <span>Support for PDF, CSV, TIFF, XLSX (Max 50MB per file)</span>
@@ -331,12 +329,12 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
 
         <div className="bg-primary p-4 text-white">
           <Headphones className="size-5" />
-          <h3 className="mt-3 text-sm font-bold">Quick Support</h3>
-          <p className="mt-2 text-[0.68rem] leading-5 opacity-85">
+          <h3 className="crop-section-title mt-3 text-white">Quick Support</h3>
+          <p className="crop-body-text mt-2 leading-5 text-white/85">
             Need help documenting your crop program? Our AI assistant can help categorize your files
             automatically.
           </p>
-          <button className="mt-3 bg-white px-3 py-2 text-[0.65rem] font-bold text-primary">
+          <button className="crop-button-text mt-3 bg-white px-3 py-2 text-primary">
             Open Assistant
           </button>
         </div>

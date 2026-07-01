@@ -191,7 +191,7 @@ export function MetricForm({
   }
 
   function renderInput(name: string, type: FieldType) {
-    const common = "h-8 text-sm";
+    const common = "crop-body-text h-8";
     const value = (values[name] ?? "") as string | number;
     if (type === "textarea") {
       return (
@@ -237,13 +237,13 @@ export function MetricForm({
       return (
         <div>
           {renderInput(name, type)}
-          {errors[name] && <p className="mt-1 text-xs text-destructive">{errors[name]}</p>}
+          {errors[name] && <p className="crop-helper-text mt-1 text-destructive">{errors[name]}</p>}
         </div>
       );
     }
     const text = displayValue(initial?.[name], type);
     return (
-      <span className="text-sm font-medium text-foreground">
+      <span className="crop-body-text font-medium text-foreground">
         {text}
         {suffix && text !== "-" ? ` ${suffix}` : ""}
       </span>
@@ -256,7 +256,7 @@ export function MetricForm({
   const colCount = showGenderColumns ? 3 : 2;
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
+    <div className="crop-form-shell crop-table-shell rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <div className="flex items-center gap-3">
           {icon ? (
@@ -265,38 +265,45 @@ export function MetricForm({
             </div>
           ) : null}
           <div>
-            <h3 className="text-base font-semibold">{title}</h3>
+            <h3 className="crop-section-title">{title}</h3>
+            {description ? <p className="crop-helper-text mt-1">{description}</p> : null}
           </div>
         </div>
         {editing ? (
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={isSaving}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="crop-button-text"
+              onClick={cancelEdit}
+              disabled={isSaving}
+            >
               <X className="mr-1 h-4 w-4" /> Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={isSaving}>
+            <Button size="sm" className="crop-button-text" onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving…" : "Save"}
             </Button>
           </div>
         ) : (
-          <Button variant="outline" size="sm" onClick={startEdit}>
+          <Button variant="outline" size="sm" className="crop-button-text" onClick={startEdit}>
             <Pencil className="mr-1.5 h-3.5 w-3.5" /> {editLabel}
           </Button>
         )}
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           {showGenderColumns && (
             <thead>
-              <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
-                <th className="px-5 py-2.5 text-left font-medium">Metric Definition</th>
+              <tr className="border-b bg-muted/40">
+                <th className="crop-table-head px-5 py-2.5 text-left">Metric Definition</th>
                 <th
-                  className={`px-3 py-2.5 text-left font-medium ${columnLabels ? "" : "text-blue-600"}`}
+                  className={`crop-table-head px-3 py-2.5 text-left ${columnLabels ? "" : "text-blue-600"}`}
                 >
                   {columnLabels ? columnLabels.left : "♂ Male"}
                 </th>
                 <th
-                  className={`px-3 py-2.5 text-left font-medium ${columnLabels ? "" : "text-pink-600"}`}
+                  className={`crop-table-head px-3 py-2.5 text-left ${columnLabels ? "" : "text-pink-600"}`}
                 >
                   {columnLabels ? columnLabels.right : "♀ Female"}
                 </th>
@@ -308,10 +315,7 @@ export function MetricForm({
               if (row.kind === "subheader") {
                 return (
                   <tr key={i} className="bg-muted/30">
-                    <td
-                      colSpan={colCount}
-                      className="px-5 py-2 text-xs font-semibold text-muted-foreground"
-                    >
+                    <td colSpan={colCount} className="crop-field-label px-5 py-2">
                       {row.label}
                     </td>
                   </tr>
@@ -320,7 +324,7 @@ export function MetricForm({
               if (row.kind === "mf") {
                 return (
                   <tr key={i} className="border-b last:border-0">
-                    <td className="px-5 py-2 text-muted-foreground">{row.label}</td>
+                    <td className="crop-field-label px-5 py-2">{row.label}</td>
                     <td className="px-3 py-2">{cell(row.male, row.type, row.suffix)}</td>
                     <td className="px-3 py-2">{cell(row.female, row.type, row.suffix)}</td>
                   </tr>
@@ -330,7 +334,7 @@ export function MetricForm({
                 const placement = row.placement ?? "female";
                 return (
                   <tr key={i} className="border-b last:border-0">
-                    <td className="px-5 py-2 text-muted-foreground">{row.label}</td>
+                    <td className="crop-field-label px-5 py-2">{row.label}</td>
                     {!showGenderColumns ? (
                       <td className="px-3 py-2">{cell(row.name, row.type, row.suffix)}</td>
                     ) : placement === "span" ? (
@@ -354,14 +358,14 @@ export function MetricForm({
               if (row.kind === "computed-mf") {
                 return (
                   <tr key={i} className="border-b bg-muted/10 last:border-0">
-                    <td className="px-5 py-2 text-muted-foreground">{row.label}</td>
+                    <td className="crop-field-label px-5 py-2">{row.label}</td>
                     <td className="px-3 py-2">
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="crop-body-text font-semibold text-foreground">
                         {row.computeMale(computeValues, computeContext)}
                       </span>
                     </td>
                     <td className="px-3 py-2">
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="crop-body-text font-semibold text-foreground">
                         {row.computeFemale(computeValues, computeContext)}
                       </span>
                     </td>
@@ -372,11 +376,11 @@ export function MetricForm({
               const text = row.compute(computeValues, computeContext);
               const placement = row.placement ?? "female";
               const computedCell = (
-                <span className="text-sm font-semibold text-foreground">{text}</span>
+                <span className="crop-body-text font-semibold text-foreground">{text}</span>
               );
               return (
                 <tr key={i} className="border-b bg-muted/10 last:border-0">
-                  <td className="px-5 py-2 text-muted-foreground">{row.label}</td>
+                  <td className="crop-field-label px-5 py-2">{row.label}</td>
                   {!showGenderColumns ? (
                     <td className="px-3 py-2">{computedCell}</td>
                   ) : placement === "span" ? (

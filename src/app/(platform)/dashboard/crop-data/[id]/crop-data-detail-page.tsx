@@ -85,7 +85,7 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
     <button
       type="button"
       onClick={() => setExpanded((value) => !value)}
-      className="flex shrink-0 items-center gap-2 px-2 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]"
+      className="crop-button-text flex shrink-0 items-center gap-2 px-2 text-[var(--erp-muted)]"
     >
       {expanded ? "Expanded View" : "Compact View"}
       {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -93,7 +93,7 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
   );
 
   return (
-    <div className="w-full bg-[var(--erp-canvas)] px-4 pb-4 pt-3">
+    <div className="crop-data-module w-full bg-[var(--erp-canvas)] px-4 pb-4 pt-3">
       <section className="border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] pb-3">
         {expanded ? (
           <div className="grid gap-5 pt-1 lg:grid-cols-[8rem_minmax(0,1fr)]">
@@ -110,10 +110,8 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             <div>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl font-bold leading-tight text-[var(--erp-ink)]">
-                    {displayName}
-                  </h1>
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-[var(--erp-muted)]">
+                  <h1 className="crop-page-title">{displayName}</h1>
+                  <div className="crop-helper-text mt-3 flex flex-wrap items-center gap-4 font-medium">
                     <span>{record.block ?? "-"}</span>
                     <span>{record.seasonName ?? "-"}</span>
                   </div>
@@ -153,7 +151,7 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
               <ArrowLeft className="size-4" />
             </Button>
 
-            <p className="min-w-32 max-w-56 truncate text-xs font-semibold text-[var(--erp-muted)]">
+            <p className="crop-helper-text min-w-32 max-w-56 truncate font-semibold">
               {breadcrumbText}
             </p>
 
@@ -168,10 +166,8 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
               ) : null}
             </div>
 
-            <h1 className="min-w-36 max-w-52 truncate text-sm font-bold text-[var(--erp-ink)]">
-              {displayName}
-            </h1>
-            <span className="shrink-0 bg-[var(--erp-green-muted)] px-2 py-1 text-[0.62rem] font-bold uppercase text-primary">
+            <h1 className="crop-card-title min-w-36 max-w-52 truncate font-bold">{displayName}</h1>
+            <span className="crop-badge shrink-0 bg-[var(--erp-green-muted)] text-primary">
               Active Cycle
             </span>
             <CompactFact label="Block" value={record.block} />
@@ -200,10 +196,10 @@ function CompactFact({
   strong?: boolean;
 }) {
   return (
-    <div className="min-w-20 max-w-32 shrink truncate text-[0.65rem] font-semibold">
-      <span className="mr-1 text-[var(--erp-muted)]">{label}</span>
+    <div className="crop-helper-text min-w-20 max-w-32 shrink truncate font-semibold">
+      <span className="mr-1">{label}</span>
       <span
-        className={strong ? "truncate text-[var(--erp-ink)]" : "truncate text-[var(--erp-ink)]"}
+        className={strong ? "crop-body-text truncate font-semibold" : "crop-body-text truncate"}
       >
         {value || "-"}
       </span>
@@ -222,11 +218,11 @@ function FactBlock({
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--erp-muted)]">
+      <div className="crop-field-label mb-2 flex items-center gap-2 uppercase tracking-wide">
         {icon}
         {label}
       </div>
-      <div className="text-sm font-semibold text-[var(--erp-ink)]">{value || "-"}</div>
+      <div className="crop-body-text font-semibold">{value || "-"}</div>
     </div>
   );
 }

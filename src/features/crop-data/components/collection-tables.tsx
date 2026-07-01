@@ -121,9 +121,9 @@ export function PerformanceTable({
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-primary">Performance Tracking</h2>
+            <h2 className="crop-page-title text-primary">Performance Tracking</h2>
           </div>
-          <div className="hidden min-w-64 items-center gap-2 border border-[var(--erp-border)] bg-white px-2 py-1.5 text-[0.65rem] text-[var(--erp-muted)] md:flex">
+          <div className="crop-helper-text hidden min-w-64 items-center gap-2 border border-[var(--erp-border)] bg-white px-2 py-1.5 md:flex">
             <Filter className="size-3.5" />
             Search data...
           </div>
@@ -162,7 +162,7 @@ export function PerformanceTable({
 function AnalysisBar({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div>
-      <div className="mb-1 flex justify-between text-[0.65rem] font-semibold text-[var(--erp-ink)]">
+      <div className="crop-body-text mb-1 flex justify-between font-semibold">
         <span>{label}</span>
         <span>{value}</span>
       </div>
@@ -178,7 +178,7 @@ function TeamInsights({ rows }: { rows: Vals[] }) {
     <aside className="space-y-3">
       <div className="border border-[var(--erp-border)] bg-white p-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[var(--erp-ink)]">Team Insights</h3>
+          <h3 className="crop-section-title">Team Insights</h3>
           <TrendingUp className="size-4 text-primary" />
         </div>
         <div className="mt-4 space-y-3">
@@ -188,16 +188,14 @@ function TeamInsights({ rows }: { rows: Vals[] }) {
       </div>
 
       <div className="border border-[var(--erp-border)] bg-white p-4">
-        <h3 className="text-[0.68rem] font-bold uppercase text-[var(--erp-muted)]">
-          Top Performers
-        </h3>
+        <h3 className="crop-card-title text-[var(--erp-muted)]">Top Performers</h3>
         <div className="mt-3 space-y-3">
           {rows.slice(0, 2).map((row, index) => (
             <div
               key={String(row.id ?? index)}
               className="flex items-center justify-between text-xs"
             >
-              <span className="inline-flex items-center gap-2 font-semibold text-[var(--erp-ink)]">
+              <span className="crop-body-text inline-flex items-center gap-2 font-semibold">
                 <span className="flex size-6 items-center justify-center rounded-full bg-[var(--erp-green-muted)] text-[0.62rem] text-primary">
                   {String(row.empName ?? "OP")
                     .slice(0, 2)
@@ -205,11 +203,13 @@ function TeamInsights({ rows }: { rows: Vals[] }) {
                 </span>
                 {String(row.empName ?? `Operator ${index + 1}`)}
               </span>
-              <span className="font-bold text-primary">{index === 0 ? "102%" : "98%"}</span>
+              <span className="crop-body-text font-bold text-primary">
+                {index === 0 ? "102%" : "98%"}
+              </span>
             </div>
           ))}
         </div>
-        <button className="mt-4 w-full bg-[var(--erp-nav-active)] px-3 py-2 text-[0.68rem] font-bold text-[var(--erp-ink)]">
+        <button className="crop-button-text mt-4 w-full bg-[var(--erp-nav-active)] px-3 py-2 text-[var(--erp-ink)]">
           View Full Analytics Report
         </button>
       </div>

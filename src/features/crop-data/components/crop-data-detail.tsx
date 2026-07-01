@@ -127,7 +127,7 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     : null;
 
   const triggerClassName = cn(
-    "relative shrink-0 whitespace-nowrap px-5 py-3 text-[0.72rem] font-bold text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
+    "crop-tab-trigger relative shrink-0 whitespace-nowrap px-5 py-3 text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
     "after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:bg-transparent",
     "data-active:text-primary data-active:after:bg-primary"
   );

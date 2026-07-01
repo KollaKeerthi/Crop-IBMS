@@ -176,7 +176,7 @@ export function RowTableEditor({
     const type = c.type === "int" ? "number" : c.type === "number" ? "number" : c.type;
     return (
       <Input
-        className="h-8 text-sm"
+        className="crop-body-text h-8"
         type={type === "text" ? "text" : type}
         step={c.type === "int" ? 1 : c.type === "number" ? "any" : undefined}
         value={value}
@@ -186,31 +186,29 @@ export function RowTableEditor({
   }
 
   return (
-    <div className="overflow-hidden border border-[var(--erp-border)] bg-white">
+    <div className="crop-form-shell crop-table-shell overflow-hidden border border-[var(--erp-border)] bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--erp-border)] px-3 py-2">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-xs font-bold text-[var(--erp-ink)]">{title}</h3>
+            <h3 className="crop-card-title">{title}</h3>
             {description ? (
-              <span className="text-[0.62rem] font-semibold text-[var(--erp-muted)]">
-                {description}
-              </span>
+              <span className="crop-helper-text font-semibold">{description}</span>
             ) : null}
           </div>
         </div>
         <div className="flex items-center gap-2">
           {showExport ? (
-            <Button size="sm" variant="outline" className="h-7 rounded-sm text-[0.65rem]">
+            <Button size="sm" variant="outline" className="crop-button-text h-7 rounded-sm">
               <Download className="mr-1.5 size-3.5" /> Export
             </Button>
           ) : null}
           {showBulkUpload ? (
-            <Button size="sm" variant="outline" className="h-7 rounded-sm text-[0.65rem]">
+            <Button size="sm" variant="outline" className="crop-button-text h-7 rounded-sm">
               <Upload className="mr-1.5 size-3.5" /> Bulk Upload
             </Button>
           ) : null}
           {!showForm && !readOnly && (
-            <Button size="sm" className="h-7 rounded-sm text-[0.65rem]" onClick={openNew}>
+            <Button size="sm" className="crop-button-text h-7 rounded-sm" onClick={openNew}>
               <Plus className="mr-1.5 size-3.5" /> {newLabel}
             </Button>
           )}
@@ -219,18 +217,16 @@ export function RowTableEditor({
 
       {showForm && (
         <div className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3">
-          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
+          <p className="crop-field-label mb-3 uppercase tracking-wide">
             {editingId ? "Edit Record" : "New Record"}
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {columns.map((c) => (
               <div key={c.name}>
-                <label className="mb-1 block text-[0.65rem] font-semibold text-[var(--erp-muted)]">
-                  {c.label}
-                </label>
+                <label className="crop-field-label mb-1 block">{c.label}</label>
                 {renderInput(c)}
                 {errors[c.name] && (
-                  <p className="mt-1 text-xs text-destructive">{errors[c.name]}</p>
+                  <p className="crop-helper-text mt-1 text-destructive">{errors[c.name]}</p>
                 )}
               </div>
             ))}
@@ -239,7 +235,7 @@ export function RowTableEditor({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 rounded-sm text-[0.65rem]"
+              className="crop-button-text h-7 rounded-sm"
               onClick={close}
               disabled={saving}
             >
@@ -247,7 +243,7 @@ export function RowTableEditor({
             </Button>
             <Button
               size="sm"
-              className="h-7 rounded-sm text-[0.65rem]"
+              className="crop-button-text h-7 rounded-sm"
               onClick={submit}
               disabled={saving}
             >
@@ -258,20 +254,20 @@ export function RowTableEditor({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[52rem] text-[0.68rem]">
+        <table className="w-full min-w-[52rem]">
           <thead>
-            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] text-[var(--erp-muted)]">
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
               {columns.map((c) => (
-                <th key={c.name} className="px-3 py-2 text-left font-bold">
+                <th key={c.name} className="crop-table-head px-3 py-2 text-left">
                   {c.label}
                 </th>
               ))}
               {computed.map((c) => (
-                <th key={c.label} className="px-3 py-2 text-left font-bold">
+                <th key={c.label} className="crop-table-head px-3 py-2 text-left">
                   {c.label}
                 </th>
               ))}
-              {!readOnly && <th className="px-3 py-2 text-right font-bold">Actions</th>}
+              {!readOnly && <th className="crop-table-head px-3 py-2 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -279,7 +275,7 @@ export function RowTableEditor({
               <tr>
                 <td
                   colSpan={columns.length + computed.length + (readOnly ? 0 : 1)}
-                  className="px-3 py-6 text-center text-[var(--erp-muted)]"
+                  className="crop-helper-text px-3 py-6 text-center"
                 >
                   No records yet. Click &quot;New&quot; to add one.
                 </td>
