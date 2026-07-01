@@ -81,60 +81,22 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
     .filter(Boolean)
     .join("-");
   const breadcrumbText = ["Crop Data", record.block, cropVarietyCode].filter(Boolean).join(" / ");
+  const toggleButton = (
+    <button
+      type="button"
+      onClick={() => setExpanded((value) => !value)}
+      className="flex shrink-0 items-center gap-2 px-2 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]"
+    >
+      {expanded ? "Expanded View" : "Compact View"}
+      {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+    </button>
+  );
 
   return (
     <div className="w-full bg-[var(--erp-canvas)] px-4 pb-4 pt-3">
       <section className="border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] pb-3">
-        <div className="flex min-h-20 items-center gap-2 overflow-hidden">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-8 rounded-sm border-[var(--erp-border)] bg-white"
-            render={<Link href="/dashboard/crop-data" />}
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
-
-          <p className="min-w-32 max-w-56 truncate text-xs font-semibold text-[var(--erp-muted)]">
-            {breadcrumbText}
-          </p>
-
-          <div className="size-12 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
-            {record.cropImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={record.cropImageUrl}
-                alt={record.cropName ?? "Crop"}
-                className="h-full w-full object-cover"
-              />
-            ) : null}
-          </div>
-
-          <h1 className="min-w-36 max-w-52 truncate text-sm font-bold text-[var(--erp-ink)]">
-            {displayName}
-          </h1>
-          <span className="shrink-0 bg-[var(--erp-green-muted)] px-2 py-1 text-[0.62rem] font-bold uppercase text-primary">
-            Active Cycle
-          </span>
-          <CompactFact label="Block" value={record.block} />
-          <CompactFact label="Season" value={record.seasonName} />
-          <CompactFact label="Contract Number" value={record.contractNo} />
-          <CompactFact label="Field" value={record.fieldName} />
-          <CompactFact label="Crop Type" value={record.cropTypeName ?? record.block} />
-          <CompactFact label="Sex Expression" value={record.sexExpression} />
-
-          <button
-            type="button"
-            onClick={() => setExpanded((value) => !value)}
-            className="flex shrink-0 items-center gap-2 px-2 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]"
-          >
-            {expanded ? "Expanded View" : "Compact View"}
-            {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-          </button>
-        </div>
-
         {expanded ? (
-          <div className="mt-4 grid gap-5 border-t border-[var(--erp-border)] pt-4 lg:grid-cols-[8rem_minmax(0,1fr)]">
+          <div className="grid gap-5 pt-1 lg:grid-cols-[8rem_minmax(0,1fr)]">
             <div className="h-28 w-28 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
               {record.cropImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -146,12 +108,17 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
               ) : null}
             </div>
             <div>
-              <h1 className="text-2xl font-bold leading-tight text-[var(--erp-ink)]">
-                {displayName}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-[var(--erp-muted)]">
-                <span>{record.block ?? "-"}</span>
-                <span>{record.seasonName ?? "-"}</span>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h1 className="text-2xl font-bold leading-tight text-[var(--erp-ink)]">
+                    {displayName}
+                  </h1>
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-[var(--erp-muted)]">
+                    <span>{record.block ?? "-"}</span>
+                    <span>{record.seasonName ?? "-"}</span>
+                  </div>
+                </div>
+                {toggleButton}
               </div>
               <div className="mt-5 grid gap-x-12 gap-y-5 md:grid-cols-3">
                 <FactBlock
@@ -175,7 +142,47 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex min-h-20 items-center gap-2 overflow-hidden">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8 rounded-sm border-[var(--erp-border)] bg-white"
+              render={<Link href="/dashboard/crop-data" />}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+
+            <p className="min-w-32 max-w-56 truncate text-xs font-semibold text-[var(--erp-muted)]">
+              {breadcrumbText}
+            </p>
+
+            <div className="size-12 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
+              {record.cropImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={record.cropImageUrl}
+                  alt={record.cropName ?? "Crop"}
+                  className="h-full w-full object-cover"
+                />
+              ) : null}
+            </div>
+
+            <h1 className="min-w-36 max-w-52 truncate text-sm font-bold text-[var(--erp-ink)]">
+              {displayName}
+            </h1>
+            <span className="shrink-0 bg-[var(--erp-green-muted)] px-2 py-1 text-[0.62rem] font-bold uppercase text-primary">
+              Active Cycle
+            </span>
+            <CompactFact label="Block" value={record.block} />
+            <CompactFact label="Season" value={record.seasonName} />
+            <CompactFact label="Contract Number" value={record.contractNo} />
+            <CompactFact label="Field" value={record.fieldName} />
+            <CompactFact label="Crop Type" value={record.cropTypeName ?? record.block} />
+            <CompactFact label="Sex Expression" value={record.sexExpression} />
+            {toggleButton}
+          </div>
+        )}
       </section>
 
       <CropDataDetail record={record} farmId={selectedFarmId} activeTab={activeTab} />
