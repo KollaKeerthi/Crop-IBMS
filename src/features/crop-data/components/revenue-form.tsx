@@ -1,14 +1,24 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
-import { DollarSign, Info, Pencil, RefreshCw, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  BanknoteArrowUp,
+  CalendarDays,
+  Coins,
+  DollarSign,
+  FileSpreadsheet,
+  MessageSquarePlus,
+  PlusCircle,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UpdateRevenueInputSchema, type UpdateRevenueInput } from "../schema";
 import { useUpdateRevenue } from "../hooks";
-import { fmtNum, revenueSide } from "../compute";
+import { revenueSide, toNum } from "../compute";
 
 type Vals = Record<string, unknown>;
 type FieldType = "number" | "int" | "textarea";
@@ -78,108 +88,256 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
     setEditing(false);
   }
 
+  const planned = revenueSide(displayValues, programInfo, "male");
+  const actual = revenueSide(displayValues, programInfo, "female");
+  const variance = buildVarianceMetrics(displayValues, programInfo);
+
   return (
-    <div className="space-y-5">
-      <section className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between gap-4 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-50 text-emerald-600">
-              <DollarSign className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold tracking-tight">
-                  Financial Performance Comparison
-                </h3>
-                <RefreshCw className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-          </div>
-          {editing ? (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={cancelEdit} disabled={mutation.isPending}>
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-              <Button onClick={save} disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          ) : (
-            <Button variant="outline" onClick={startEdit}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Financials
-            </Button>
-          )}
-        </div>
-      </section>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
-        <RevenueTable
-          values={displayValues}
-          editing={editing}
-          errors={errors}
-          programInfo={programInfo}
-          onFieldChange={setField}
-        />
-        <div className="space-y-5">
-          <RemarksCard
-            title="Planned Remarks"
-            name="plannedRemarks"
-            value={displayValues.plannedRemarks}
-            editing={editing}
-            error={errors.plannedRemarks}
-            onFieldChange={setField}
-          />
-          <RemarksCard
-            title="Actual Remarks"
-            name="actualRemarks"
-            value={displayValues.actualRemarks}
-            editing={editing}
-            error={errors.actualRemarks}
-            onFieldChange={setField}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="border border-[var(--erp-border)] bg-[var(--erp-green-muted)] px-3 py-1.5 text-[0.65rem] font-bold text-primary">
-          Profit Margin: 32%
-        </span>
-        <span className="border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-3 py-1.5 text-[0.65rem] font-bold text-[var(--brand-secondary)]">
-          Audit Ready
-        </span>
-        <span className="ml-auto text-[0.65rem] font-semibold text-destructive">
-          Incomplete data for Post-Harvest Waste Deduction in Week 42.
-        </span>
-      </div>
-
-      <section className="border border-[var(--erp-border)] bg-white p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[var(--erp-ink)]">
-            Revenue Velocity (Week-over-Week)
-          </h3>
-          <div className="flex border border-[var(--erp-border)] text-[0.62rem] font-bold">
-            <button className="px-3 py-1 text-[var(--erp-muted)]">Week</button>
-            <button className="bg-primary px-3 py-1 text-white">Month</button>
-          </div>
-        </div>
-        <div className="mt-4 flex h-36 items-end gap-7 bg-[var(--erp-nav-active)] px-8 pb-5">
-          {["42%", "58%", "85%", "67%", "78%", "90%", "72%", "45%"].map((height, index) => (
-            <div
-              key={`${height}-${index}`}
-              className={
-                index === 2
-                  ? "w-10 bg-primary"
-                  : index === 5
-                    ? "w-10 bg-[var(--brand-secondary)]"
-                    : "w-10 bg-[var(--erp-track)]"
-              }
-              style={{ height }}
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,2.05fr)_minmax(13rem,1fr)]">
+      <section className="overflow-hidden rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
+        <div className="border-t-2 border-primary" />
+        <table className="w-full table-fixed border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
+              <th className="w-[48%] px-4 py-3 text-left text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Revenue Category
+              </th>
+              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Planned
+              </th>
+              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Actual
+              </th>
+              <th className="w-[18%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Variance
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <RevenueMetricRow
+              icon={<CalendarDays className="size-4 text-[var(--brand-secondary)]" />}
+              label="Total Number of Weeks"
+              hint="Production cycle duration"
+              planned={renderEditableValue({
+                editing,
+                name: "maleTotalWeeks",
+                type: "int",
+                value: displayValues.maleTotalWeeks,
+                error: errors.maleTotalWeeks,
+                onFieldChange: setField,
+              })}
+              actual={renderEditableValue({
+                editing,
+                name: "femaleTotalWeeks",
+                type: "int",
+                value: displayValues.femaleTotalWeeks,
+                error: errors.femaleTotalWeeks,
+                onFieldChange: setField,
+              })}
+              variance={renderVariance(variance.totalWeeks)}
             />
-          ))}
-        </div>
+
+            <RevenueMetricRow
+              icon={<DollarSign className="size-4 text-[#4f7cff]" />}
+              label="Agreed Unit Price (£/m2)"
+              hint="Average rate per unit"
+              planned={renderEditableValue({
+                editing,
+                name: "maleAgreedUnitPrice",
+                type: "number",
+                value: displayValues.maleAgreedUnitPrice,
+                error: errors.maleAgreedUnitPrice,
+                onFieldChange: setField,
+              })}
+              actual={renderEditableValue({
+                editing,
+                name: "femaleAgreedUnitPrice",
+                type: "number",
+                value: displayValues.femaleAgreedUnitPrice,
+                error: errors.femaleAgreedUnitPrice,
+                onFieldChange: setField,
+              })}
+              variance={renderVariance(variance.unitPrice)}
+            />
+
+            <RevenueMetricRow
+              icon={<FileSpreadsheet className="size-4 text-[#4caf50]" />}
+              label="Contract Revenue (£)"
+              hint="Fixed quota revenue"
+              planned={renderStaticValue(planned.contractRevenue)}
+              actual={renderStaticValue(actual.contractRevenue)}
+              variance={renderVariance(variance.contractRevenue)}
+            />
+
+            <RevenueMetricRow
+              icon={<PlusCircle className="size-4 text-[#f97316]" />}
+              label="Additional Revenue (£)"
+              hint="Spot market sales"
+              planned={renderStaticValue(0)}
+              actual={renderEditableValue({
+                editing,
+                name: "additionalRevenue",
+                type: "number",
+                value: displayValues.additionalRevenue,
+                error: errors.additionalRevenue,
+                onFieldChange: setField,
+                emphasize: true,
+              })}
+              variance={renderVariance(variance.additionalRevenue)}
+            />
+
+            <RevenueMetricRow
+              emphasized
+              icon={<BanknoteArrowUp className="size-4 text-white" />}
+              label="Total Revenue (£)"
+              hint="Gross aggregate for cycle"
+              planned={renderStaticValue(planned.totalRevenue, true)}
+              actual={renderStaticValue(actual.totalRevenue, true)}
+              variance={renderVariance(variance.totalRevenue, true)}
+            />
+
+            <RevenueMetricRow
+              icon={<Coins className="size-4 text-[#a855f7]" />}
+              label="Total Revenue m2/wk"
+              hint="Spatial and temporal efficiency"
+              planned={renderStaticValue(planned.totalRevenuePerSqmWk)}
+              actual={renderStaticValue(actual.totalRevenuePerSqmWk, true)}
+              variance={renderVariance(variance.totalRevenuePerSqmWk)}
+            />
+          </tbody>
+        </table>
       </section>
+
+      <div className="space-y-4">
+        <section className="rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="space-y-3 p-3">
+            <SystemNoteCard
+              title="S. Henderson"
+              time="Oct 24, 08:30"
+              body={
+                displayValues.actualRemarks
+                  ? String(displayValues.actualRemarks)
+                  : "Higher than anticipated spot market prices in week 18 drove additional revenue surge. Monitoring harvest quality to maintain premiums."
+              }
+            />
+            <SystemNoteCard
+              title="System Log"
+              time="Oct 22, 16:45"
+              body={
+                displayValues.plannedRemarks
+                  ? String(displayValues.plannedRemarks)
+                  : "Automatic yield forecast updated. +2.4% projected increase in contract fulfillment."
+              }
+            />
+
+            {editing ? (
+              <div className="space-y-3 border border-[var(--erp-border)] p-3">
+                <div>
+                  <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                    Planned Remark
+                  </p>
+                  <Textarea
+                    value={(displayValues.plannedRemarks ?? "") as string}
+                    rows={3}
+                    onChange={(event) => setField("plannedRemarks", event.target.value)}
+                  />
+                  {errors.plannedRemarks ? (
+                    <p className="mt-1 text-xs text-destructive">{errors.plannedRemarks}</p>
+                  ) : null}
+                </div>
+                <div>
+                  <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                    Actual Remark
+                  </p>
+                  <Textarea
+                    value={(displayValues.actualRemarks ?? "") as string}
+                    rows={3}
+                    onChange={(event) => setField("actualRemarks", event.target.value)}
+                  />
+                  {errors.actualRemarks ? (
+                    <p className="mt-1 text-xs text-destructive">{errors.actualRemarks}</p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={editing ? undefined : startEdit}
+              className="flex w-full items-center justify-center gap-2 border border-[var(--erp-border-strong)] bg-[var(--erp-table-head)] px-3 py-2 text-[0.76rem] font-semibold text-[var(--erp-ink)]"
+            >
+              <MessageSquarePlus className="size-4" />
+              Add Remark
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-md border border-[var(--erp-border)] bg-white p-3 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[var(--erp-ink)]">Revenue Trends</h3>
+            <TrendingUp className="size-4 text-[var(--brand-secondary)]" />
+          </div>
+
+          <div className="rounded-sm bg-[#eef3fb] px-4 pb-5 pt-4">
+            <div className="flex h-28 items-end justify-between gap-3">
+              {TREND_BARS.map((bar) => (
+                <div
+                  key={bar.label}
+                  className="flex flex-1 flex-col items-center justify-end gap-2"
+                >
+                  <div
+                    className={
+                      bar.active ? "w-full max-w-4 bg-[#0f5a7c]" : "w-full max-w-4 bg-[#9bd389]"
+                    }
+                    style={{ height: bar.height }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[0.6rem] font-semibold text-[var(--erp-muted)]">
+              {TREND_BARS.map((bar) => (
+                <span key={bar.label} className={bar.active ? "text-[#0f5a7c]" : undefined}>
+                  {bar.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-md border border-[var(--erp-border)] bg-white px-3 py-3 shadow-sm">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {editing ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={mutation.isPending}
+                >
+                  <X className="size-4" />
+                  Cancel
+                </Button>
+                <Button variant="outline" size="sm" type="button">
+                  Export to CSV
+                </Button>
+                <Button size="sm" type="button" onClick={save} disabled={mutation.isPending}>
+                  {mutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" type="button">
+                  Export to CSV
+                </Button>
+                <Button size="sm" type="button" onClick={startEdit}>
+                  Edit Revenue
+                </Button>
+              </>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
@@ -204,7 +362,7 @@ function assembleRevenuePayload(values: Vals): UpdateRevenueInput {
   return payload as UpdateRevenueInput;
 }
 
-function displayValue(value: unknown, digits = 2) {
+function formatValue(value: unknown, digits = 2) {
   if (value === null || value === undefined || value === "") return "-";
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return String(value);
@@ -214,163 +372,178 @@ function displayValue(value: unknown, digits = 2) {
   });
 }
 
-function RevenueTable({
-  values,
-  editing,
-  errors,
-  programInfo,
-  onFieldChange,
-}: {
-  values: Vals;
-  editing: boolean;
-  errors: Record<string, string>;
-  programInfo: Vals | null;
-  onFieldChange: (name: string, value: string) => void;
-}) {
+function calculateVariance(actual: unknown, planned: unknown): number | null {
+  const actualNum = toNum(actual);
+  const plannedNum = toNum(planned);
+  if (actualNum === null || plannedNum === null) return null;
+  return actualNum - plannedNum;
+}
+
+function buildVarianceMetrics(values: Vals, programInfo: Vals | null) {
   const planned = revenueSide(values, programInfo, "male");
   const actual = revenueSide(values, programInfo, "female");
 
-  function inputCell(name: keyof UpdateRevenueInput, type: "number" | "int") {
-    if (!editing) return <strong>{displayValue(values[name])}</strong>;
+  return {
+    totalWeeks: calculateVariance(values.femaleTotalWeeks, values.maleTotalWeeks),
+    unitPrice: calculateVariance(values.femaleAgreedUnitPrice, values.maleAgreedUnitPrice),
+    contractRevenue: calculateVariance(actual.contractRevenue, planned.contractRevenue),
+    additionalRevenue: toNum(values.additionalRevenue),
+    totalRevenue: calculateVariance(actual.totalRevenue, planned.totalRevenue),
+    totalRevenuePerSqmWk: calculateVariance(
+      actual.totalRevenuePerSqmWk,
+      planned.totalRevenuePerSqmWk
+    ),
+  };
+}
+
+function renderStaticValue(value: unknown, emphasize = false) {
+  return (
+    <span
+      className={
+        emphasize ? "font-bold text-[var(--erp-ink)]" : "font-medium text-[var(--erp-ink)]"
+      }
+    >
+      {formatValue(value)}
+    </span>
+  );
+}
+
+function renderVariance(value: number | null, emphasize = false) {
+  if (value === null) return <span className="font-medium text-[var(--erp-muted)]">-</span>;
+
+  const tone =
+    value > 0 ? "text-primary" : value < 0 ? "text-destructive" : "text-[var(--erp-muted)]";
+
+  const prefix = value > 0 ? "+" : "";
+
+  return (
+    <span className={`${emphasize ? "font-bold" : "font-semibold"} ${tone}`}>
+      {prefix}
+      {formatValue(value)}
+    </span>
+  );
+}
+
+function renderEditableValue({
+  editing,
+  name,
+  type,
+  value,
+  error,
+  onFieldChange,
+  emphasize = false,
+}: {
+  editing: boolean;
+  name: keyof UpdateRevenueInput;
+  type: "number" | "int";
+  value: unknown;
+  error?: string;
+  onFieldChange: (name: string, value: string) => void;
+  emphasize?: boolean;
+}) {
+  if (!editing) {
     return (
-      <div>
-        <Input
-          className="h-9"
-          type="number"
-          step={type === "int" ? 1 : "any"}
-          value={(values[name] ?? "") as string | number}
-          onChange={(event) => onFieldChange(name, event.target.value)}
-        />
-        {errors[name] ? <p className="mt-1 text-xs text-destructive">{errors[name]}</p> : null}
-      </div>
+      <span
+        className={
+          emphasize
+            ? "font-bold text-[var(--brand-secondary)]"
+            : "font-medium text-[var(--erp-ink)]"
+        }
+      >
+        {formatValue(value)}
+      </span>
     );
   }
 
   return (
-    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
-      <table className="w-full table-fixed text-sm">
-        <thead>
-          <tr className="border-b bg-muted/30">
-            <th className="w-[34%] px-5 py-4 text-left font-bold text-slate-900">
-              Metric Definition
-            </th>
-            <th className="w-[33%] px-5 py-4 text-left font-bold text-cyan-700">
-              Planned Projection
-            </th>
-            <th className="w-[33%] px-5 py-4 text-left font-bold text-emerald-700">
-              Actual Performance
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <RevenueRow
-            label="Total number of Weeks"
-            planned={inputCell("maleTotalWeeks", "int")}
-            actual={inputCell("femaleTotalWeeks", "int")}
-          />
-          <RevenueRow
-            label="Agreed Unit Price"
-            planned={inputCell("maleAgreedUnitPrice", "number")}
-            actual={inputCell("femaleAgreedUnitPrice", "number")}
-          />
-          <RevenueRow
-            label="Contract Revenue"
-            planned={<strong>{fmtNum(planned.contractRevenue, 2)}</strong>}
-            actual={
-              <strong className="text-emerald-700">{fmtNum(actual.contractRevenue, 2)}</strong>
-            }
-          />
-          <RevenueRow
-            label="Additional Revenue"
-            planned={<span />}
-            actual={
-              editing ? (
-                inputCell("additionalRevenue", "number")
-              ) : (
-                <strong className="text-emerald-700">
-                  {displayValue(values.additionalRevenue)}
-                </strong>
-              )
-            }
-          />
-          <RevenueRow
-            label="Total Revenue"
-            planned={<strong>{fmtNum(planned.totalRevenue, 2)}</strong>}
-            actual={<strong className="text-emerald-700">{fmtNum(actual.totalRevenue, 2)}</strong>}
-          />
-          <RevenueRow
-            label="Total Revenue m²"
-            planned={<strong>{fmtNum(planned.totalRevenuePerSqm, 2)}</strong>}
-            actual={
-              <strong className="text-emerald-700">{fmtNum(actual.totalRevenuePerSqm, 2)}</strong>
-            }
-          />
-          <RevenueRow
-            label="Total Revenue m²/wk"
-            planned={<strong>{fmtNum(planned.totalRevenuePerSqmWk, 2)}</strong>}
-            actual={
-              <strong className="text-emerald-700">{fmtNum(actual.totalRevenuePerSqmWk, 2)}</strong>
-            }
-          />
-        </tbody>
-      </table>
-    </section>
+    <div>
+      <Input
+        className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-right text-[0.78rem] font-semibold"
+        type="number"
+        step={type === "int" ? 1 : "any"}
+        value={(value ?? "") as string | number}
+        onChange={(event) => onFieldChange(name, event.target.value)}
+      />
+      {error ? <p className="mt-1 text-xs text-destructive">{error}</p> : null}
+    </div>
   );
 }
 
-function RevenueRow({
+function RevenueMetricRow({
+  icon,
   label,
+  hint,
   planned,
   actual,
+  variance,
+  emphasized = false,
 }: {
+  icon: React.ReactNode;
   label: string;
-  planned: ReactNode;
-  actual: ReactNode;
+  hint: string;
+  planned: React.ReactNode;
+  actual: React.ReactNode;
+  variance: React.ReactNode;
+  emphasized?: boolean;
 }) {
   return (
-    <tr className="border-b last:border-0">
-      <td className="px-5 py-4 font-semibold text-muted-foreground">{label}</td>
-      <td className="px-5 py-4 text-slate-900">{planned}</td>
-      <td className="px-5 py-4 text-slate-900">{actual}</td>
+    <tr
+      className={
+        emphasized
+          ? "border-b border-[var(--erp-border)] bg-[#edf4ff] last:border-0"
+          : "border-b border-[var(--erp-border)] last:border-0"
+      }
+    >
+      <td className="px-4 py-3">
+        <div className="flex items-start gap-3">
+          <span
+            className={
+              emphasized
+                ? "mt-0.5 flex size-7 shrink-0 items-center justify-center bg-primary text-white"
+                : "mt-0.5 flex size-7 shrink-0 items-center justify-center bg-[var(--erp-table-head)]"
+            }
+          >
+            {icon}
+          </span>
+          <div>
+            <p
+              className={
+                emphasized
+                  ? "font-bold text-[var(--erp-ink)]"
+                  : "font-semibold text-[var(--erp-ink)]"
+              }
+            >
+              {label}
+            </p>
+            <p className="mt-0.5 text-[0.65rem] text-[var(--erp-muted)]">{hint}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-3 py-3 text-right font-mono text-[0.82rem]">{planned}</td>
+      <td className="px-3 py-3 text-right font-mono text-[0.82rem]">{actual}</td>
+      <td className="px-3 py-3 text-right font-mono text-[0.82rem]">{variance}</td>
     </tr>
   );
 }
 
-function RemarksCard({
-  title,
-  name,
-  value,
-  editing,
-  error,
-  onFieldChange,
-}: {
-  title: string;
-  name: "plannedRemarks" | "actualRemarks";
-  value: unknown;
-  editing: boolean;
-  error?: string;
-  onFieldChange: (name: string, value: string) => void;
-}) {
+function SystemNoteCard({ title, time, body }: { title: string; time: string; body: string }) {
   return (
-    <section className="rounded-lg border bg-card p-5 shadow-sm">
-      <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-900">
-        <Info className="h-4 w-4 text-cyan-600" />
-        {title}
+    <div className="border border-[var(--erp-border)] bg-[#fbfcfe] p-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[0.68rem] font-bold text-[var(--erp-ink)]">{title}</p>
+        <p className="text-[0.62rem] text-[var(--erp-muted)]">{time}</p>
       </div>
-      {editing ? (
-        <>
-          <Textarea
-            value={(value ?? "") as string}
-            rows={4}
-            onChange={(event) => onFieldChange(name, event.target.value)}
-          />
-          {error ? <p className="mt-1 text-xs text-destructive">{error}</p> : null}
-        </>
-      ) : (
-        <div className="min-h-24 rounded-md border bg-muted/20 px-4 py-4 text-sm italic text-muted-foreground">
-          {value ? String(value) : `All the ${title.toLowerCase()} are here`}
-        </div>
-      )}
-    </section>
+      <p className="mt-2 text-[0.68rem] leading-5 text-[var(--erp-ink)]">{body}</p>
+    </div>
   );
 }
+
+const TREND_BARS = [
+  { label: "W14", height: "42%", active: false },
+  { label: "W16", height: "56%", active: false },
+  { label: "W18", height: "66%", active: false },
+  { label: "(Current)", height: "34%", active: false },
+  { label: "W20", height: "84%", active: true },
+  { label: "W22", height: "74%", active: false },
+  { label: "", height: "42%", active: false },
+] as const;

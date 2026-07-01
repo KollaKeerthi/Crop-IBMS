@@ -1,8 +1,7 @@
 "use client";
 
-import type { FieldType, MetricRow, Vals } from "./metric-form";
 import { useMemo, useState } from "react";
-import { CalendarDays, Info, Mars, Pencil, Venus, X } from "lucide-react";
+import { GitBranch, Printer, Save, Share2, Sprout, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   UpdateProgramInfoInputSchema,
@@ -10,101 +9,53 @@ import {
   type UpdateProgramInfoInput,
 } from "../schema";
 import { useUpdateProgramInfo } from "../hooks";
-import { computeProgramInfoDerivedFields } from "../compute";
+import { computeProgramInfoDerivedFields, toNum } from "../compute";
+import { formatDateDisplay } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const PLANNING_ROWS: MetricRow[] = [
-  { kind: "mf", label: "Batch Number", type: "text", male: "maleBatchNo", female: "femaleBatchNo" },
-  {
-    kind: "mf",
-    label: "Planned Sowing Date",
-    type: "date",
-    male: "malePlannedSowingDate",
-    female: "femalePlannedSowingDate",
-  },
-  {
-    kind: "mf",
-    label: "Planned Planting Date",
-    type: "date",
-    male: "malePlannedPlantingDate",
-    female: "femalePlannedPlantingDate",
-  },
-  {
-    kind: "mf",
-    label: "Planned No of Plants",
-    type: "int",
-    male: "malePlannedPlants",
-    female: "femalePlannedPlants",
-  },
-  {
-    kind: "mf",
-    label: "Planned Plants / Row",
-    type: "number",
-    male: "malePlannedPlantsPerRow",
-    female: "femalePlannedPlantsPerRow",
-  },
-  {
-    kind: "mf",
-    label: "Planned Plants / m²",
-    type: "number",
-    male: "malePlannedPlantsPerSqm",
-    female: "femalePlannedPlantsPerSqm",
-  },
-  { kind: "single", label: "Planned Surface Area", type: "number", name: "plannedSurfaceArea" },
-  { kind: "single", label: "Planned No of Rows", type: "int", name: "plannedNoOfRows" },
-  {
-    kind: "single",
-    label: "Proposed gram / Plant (Customer)",
-    type: "number",
-    name: "proposedGramPerPlant",
-  },
-  { kind: "single", label: "Agreed gram / Plant", type: "number", name: "agreedGramPerPlant" },
-  { kind: "single", label: "Base Yield (kg)", type: "number", name: "baseYieldKg" },
-  { kind: "single", label: "grams / m2", type: "number", name: "gramsPerSqm" },
-  {
-    kind: "mf",
-    label: "Requested Quantity",
-    type: "number",
-    male: "maleRequestedQuantity",
-    female: "femaleRequestedQuantity",
-  },
-];
+type FieldType = "text" | "number" | "int" | "date" | "textarea";
+type Vals = Record<string, unknown>;
 
-type ContextField = {
-  label: string;
-  name: keyof UpdateProgramInfoInput;
-  type: "text" | "number" | "int" | "date" | "textarea";
-};
+const PLANNING_FIELDS = [
+  { name: "maleBatchNo", type: "text" },
+  { name: "femaleBatchNo", type: "text" },
+  { name: "malePlannedSowingDate", type: "date" },
+  { name: "femalePlannedSowingDate", type: "date" },
+  { name: "malePlannedPlantingDate", type: "date" },
+  { name: "femalePlannedPlantingDate", type: "date" },
+  { name: "malePlannedPlants", type: "int" },
+  { name: "femalePlannedPlants", type: "int" },
+  { name: "malePlannedPlantsPerRow", type: "number" },
+  { name: "femalePlannedPlantsPerRow", type: "number" },
+  { name: "malePlannedPlantsPerSqm", type: "number" },
+  { name: "femalePlannedPlantsPerSqm", type: "number" },
+  { name: "plannedSurfaceArea", type: "number" },
+  { name: "plannedNoOfRows", type: "int" },
+  { name: "proposedGramPerPlant", type: "number" },
+  { name: "agreedGramPerPlant", type: "number" },
+  { name: "baseYieldKg", type: "number" },
+  { name: "gramsPerSqm", type: "number" },
+  { name: "maleRequestedQuantity", type: "number" },
+  { name: "femaleRequestedQuantity", type: "number" },
+] as const satisfies ReadonlyArray<{ name: string; type: FieldType }>;
 
-const CONTEXT_FIELDS: ContextField[] = [
-  {
-    label: "Arrival Date (Actual)",
-    type: "date",
-    name: "materialArrivalDate",
-  },
-  { label: "Block Prep Start", type: "date", name: "blockPrepStartDate" },
-  { label: "Block Prep End", type: "date", name: "blockPrepEndDate" },
-  { label: "Reference Year", type: "int", name: "productionYear" },
-  {
-    label: "Agreed Order (kg)",
-    type: "number",
-    name: "agreedOrderFromCustomerKg",
-  },
-  {
-    label: "Requested Delivery Date (Customer)",
-    type: "date",
-    name: "requestedDeliveryDate",
-  },
-  { label: "Archive Status", type: "text", name: "archiveStatus" },
-  {
-    label: "Remarks From Customer",
-    type: "textarea",
-    name: "remarksFromCustomer",
-  },
-  { label: "Notes", type: "textarea", name: "notes" },
-];
+const CONTEXT_FIELDS = [
+  { label: "Material Arrival (Actual)", name: "materialArrivalDate", type: "date" },
+  { label: "Block Prep Start (Actual)", name: "blockPrepStartDate", type: "date" },
+  { label: "Block Prep End (Actual)", name: "blockPrepEndDate", type: "date" },
+  { label: "Archive Status", name: "archiveStatus", type: "text" },
+  { label: "Year", name: "productionYear", type: "int" },
+  { label: "Agreed Order From (kg)", name: "agreedOrderFromCustomerKg", type: "number" },
+  { label: "Req Delivery Date", name: "requestedDeliveryDate", type: "date" },
+  { label: "Remarks From Customer", name: "remarksFromCustomer", type: "textarea" },
+  { label: "Notes", name: "notes", type: "textarea" },
+] as const satisfies ReadonlyArray<{ label: string; name: string; type: FieldType }>;
+
+const ARCHIVE_STATUS_OPTIONS = ["RUN", "HOLD", "ARCHIVED"] as const;
+
+const YEAR_OPTIONS = Array.from({ length: 7 }, (_, index) => String(2024 + index));
 
 type Props = {
   cropDataId: string;
@@ -112,9 +63,87 @@ type Props = {
   programInfo: Vals | null;
 };
 
+type ParentRow =
+  | {
+      label: string;
+      kind: "editable-mf";
+      male: string;
+      female: string;
+      type: FieldType;
+    }
+  | {
+      label: string;
+      kind: "computed-mf";
+      getMale: (values: Vals) => unknown;
+      getFemale: (values: Vals) => unknown;
+      type: "number" | "int";
+    };
+
+const PARENT_ROWS: ParentRow[] = [
+  {
+    label: "Planned Sowing Date",
+    kind: "editable-mf",
+    male: "malePlannedSowingDate",
+    female: "femalePlannedSowingDate",
+    type: "date",
+  },
+  {
+    label: "Planned Planting Date",
+    kind: "editable-mf",
+    male: "malePlannedPlantingDate",
+    female: "femalePlannedPlantingDate",
+    type: "date",
+  },
+  {
+    label: "Planned No of Plants",
+    kind: "editable-mf",
+    male: "malePlannedPlants",
+    female: "femalePlannedPlants",
+    type: "int",
+  },
+  {
+    label: "Planned Surface Area",
+    kind: "computed-mf",
+    getMale: (values) => deriveDivision(values.malePlannedPlants, values.malePlannedPlantsPerSqm),
+    getFemale: (values) =>
+      deriveDivision(values.femalePlannedPlants, values.femalePlannedPlantsPerSqm),
+    type: "number",
+  },
+  {
+    label: "Planned Plants / m²",
+    kind: "editable-mf",
+    male: "malePlannedPlantsPerSqm",
+    female: "femalePlannedPlantsPerSqm",
+    type: "number",
+  },
+  {
+    label: "Planned Plants / Row",
+    kind: "editable-mf",
+    male: "malePlannedPlantsPerRow",
+    female: "femalePlannedPlantsPerRow",
+    type: "number",
+  },
+  {
+    label: "Planned No of Rows",
+    kind: "computed-mf",
+    getMale: (values) =>
+      roundNullable(deriveDivision(values.malePlannedPlants, values.malePlannedPlantsPerRow)),
+    getFemale: (values) =>
+      roundNullable(deriveDivision(values.femalePlannedPlants, values.femalePlannedPlantsPerRow)),
+    type: "int",
+  },
+  {
+    label: "Requested Quantity",
+    kind: "editable-mf",
+    male: "maleRequestedQuantity",
+    female: "femaleRequestedQuantity",
+    type: "number",
+  },
+];
+
 export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
   const mutation = useUpdateProgramInfo(cropDataId, farmId);
-  const fields = useMemo(() => editableFields([...PLANNING_ROWS, ...CONTEXT_FIELDS]), []);
+  const fields = useMemo(() => [...PLANNING_FIELDS, ...CONTEXT_FIELDS], []);
   const buildState = useMemo(
     () => () => buildProgramState(programInfo, fields),
     [fields, programInfo]
@@ -122,6 +151,7 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<Vals>(buildState);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const displayValues = editing ? values : buildState();
 
   function startEdit() {
@@ -159,134 +189,150 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
   }
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between gap-4 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-cyan-50 text-cyan-600">
-              <Info className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold tracking-tight">Program Parameters</h3>
-            </div>
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,2.15fr)_minmax(16rem,1fr)]">
+        <section className="overflow-hidden rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3">
+            <span className="flex size-7 items-center justify-center rounded-md bg-white text-primary">
+              <GitBranch className="size-4" />
+            </span>
+            <h3 className="text-base font-bold text-[var(--erp-ink)]">
+              Parent Information &amp; Propagation
+            </h3>
           </div>
-          {editing ? (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={cancelEdit} disabled={mutation.isPending}>
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          ) : (
-            <Button variant="outline" onClick={startEdit}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit Parameters
-            </Button>
-          )}
-        </div>
-      </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(23rem,1fr)]">
-        <ProgramParametersTable
-          values={displayValues}
-          saved={programInfo}
-          editing={editing}
-          errors={errors}
-          onFieldChange={setField}
-        />
-        <TemporalContextCard
-          values={displayValues}
-          saved={programInfo}
-          editing={editing}
-          errors={errors}
-          onFieldChange={setField}
-        />
-      </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[36rem] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
+                  <th className="w-[30%] px-3 py-2 text-left text-[0.68rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                    Metric
+                  </th>
+                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold uppercase tracking-wide text-[var(--brand-secondary)]">
+                    Male Parent
+                  </th>
+                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold uppercase tracking-wide text-[var(--erp-warning)]">
+                    Female Parent
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {PARENT_ROWS.map((row) => (
+                  <tr key={row.label} className="border-b border-[var(--erp-border)] last:border-0">
+                    <td className="px-3 py-3 align-middle text-[0.82rem] leading-5 text-[var(--erp-ink)]">
+                      {row.label}
+                    </td>
+                    <td className="px-3 py-2 align-middle">
+                      {row.kind === "editable-mf"
+                        ? renderMetricCell({
+                            name: row.male,
+                            type: row.type,
+                            editing,
+                            value: displayValues[row.male],
+                            error: errors[row.male],
+                            onFieldChange: setField,
+                          })
+                        : renderComputedCell(row.getMale(displayValues), row.type)}
+                    </td>
+                    <td className="px-3 py-2 align-middle">
+                      {row.kind === "editable-mf"
+                        ? renderMetricCell({
+                            name: row.female,
+                            type: row.type,
+                            editing,
+                            value: displayValues[row.female],
+                            error: errors[row.female],
+                            onFieldChange: setField,
+                          })
+                        : renderComputedCell(row.getFemale(displayValues), row.type)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(18rem,0.65fr)]">
-        <section className="border border-[var(--erp-border)] bg-white p-4">
-          <h3 className="text-sm font-bold text-[var(--erp-ink)]">Sowing Schedule Timeline</h3>
-          <div className="mt-4 space-y-4 text-[0.68rem]">
-            {[
-              ["Male Parent Sowing", "Planned Feb 12 Month, 2024"],
-              ["Female Parent Sowing", "Planned Feb 14 Month, 2024"],
-              ["Transplant to Main Field", "Expected Mar 05 Month, 2024"],
-            ].map(([title, detail], index) => (
-              <div key={title} className="flex gap-2">
-                <span className="mt-1 size-2 rounded-full bg-primary" />
-                <div>
-                  <p className="font-bold text-[var(--erp-ink)]">{title}</p>
-                  <p className="text-[var(--erp-muted)]">{detail}</p>
-                </div>
-                {index < 2 ? (
-                  <span className="ml-[-0.62rem] mt-4 h-6 w-px bg-[var(--erp-border)]" />
-                ) : null}
-              </div>
+        <section className="overflow-hidden rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3">
+            <span className="flex size-7 items-center justify-center rounded-md bg-[var(--erp-warning-muted)] text-[var(--erp-warning)]">
+              <Sprout className="size-4" />
+            </span>
+            <h3 className="text-base font-bold text-[var(--erp-ink)]">Program Lifecycle</h3>
+          </div>
+
+          <div className="space-y-4 px-4 py-4">
+            {CONTEXT_FIELDS.map((field) => (
+              <LifecycleField
+                key={field.name}
+                label={field.label}
+                name={field.name}
+                type={field.type}
+                editing={editing}
+                value={displayValues[field.name]}
+                error={errors[field.name]}
+                onFieldChange={setField}
+              />
             ))}
           </div>
         </section>
-
-        <section className="flex min-h-36 flex-col items-center justify-center border border-[var(--erp-border)] bg-white p-4 text-center">
-          <div className="flex size-12 items-center justify-center bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
-            <Info className="size-5" />
-          </div>
-          <p className="mt-3 text-[0.62rem] font-bold uppercase text-[var(--erp-muted)]">
-            Yield Estimation
-          </p>
-          <p className="mt-1 text-2xl font-bold text-[var(--erp-ink)]">12,450 kg</p>
-          <p className="text-[0.62rem] text-[var(--erp-muted)]">
-            Projected at 95% germination rate
-          </p>
-        </section>
-
-        <section className="flex flex-col justify-end gap-2 border border-[var(--erp-border)] bg-white p-4">
-          <button className="border border-[var(--erp-border-strong)] bg-white px-3 py-2 text-[0.68rem] font-bold text-[var(--erp-ink)]">
-            Export CSV
-          </button>
-          {editing ? (
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={mutation.isPending}
-              className="bg-primary px-3 py-2 text-[0.68rem] font-bold text-white"
-            >
-              Save Changes
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={startEdit}
-              className="bg-primary px-3 py-2 text-[0.68rem] font-bold text-white"
-            >
-              Edit Details
-            </button>
-          )}
-        </section>
       </div>
+
+      <section className="rounded-md border border-[var(--erp-border)] bg-white px-4 py-3 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="ghost" size="sm" type="button" className="text-[var(--erp-muted)]">
+              <Printer className="size-4" />
+              Print Program
+            </Button>
+            <Button variant="ghost" size="sm" type="button" className="text-[var(--erp-muted)]">
+              <Share2 className="size-4" />
+              Share Data
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {editing ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={mutation.isPending}
+                >
+                  <X className="size-4" />
+                  Cancel
+                </Button>
+                <Button variant="outline" size="sm" type="button">
+                  Export to CSV
+                </Button>
+                <Button size="sm" type="button" onClick={handleSave} disabled={mutation.isPending}>
+                  <Save className="size-4" />
+                  {mutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" type="button">
+                  Export to CSV
+                </Button>
+                <Button size="sm" type="button" onClick={startEdit}>
+                  Edit Details
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
 
-type EditableField = { name: string; type: FieldType };
-
-function editableFields(rows: Array<MetricRow | ContextField>): EditableField[] {
-  const out: EditableField[] = [];
-  for (const row of rows) {
-    if ("kind" in row && row.kind === "mf") {
-      out.push({ name: row.male, type: row.type }, { name: row.female, type: row.type });
-    } else if ("kind" in row && row.kind === "single") {
-      out.push({ name: row.name, type: row.type });
-    } else if (!("kind" in row)) {
-      out.push({ name: row.name, type: row.type });
-    }
-  }
-  return out;
-}
-
-function buildProgramState(programInfo: Vals | null, fields: EditableField[]): Vals {
+function buildProgramState(
+  programInfo: Vals | null,
+  fields: ReadonlyArray<{ name: string; type: FieldType }>
+): Vals {
   const state: Vals = {};
   for (const field of fields) {
     const raw = programInfo?.[field.name];
@@ -295,7 +341,10 @@ function buildProgramState(programInfo: Vals | null, fields: EditableField[]): V
   return computeProgramInfoDerivedFields(state);
 }
 
-function assembleProgramPayload(values: Vals, fields: EditableField[]): UpdateProgramInfoInput {
+function assembleProgramPayload(
+  values: Vals,
+  fields: ReadonlyArray<{ name: string; type: FieldType }>
+): UpdateProgramInfoInput {
   const dateSet = new Set<string>(PROGRAM_INFO_DATE_FIELDS);
   const payload: Vals = {};
   for (const field of fields) {
@@ -312,9 +361,16 @@ function assembleProgramPayload(values: Vals, fields: EditableField[]): UpdatePr
   return payload as UpdateProgramInfoInput;
 }
 
-function displayProgramValue(value: unknown, type: FieldType) {
+function formatDateForInput(value: unknown): string {
+  if (!value) return "";
+  const date = new Date(value as string);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
+function displayProgramValue(value: unknown, type: FieldType): string {
   if (value === null || value === undefined || value === "") return "-";
-  if (type === "date") return formatDateForInput(value);
+  if (type === "date") return formatDateDisplay(value as string);
   if (type === "number") return formatNumber(value, 2);
   if (type === "int") return formatNumber(value, 0);
   return String(value);
@@ -329,16 +385,68 @@ function formatNumber(value: unknown, fractionDigits: number) {
   });
 }
 
+function deriveDivision(dividend: unknown, divisor: unknown): number | null {
+  const left = toNum(dividend);
+  const right = toNum(divisor);
+  if (left === null || right === null || right === 0) return null;
+  return left / right;
+}
+
+function roundNullable(value: number | null): number | null {
+  return value === null ? null : Math.round(value);
+}
+
+function renderComputedCell(value: unknown, type: "number" | "int") {
+  return (
+    <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2 text-center text-[0.82rem] font-semibold text-[var(--erp-ink)]">
+      {displayProgramValue(value, type)}
+    </div>
+  );
+}
+
+function renderMetricCell({
+  name,
+  type,
+  editing,
+  value,
+  error,
+  onFieldChange,
+}: {
+  name: string;
+  type: FieldType;
+  editing: boolean;
+  value: unknown;
+  error?: string;
+  onFieldChange: (name: string, value: unknown) => void;
+}) {
+  if (!editing) {
+    return (
+      <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2 text-center text-[0.82rem] font-semibold text-[var(--erp-ink)]">
+        {displayProgramValue(value, type)}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <MetricInput name={name} type={type} value={value} onFieldChange={onFieldChange} compact />
+      {error ? <p className="mt-1 text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
 function MetricInput({
   name,
   type,
   value,
   onFieldChange,
+  compact = false,
 }: {
   name: string;
   type: FieldType;
   value: unknown;
   onFieldChange: (name: string, value: unknown) => void;
+  compact?: boolean;
 }) {
   if (type === "textarea") {
     return (
@@ -349,9 +457,48 @@ function MetricInput({
       />
     );
   }
+
+  if (name === "archiveStatus") {
+    return (
+      <select
+        value={String(value ?? "")}
+        onChange={(event) => onFieldChange(name, event.target.value)}
+        className="h-9 w-full rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 text-[0.78rem] font-semibold text-[var(--erp-ink)] outline-none"
+      >
+        <option value="">Select status</option>
+        {ARCHIVE_STATUS_OPTIONS.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (name === "productionYear") {
+    return (
+      <select
+        value={String(value ?? "")}
+        onChange={(event) => onFieldChange(name, event.target.value)}
+        className="h-9 w-full rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 text-[0.78rem] font-semibold text-[var(--erp-ink)] outline-none"
+      >
+        <option value="">Select year</option>
+        {YEAR_OPTIONS.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
   return (
     <Input
-      className="h-9"
+      className={
+        compact
+          ? "h-9 rounded-sm bg-[var(--erp-table-head)] text-center text-[0.78rem] font-semibold"
+          : "h-9 rounded-sm bg-[var(--erp-table-head)] text-[0.78rem] font-semibold"
+      }
       type={type === "date" ? "date" : type === "text" ? "text" : "number"}
       step={type === "int" ? 1 : type === "number" ? "any" : undefined}
       value={(value ?? "") as string | number}
@@ -360,156 +507,42 @@ function MetricInput({
   );
 }
 
-function ProgramParametersTable({
-  values,
-  saved,
+function LifecycleField({
+  label,
+  name,
+  type,
   editing,
-  errors,
+  value,
+  error,
   onFieldChange,
 }: {
-  values: Vals;
-  saved: Vals | null;
+  label: string;
+  name: string;
+  type: FieldType;
   editing: boolean;
-  errors: Record<string, string>;
+  value: unknown;
+  error?: string;
   onFieldChange: (name: string, value: unknown) => void;
 }) {
-  function renderCell(name: string, type: FieldType) {
-    if (!editing) {
-      return (
-        <span className="text-lg font-bold text-slate-900">
-          {displayProgramValue(saved?.[name], type)}
-        </span>
-      );
-    }
-    return (
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_7rem] items-start gap-3">
+      <div className="pt-1 text-[0.64rem] font-bold uppercase leading-4 tracking-wide text-[var(--erp-muted)]">
+        {label}
+      </div>
       <div>
-        <MetricInput
-          name={name}
-          type={type}
-          value={values[name] ?? ""}
-          onFieldChange={onFieldChange}
-        />
-        {errors[name] ? <p className="mt-1 text-xs text-destructive">{errors[name]}</p> : null}
-      </div>
-    );
-  }
-
-  return (
-    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
-      <table className="w-full table-fixed text-sm">
-        <thead>
-          <tr className="border-b bg-muted/30">
-            <th className="w-[34%] px-5 py-4 text-left text-base font-bold text-slate-900">
-              Metric Definition
-            </th>
-            <th className="w-[33%] px-5 py-4 text-left text-base font-bold text-cyan-700">
-              <span className="inline-flex items-center gap-2">
-                <Mars className="h-4 w-4" />
-                Male Parent
-              </span>
-            </th>
-            <th className="w-[33%] px-5 py-4 text-left text-base font-bold text-pink-600">
-              <span className="inline-flex items-center gap-2">
-                <Venus className="h-4 w-4" />
-                Female Parent
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {PLANNING_ROWS.map((row) => {
-            if (row.kind === "mf") {
-              return (
-                <tr key={row.label} className="border-b last:border-0">
-                  <td className="px-5 py-4 text-base font-semibold text-muted-foreground">
-                    {row.label}
-                  </td>
-                  <td className="px-5 py-4">{renderCell(row.male, row.type)}</td>
-                  <td className="px-5 py-4">{renderCell(row.female, row.type)}</td>
-                </tr>
-              );
-            }
-            if (row.kind === "single") {
-              return (
-                <tr key={row.label} className="border-b last:border-0">
-                  <td className="px-5 py-4 text-base font-semibold text-muted-foreground">
-                    {row.label}
-                  </td>
-                  <td className="px-5 py-4" />
-                  <td className="px-5 py-4">{renderCell(row.name, row.type)}</td>
-                </tr>
-              );
-            }
-            return null;
-          })}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function TemporalContextCard({
-  values,
-  saved,
-  editing,
-  errors,
-  onFieldChange,
-}: {
-  values: Vals;
-  saved: Vals | null;
-  editing: boolean;
-  errors: Record<string, string>;
-  onFieldChange: (name: string, value: unknown) => void;
-}) {
-  return (
-    <section className="rounded-lg border bg-card shadow-sm">
-      <div className="flex items-center gap-3 px-5 py-5">
-        <CalendarDays className="h-5 w-5 text-cyan-600" />
-        <h3 className="text-base font-bold text-slate-900">Temporal Context</h3>
-      </div>
-      <div className="space-y-5 px-8 pb-6 pt-1">
-        {CONTEXT_FIELDS.map((field) => (
-          <div key={field.name}>
-            <div className="mb-2 text-xs font-bold text-slate-700">{field.label}</div>
-            {editing ? (
-              <>
-                <MetricInput
-                  name={field.name}
-                  type={field.type}
-                  value={values[field.name] ?? ""}
-                  onFieldChange={onFieldChange}
-                />
-                {errors[field.name] ? (
-                  <p className="mt-1 text-xs text-destructive">{errors[field.name]}</p>
-                ) : null}
-              </>
-            ) : (
-              <div className="text-lg font-bold text-slate-900">
-                {displayContextValue(saved?.[field.name], field.type)}
-              </div>
-            )}
+        {editing ? (
+          <MetricInput name={name} type={type} value={value} onFieldChange={onFieldChange} />
+        ) : type === "textarea" ? (
+          <div className="min-h-16 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">
+            {displayProgramValue(value, type)}
           </div>
-        ))}
+        ) : (
+          <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">
+            {displayProgramValue(value, type)}
+          </div>
+        )}
+        {error ? <p className="mt-1 text-xs text-destructive">{error}</p> : null}
       </div>
-    </section>
+    </div>
   );
-}
-
-function formatDateForInput(value: unknown): string {
-  if (!value) return "";
-  const date = new Date(value as string);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
-}
-
-function displayContextValue(value: unknown, type: ContextField["type"]) {
-  if (value === null || value === undefined || value === "") return "-";
-  if (type === "date") {
-    const date = new Date(value as string);
-    if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleDateString("en-GB").replace(/\//g, "-");
-  }
-  if (type === "number") return formatNumber(value, 2);
-  if (type === "int") return formatNumber(value, 2);
-  return String(value);
 }

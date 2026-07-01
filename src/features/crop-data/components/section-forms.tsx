@@ -1,7 +1,18 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Activity, Flower2, Pencil, Plus, Sprout, Truck, X } from "lucide-react";
+import {
+  Activity,
+  CircleAlert,
+  Flower2,
+  Info,
+  Pencil,
+  Plus,
+  Sprout,
+  Truck,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
@@ -22,6 +33,7 @@ import {
   pollinationEstimatedYield,
   postHarvestComputations,
   computeProductionDerivedFields,
+  toNum,
 } from "../compute";
 
 type BaseProps = {
@@ -50,7 +62,7 @@ function dateInputValue(value: unknown) {
   return date.toISOString().slice(0, 10);
 }
 
-export function ProductionForm({
+function LegacyProductionForm({
   cropDataId,
   farmId,
   initial,
@@ -308,6 +320,342 @@ export function ProductionForm({
       </div>
     </div>
   );
+}
+
+export function ProductionForm({
+  cropDataId,
+  farmId,
+  initial,
+  nursery,
+  programInfo,
+}: BaseProps & { nursery: Vals | null; programInfo: Vals | null }) {
+  const mutation = useUpdateSection(cropDataId, farmId, "production");
+
+  const mergedInitial = useMemo(() => {
+    const computed = computeProductionDerivedFields(initial ?? {}, nursery, programInfo);
+    return { ...initial, ...computed };
+  }, [initial, nursery, programInfo]);
+  const [editing, setEditing] = useState(false);
+  const [values, setValues] = useState<Vals>(mergedInitial);
+
+  function startEdit() {
+    setValues(mergedInitial);
+    setEditing(true);
+  }
+
+  function setField(name: string, value: unknown) {
+    setValues((current) => {
+      const next = { ...current, [name]: value };
+      return { ...next, ...computeProductionDerivedFields(next, nursery, programInfo) };
+    });
+  }
+
+  async function saveProduction() {
+    const payload = {
+      realizedPlants: parseNumberValue(values.realizedPlants),
+      realizedRows: parseNumberValue(values.realizedRows),
+      realizedSurfaceArea: parseNumberValue(values.realizedSurfaceArea),
+      realizedPlantsPerSqm: parseNumberValue(values.realizedPlantsPerSqm),
+      avgTemperature: parseNumberValue(values.avgTemperature),
+      avgRadiation: parseNumberValue(values.avgRadiation),
+      avgHumidity: parseNumberValue(values.avgHumidity),
+      remarks: values.remarks === "" ? null : values.remarks,
+      recommendations: values.recommendations === "" ? null : values.recommendations,
+    };
+    const parsed = UpdateProductionInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      toast.error("Please fix the highlighted production fields.");
+      return;
+    }
+    try {
+      await mutation.mutateAsync(parsed.data);
+      toast.success("Production saved");
+      setEditing(false);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to save production.");
+    }
+  }
+
+  const displayValues = editing ? values : mergedInitial;
+  const productionRows = [
+    ["Realized No of Plants", "realizedPlants"],
+    ["Realized No of Rows", "realizedRows"],
+    ["Realized Surface Area", "realizedSurfaceArea"],
+    ["Realized Plants / m2", "realizedPlantsPerSqm"],
+  ] as const;
+  const climateRows = [
+    ["Avg Temperature (°C)", "avgTemperature"],
+    ["Avg Radiation (j/cm2)", "avgRadiation"],
+    ["Avg Humidity (%)", "avgHumidity"],
+  ] as const;
+  const plantingWeekValue = prodDisplayPlantingWeek(nursery?.actualPlantingWeek);
+  const customerDirectives =
+    prodTextOrFallback(nursery?.remarksFromCustomer) ??
+    prodTextOrFallback(programInfo?.remarksFromCustomer) ??
+    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
+  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [
+    "Increase fertilization frequency in Week 46.",
+    "Monitor for leaf curl in sector 4B.",
+  ];
+  const utilization = prodUtilization(displayValues, nursery);
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(12rem,1fr)]">
+      <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="flex size-4 items-center justify-center rounded-sm border border-primary text-primary">
+              <span className="block size-1.5 rounded-full bg-primary" />
+            </span>
+            <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Production Overview</h3>
+          </div>
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
+                <X className="mr-1.5 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={saveProduction}
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          ) : (
+            <Button type="button" size="sm" onClick={startEdit}>
+              <Pencil className="mr-1.5 h-4 w-4" />
+              Edit Operations
+            </Button>
+          )}
+        </div>
+
+        <div className="grid gap-6 p-4 lg:grid-cols-2">
+          <div>
+            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Realized Counts
+            </p>
+            <div className="mt-4 space-y-3">
+              {productionRows.map(([label, name]) => (
+                <ProdValueRow
+                  key={name}
+                  label={label}
+                  value={
+                    editing ? (
+                      <Input
+                        className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-right text-[0.78rem] font-semibold"
+                        type="number"
+                        step="any"
+                        value={numberInputValue(values[name])}
+                        onChange={(event) => setField(name, event.target.value)}
+                      />
+                    ) : (
+                      <span className="font-semibold text-[var(--erp-ink)]">
+                        {fieldDisplay(displayValues[name])}
+                      </span>
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              Environmental Cycle Data
+            </p>
+            <div className="mt-4 space-y-3">
+              {climateRows.map(([label, name]) => (
+                <ProdValueRow
+                  key={name}
+                  label={label}
+                  value={
+                    editing ? (
+                      <Input
+                        className="h-8 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-right text-[0.78rem] font-semibold"
+                        type="number"
+                        step="any"
+                        value={numberInputValue(values[name])}
+                        onChange={(event) => setField(name, event.target.value)}
+                      />
+                    ) : (
+                      <span className="font-semibold text-[var(--erp-ink)]">
+                        {fieldDisplay(displayValues[name])}
+                      </span>
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-[var(--erp-border)] px-4 py-4">
+          <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            Operational Notes
+          </p>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_11.5rem]">
+            <div>
+              <label className="mb-2 block text-[0.72rem] font-semibold text-[var(--erp-ink)]">
+                Remarks
+              </label>
+              {editing ? (
+                <Textarea
+                  className="min-h-24 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+                  rows={4}
+                  value={(values.remarks ?? "") as string}
+                  onChange={(event) => setField("remarks", event.target.value)}
+                />
+              ) : (
+                <div className="min-h-24 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] text-[var(--erp-muted)]">
+                  {fieldDisplay(displayValues.remarks) === "-"
+                    ? "Enter observational remarks..."
+                    : fieldDisplay(displayValues.remarks)}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[0.72rem] font-semibold text-[var(--erp-ink)]">
+                Pictures
+              </label>
+              <button
+                type="button"
+                className="flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-[var(--erp-border)] bg-white text-[0.7rem] font-medium text-[var(--erp-muted)]"
+              >
+                <Upload className="size-4" />
+                Upload Image
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="space-y-4">
+        <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Info className="size-4 text-[var(--brand-secondary)]" />
+              <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Program Details</h3>
+            </div>
+            <div className="text-right">
+              <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Planting Week
+              </p>
+              <p className="text-2xl font-bold leading-none text-primary">{plantingWeekValue}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-5">
+            <div>
+              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Customer Directives
+              </p>
+              <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+                {customerDirectives}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                General Remarks
+              </p>
+              <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
+                {fieldDisplay(displayValues.remarks) === "-"
+                  ? "Batches delayed by 48 hours due to unexpected cold snap. Germination rates remain within operational tolerance."
+                  : fieldDisplay(displayValues.remarks)}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                Recommendations
+              </p>
+              {editing ? (
+                <Textarea
+                  className="rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+                  rows={4}
+                  value={(values.recommendations ?? "") as string}
+                  onChange={(event) => setField("recommendations", event.target.value)}
+                />
+              ) : (
+                <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+                  {recommendationsList.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[0.875rem] border border-[#bfe6cf] bg-[#ebfaf0] p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-md bg-primary text-white">
+              <CircleAlert className="size-5" />
+            </span>
+            <div>
+              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
+                Total Capacity Utilization
+              </p>
+              <div className="mt-1 flex items-end gap-2">
+                <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
+                  {utilization.value}
+                </p>
+                <span className="text-[0.7rem] font-semibold text-primary">{utilization.note}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ProdValueRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_5.25rem] items-center gap-3">
+      <span className="text-[0.72rem] text-[var(--erp-ink)]">{label}</span>
+      <div className="min-w-0">{value}</div>
+    </div>
+  );
+}
+
+function prodTextOrFallback(value: unknown) {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
+}
+
+function prodListOrFallback(value: unknown) {
+  const text = prodTextOrFallback(value);
+  if (!text) return null;
+  return text
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function prodDisplayPlantingWeek(value: unknown) {
+  const week = toNum(value);
+  return week === null ? "W--" : `W${Math.round(week)}`;
+}
+
+function prodUtilization(values: Vals, nursery: Vals | null) {
+  const realized = toNum(values.realizedPlants);
+  const planted = toNum(nursery?.femaleActualPlantsPlanted);
+  const ratio =
+    realized !== null && planted !== null && planted > 0 ? (realized / planted) * 100 : 82.4;
+
+  return {
+    value: `${ratio.toFixed(1)}%`,
+    note: "+2.1% vs PW",
+  };
 }
 
 // ---- Pollination ----
