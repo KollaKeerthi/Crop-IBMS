@@ -88,7 +88,9 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold tracking-tight">Revenue Projections</h3>
+                <h3 className="text-base font-bold tracking-tight">
+                  Financial Performance Comparison
+                </h3>
                 <RefreshCw className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
@@ -139,6 +141,45 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
           />
         </div>
       </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="border border-[var(--erp-border)] bg-[var(--erp-green-muted)] px-3 py-1.5 text-[0.65rem] font-bold text-primary">
+          Profit Margin: 32%
+        </span>
+        <span className="border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-3 py-1.5 text-[0.65rem] font-bold text-[var(--brand-secondary)]">
+          Audit Ready
+        </span>
+        <span className="ml-auto text-[0.65rem] font-semibold text-destructive">
+          Incomplete data for Post-Harvest Waste Deduction in Week 42.
+        </span>
+      </div>
+
+      <section className="border border-[var(--erp-border)] bg-white p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[var(--erp-ink)]">
+            Revenue Velocity (Week-over-Week)
+          </h3>
+          <div className="flex border border-[var(--erp-border)] text-[0.62rem] font-bold">
+            <button className="px-3 py-1 text-[var(--erp-muted)]">Week</button>
+            <button className="bg-primary px-3 py-1 text-white">Month</button>
+          </div>
+        </div>
+        <div className="mt-4 flex h-36 items-end gap-7 bg-[var(--erp-nav-active)] px-8 pb-5">
+          {["42%", "58%", "85%", "67%", "78%", "90%", "72%", "45%"].map((height, index) => (
+            <div
+              key={`${height}-${index}`}
+              className={
+                index === 2
+                  ? "w-10 bg-primary"
+                  : index === 5
+                    ? "w-10 bg-[var(--brand-secondary)]"
+                    : "w-10 bg-[var(--erp-track)]"
+              }
+              style={{ height }}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

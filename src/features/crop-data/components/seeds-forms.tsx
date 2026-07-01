@@ -59,6 +59,23 @@ function SeedsMetricRow({ label, value }: { label: string; value: unknown }) {
   );
 }
 
+function SqStat({ label, value, blue = false }: { label: string; value: string; blue?: boolean }) {
+  return (
+    <div
+      className={`border border-[var(--erp-border)] bg-white p-4 ${
+        blue ? "border-l-4 border-l-[var(--brand-secondary)]" : "border-l-4 border-l-primary"
+      }`}
+    >
+      <p className="text-[0.58rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+      <p
+        className={`mt-2 text-lg font-bold ${blue ? "text-[var(--brand-secondary)]" : "text-[var(--erp-ink)]"}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
   const [editing, setEditing] = useState(false);
   const mutation = useUpdateSection(cropDataId, farmId, "seeds_quality");
@@ -91,7 +108,7 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
             <TestTube2 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Seeds Quality Assessment</h3>
+            <h3 className="text-base font-bold text-slate-900">Batch SQ-2024-0812</h3>
             <p className="text-sm text-muted-foreground">
               Log and manage germination metrics and laboratory testing results.
             </p>
@@ -106,10 +123,10 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
         <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
           <table className="w-full table-fixed text-sm">
             <thead>
-              <tr className="border-b bg-muted/20">
+              <tr className="border-b bg-[var(--erp-table-head)]">
                 <th className="w-[36%] px-5 py-4 text-left" />
                 <th className="px-5 py-4 text-left text-base font-bold text-slate-900">
-                  Actual Values
+                  Actual Values Analysis
                 </th>
               </tr>
             </thead>
@@ -191,11 +208,15 @@ export function SeedsQualityForm({ cropDataId, farmId, initial }: BaseProps) {
             </div>
           </div>
           <div className="pt-6">
-            <div className="mb-2 text-sm font-bold">
-              Actionable Recommendations <span className="text-rose-500">*</span>
-            </div>
+            <div className="mb-2 text-sm font-bold">Strategic Recommendations</div>
             <div className="min-h-28 rounded-md border border-emerald-100 bg-emerald-50/70 px-4 py-4 text-sm text-emerald-900">
-              Recommendations
+              Proceed to direct sowing for high-yield sectors. No pre-treatment required. Batch is
+              suitable for late-season resilient cropping programs.
+            </div>
+            <div className="mt-4 min-h-32 bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center">
+              <div className="flex h-32 items-end bg-gradient-to-t from-black/70 to-transparent p-3 text-[0.62rem] font-bold text-white">
+                Sample Photo Reference: Batch ID 812
+              </div>
             </div>
           </div>
         </div>
@@ -270,43 +291,68 @@ export function SqBreakdownForm({ cropDataId, farmId, initial }: BaseProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-card px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Layers className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Quality Breakdown</h3>
-            <p className="text-sm text-muted-foreground">
-              Manage seed categorizations and corresponding net weights.
-            </p>
-          </div>
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-          + Add Category
-        </Button>
+    <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-3">
+        <SqStat label="Total Net SQ" value="42,850.00 KG" />
+        <SqStat label="Active Categories" value="06" />
+        <SqStat label="Last Update" value="Today, 08:42" blue />
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-        <table className="w-full table-fixed text-sm">
-          <thead>
-            <tr className="border-b bg-muted/20">
-              <th className="px-5 py-4 text-left font-bold text-slate-900">Category Designation</th>
-              <th className="px-5 py-4 text-left font-bold text-slate-900">Net Value (KG)</th>
-              <th className="w-16 px-5 py-4" />
+      <div className="overflow-hidden border border-[var(--erp-border)] bg-white">
+        <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-4 py-3">
+          <div>
+            <h3 className="text-sm font-bold text-[var(--erp-ink)]">Category Breakdown</h3>
+            <p className="text-[0.65rem] text-[var(--erp-muted)]">
+              Operational volume analysis by designation
+            </p>
+          </div>
+          <Button
+            className="h-7 rounded-sm text-[0.65rem]"
+            size="sm"
+            onClick={() => setEditing(true)}
+          >
+            + Add Category
+          </Button>
+        </div>
+        <table className="w-full text-[0.72rem]">
+          <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
+            <tr>
+              <th className="px-4 py-2 text-left font-bold text-[var(--erp-muted)]">
+                Category Designation
+              </th>
+              <th className="px-4 py-2 text-right font-bold text-[var(--erp-muted)]">
+                Net Value (KG)
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td className="px-5 py-4 font-bold text-slate-900">Testing</td>
-              <td className="px-5 py-4 font-bold text-slate-900">149.00 KG</td>
-              <td className="px-5 py-4 text-muted-foreground">
-                <Trash2 className="h-4 w-4" />
-              </td>
+            {[
+              ["Premium Grade A1 - Export", "12,450.00"],
+              ["Standard Grade B - Domestic", "18,200.00"],
+              ["Processing Grade - Industrial", "6,800.50"],
+              ["Organic Certified - Specialty", "4,100.00"],
+              ["Seed Stock - Internal Use", "1,299.50"],
+            ].map(([category, value]) => (
+              <tr key={category} className="border-b border-[var(--erp-border)]">
+                <td className="px-4 py-3">{category}</td>
+                <td className="px-4 py-3 text-right font-semibold">{value}</td>
+              </tr>
+            ))}
+            <tr className="bg-[var(--erp-danger-row)] text-destructive">
+              <td className="px-4 py-3 font-semibold">Uncategorized Residuals</td>
+              <td className="px-4 py-3 text-right font-bold">Missing Data</td>
+            </tr>
+            <tr className="bg-[var(--erp-nav-active)] font-bold">
+              <td className="px-4 py-4">Total Inventory Weight</td>
+              <td className="px-4 py-4 text-right">42,850.00 KG</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="flex justify-end gap-4 text-[0.65rem] font-semibold text-[var(--erp-muted)]">
+        <button>Export CSV</button>
+        <button>Print Report</button>
       </div>
     </div>
   );

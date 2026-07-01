@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import {
-  ArrowLeft,
-  Box,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  MapPin,
-  Tag,
-} from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, FileText, MapPin, Tag } from "lucide-react";
 import { useFarm } from "@/lib/farm-context";
 import { useCropDataDetail } from "@/features/crop-data/hooks";
 import { CropDataDetail } from "@/features/crop-data/components/crop-data-detail";
@@ -94,7 +85,7 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
   return (
     <div className="w-full bg-[var(--erp-canvas)] px-4 pb-4 pt-3">
       <section className="border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] pb-3">
-        <div className="flex min-h-18 items-center gap-3">
+        <div className="flex min-h-20 items-center gap-2 overflow-hidden">
           <Button
             variant="outline"
             size="icon"
@@ -104,23 +95,33 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             <ArrowLeft className="size-4" />
           </Button>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-3">
-              <p className="truncate text-sm font-bold text-[var(--erp-ink)]">{breadcrumbText}</p>
-              <span className="shrink-0 bg-[var(--erp-green-muted)] px-2 py-1 text-[0.68rem] font-bold uppercase tracking-widest text-primary">
-                Active Cycle
-              </span>
-            </div>
-            <div className="mt-2 grid gap-2 text-[0.68rem] font-semibold text-[var(--erp-muted)] md:grid-cols-[minmax(14rem,1.2fr)_repeat(6,minmax(7rem,1fr))]">
-              <CompactFact label="Crop" value={displayName} strong />
-              <CompactFact label="Block" value={record.block} />
-              <CompactFact label="Season" value={record.seasonName} />
-              <CompactFact label="Contract No" value={record.contractNo} />
-              <CompactFact label="Field" value={record.fieldName} />
-              <CompactFact label="Crop Type" value={record.cropTypeName ?? record.block} />
-              <CompactFact label="Sex" value={record.sexExpression} />
-            </div>
+          <p className="min-w-32 max-w-56 truncate text-xs font-semibold text-[var(--erp-muted)]">
+            {breadcrumbText}
+          </p>
+
+          <div className="size-12 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
+            {record.cropImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={record.cropImageUrl}
+                alt={record.cropName ?? "Crop"}
+                className="h-full w-full object-cover"
+              />
+            ) : null}
           </div>
+
+          <h1 className="min-w-36 max-w-52 truncate text-sm font-bold text-[var(--erp-ink)]">
+            {displayName}
+          </h1>
+          <span className="shrink-0 bg-[var(--erp-green-muted)] px-2 py-1 text-[0.62rem] font-bold uppercase text-primary">
+            Active Cycle
+          </span>
+          <CompactFact label="Block" value={record.block} />
+          <CompactFact label="Season" value={record.seasonName} />
+          <CompactFact label="Contract Number" value={record.contractNo} />
+          <CompactFact label="Field" value={record.fieldName} />
+          <CompactFact label="Crop Type" value={record.cropTypeName ?? record.block} />
+          <CompactFact label="Sex Expression" value={record.sexExpression} />
 
           <button
             type="button"
@@ -149,14 +150,8 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
                 {displayName}
               </h1>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-sm font-medium text-[var(--erp-muted)]">
-                <span className="inline-flex items-center gap-1">
-                  <Box className="size-4" />
-                  {record.block ?? "-"}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-4" />
-                  {record.seasonName ?? "-"}
-                </span>
+                <span>{record.block ?? "-"}</span>
+                <span>{record.seasonName ?? "-"}</span>
               </div>
               <div className="mt-5 grid gap-x-12 gap-y-5 md:grid-cols-3">
                 <FactBlock
@@ -198,8 +193,8 @@ function CompactFact({
   strong?: boolean;
 }) {
   return (
-    <div className="min-w-0">
-      <span className="mr-1 uppercase tracking-widest text-[var(--erp-muted)]">{label}</span>
+    <div className="min-w-20 max-w-32 shrink truncate text-[0.65rem] font-semibold">
+      <span className="mr-1 text-[var(--erp-muted)]">{label}</span>
       <span
         className={strong ? "truncate text-[var(--erp-ink)]" : "truncate text-[var(--erp-ink)]"}
       >

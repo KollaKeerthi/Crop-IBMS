@@ -205,6 +205,67 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
           onFieldChange={setField}
         />
       </div>
+
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(18rem,0.65fr)]">
+        <section className="border border-[var(--erp-border)] bg-white p-4">
+          <h3 className="text-sm font-bold text-[var(--erp-ink)]">Sowing Schedule Timeline</h3>
+          <div className="mt-4 space-y-4 text-[0.68rem]">
+            {[
+              ["Male Parent Sowing", "Planned Feb 12 Month, 2024"],
+              ["Female Parent Sowing", "Planned Feb 14 Month, 2024"],
+              ["Transplant to Main Field", "Expected Mar 05 Month, 2024"],
+            ].map(([title, detail], index) => (
+              <div key={title} className="flex gap-2">
+                <span className="mt-1 size-2 rounded-full bg-primary" />
+                <div>
+                  <p className="font-bold text-[var(--erp-ink)]">{title}</p>
+                  <p className="text-[var(--erp-muted)]">{detail}</p>
+                </div>
+                {index < 2 ? (
+                  <span className="ml-[-0.62rem] mt-4 h-6 w-px bg-[var(--erp-border)]" />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex min-h-36 flex-col items-center justify-center border border-[var(--erp-border)] bg-white p-4 text-center">
+          <div className="flex size-12 items-center justify-center bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
+            <Info className="size-5" />
+          </div>
+          <p className="mt-3 text-[0.62rem] font-bold uppercase text-[var(--erp-muted)]">
+            Yield Estimation
+          </p>
+          <p className="mt-1 text-2xl font-bold text-[var(--erp-ink)]">12,450 kg</p>
+          <p className="text-[0.62rem] text-[var(--erp-muted)]">
+            Projected at 95% germination rate
+          </p>
+        </section>
+
+        <section className="flex flex-col justify-end gap-2 border border-[var(--erp-border)] bg-white p-4">
+          <button className="border border-[var(--erp-border-strong)] bg-white px-3 py-2 text-[0.68rem] font-bold text-[var(--erp-ink)]">
+            Export CSV
+          </button>
+          {editing ? (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={mutation.isPending}
+              className="bg-primary px-3 py-2 text-[0.68rem] font-bold text-white"
+            >
+              Save Changes
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={startEdit}
+              className="bg-primary px-3 py-2 text-[0.68rem] font-bold text-white"
+            >
+              Edit Details
+            </button>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

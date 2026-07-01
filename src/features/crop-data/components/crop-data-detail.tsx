@@ -100,7 +100,7 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     : null;
 
   const triggerClassName = cn(
-    "relative shrink-0 px-6 py-3 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
+    "relative shrink-0 px-6 py-3 text-[0.72rem] font-bold text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
     "after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:bg-transparent",
     "data-active:text-primary data-active:after:bg-primary"
   );
@@ -132,18 +132,16 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
           Seeds Quality
         </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
+          SQ Breakdown
+        </TabsPrimitive.Tab>
+        <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
+          Harvest
+        </TabsPrimitive.Tab>
       </TabsPrimitive.List>
 
       <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] py-2">
-        <span className="mr-1 text-[0.62rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
-          Operations
-        </span>
-        <OperationLink
-          href={`/dashboard/crop-data/${record.id}/harvest`}
-          active={activeTab === "harvest"}
-        >
-          Harvest Details
-        </OperationLink>
+        <span className="mr-1 text-[0.62rem] font-bold text-[var(--erp-muted)]">Operations</span>
         <OperationLink
           href={`/dashboard/crop-data/${record.id}/performance`}
           active={activeTab === "performance"}

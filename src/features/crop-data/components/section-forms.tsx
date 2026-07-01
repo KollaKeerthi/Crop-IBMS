@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { formatDateDisplay } from "@/lib/format";
 import type { Vals } from "./metric-form";
 import {
@@ -237,6 +238,74 @@ export function ProductionForm({
           </div>
         </div>
       </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <section className="border border-[var(--erp-border)] bg-white p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[var(--erp-ink)]">Density Heatmap</h3>
+            <span className="text-[0.62rem] font-semibold text-[var(--erp-muted)]">
+              Block A4 Spatial Distribution
+            </span>
+          </div>
+          <div className="grid grid-cols-[repeat(12,minmax(0,1fr))] gap-1 bg-[var(--erp-nav-active)] p-3">
+            {Array.from({ length: 36 }, (_, index) => (
+              <span
+                key={index}
+                className={cn(
+                  "h-8",
+                  index === 7 || index === 20
+                    ? "bg-destructive/40"
+                    : index % 5 === 0
+                      ? "bg-[var(--erp-track)]"
+                      : "bg-primary"
+                )}
+              />
+            ))}
+          </div>
+          <div className="mt-3 flex gap-4 text-[0.62rem] font-semibold">
+            <span className="inline-flex items-center gap-1">
+              <span className="size-2 rounded-full bg-primary" />
+              Optimal
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="size-2 rounded-full bg-destructive/60" />
+              Critical
+            </span>
+          </div>
+        </section>
+
+        <section className="border border-[var(--erp-border)] bg-white p-4">
+          <h3 className="text-sm font-bold text-[var(--erp-ink)]">Environmental Status</h3>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <EnvMetric
+              label="Avg Temp"
+              value={`${fieldDisplay(displayValues.avgTemperature)}°C`}
+              note="+0.4"
+            />
+            <EnvMetric
+              label="Radiation"
+              value={`${fieldDisplay(displayValues.avgRadiation)} J/cm2`}
+              note="Stable"
+            />
+            <EnvMetric
+              label="Humidity"
+              value={`${fieldDisplay(displayValues.avgHumidity)}%`}
+              note="-2%"
+            />
+          </div>
+          <div className="mt-4 border-l-2 border-[var(--brand-secondary)] bg-[var(--erp-info-muted)] p-3 text-[0.68rem]">
+            <p className="font-bold text-[var(--brand-secondary)]">Operational Remark</p>
+            <p className="mt-1 text-[var(--erp-ink)]">
+              Minor localized mortality observed. Recommended soil moisture analysis to rule out
+              root rot issues.
+            </p>
+          </div>
+          <div className="mt-3 bg-[var(--erp-warning-muted)] p-3 text-[0.68rem]">
+            <p className="font-bold text-[var(--erp-warning)]">Maintenance Log</p>
+            <p>Sensor node recalibrated. Data consistency back within normal variance range.</p>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
@@ -463,6 +532,41 @@ export function PollinationForm({
           </div>
         </div>
       </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+        <section className="border border-[var(--erp-border)] bg-white p-4">
+          <h3 className="text-sm font-bold text-[var(--erp-ink)]">General Remarks & Field Notes</h3>
+          <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_18rem]">
+            <div>
+              <p className="text-[0.72rem] leading-5 text-[var(--erp-ink)]">
+                The pollination cycle is currently proceeding at an accelerated pace compared to
+                baseline. Preliminary observations show high bee activity in the northern canopy.
+              </p>
+              <div className="mt-4 border-l-2 border-primary bg-[var(--erp-nav-active)] p-3 text-[0.68rem] italic text-[var(--erp-ink)]">
+                &ldquo;The flower structure is remarkably consistent this season. Expecting a
+                high-quality yield if environmental stability persists.&rdquo;
+              </div>
+            </div>
+            <div className="relative min-h-32 overflow-hidden bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-[0.62rem] font-bold text-white">
+                Reference Site Photo: Sector D-4 Flowering Status
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-primary p-4 text-white">
+          <h3 className="text-sm font-bold">Smart Recommendations</h3>
+          <ul className="mt-3 space-y-2 text-[0.68rem] leading-5 opacity-90">
+            <li>Increase ventilation in Block B1 between 11:00 AM and 2:00 PM.</li>
+            <li>Seed/Sperm variance detected. Review nutrient concentration in sector D-4.</li>
+            <li>Monitor humidity levels closely during the 48-hour flowering window.</li>
+          </ul>
+          <button className="mt-4 w-full border border-white/30 px-3 py-2 text-[0.65rem] font-bold">
+            Apply Suggested Adjustments
+          </button>
+        </section>
+      </div>
     </div>
   );
 }
@@ -555,55 +659,7 @@ export function PostHarvestForm({
 
   return (
     <div className="space-y-3">
-      <div className="border border-[var(--erp-border)] bg-white">
-        <div className="grid gap-4 p-3 md:grid-cols-[8rem_minmax(0,1fr)_9rem]">
-          <div className="min-h-24 overflow-hidden bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center" />
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-bold text-[var(--erp-ink)]">Tomato_North_24</h3>
-              <span className="bg-[var(--erp-green-muted)] px-2 py-0.5 text-[0.58rem] font-bold uppercase text-primary">
-                Active
-              </span>
-            </div>
-            <p className="mt-1 text-[0.65rem] text-[var(--erp-muted)]">
-              Block B-12 / Variety: Sem Marzano / Area: 4.5 Hectares
-            </p>
-            <div className="mt-4 grid gap-3 text-[0.62rem] font-bold uppercase text-[var(--erp-muted)] sm:grid-cols-3">
-              <div>
-                Growth Stage
-                <p className="mt-1 text-xs normal-case text-[var(--erp-ink)]">Harvesting</p>
-              </div>
-              <div>
-                Current Yield
-                <p className="mt-1 text-xs normal-case text-[var(--erp-ink)]">
-                  {fieldDisplay(displayValues.totalKgs)} / Ha
-                </p>
-              </div>
-              <div>
-                Health Index
-                <p className="mt-1 text-xs normal-case text-[var(--brand-secondary)]">94% Stable</p>
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-[0.58rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
-              Estimated Completion
-            </p>
-            <p className="mt-1 text-xs font-bold text-primary">
-              {formatDateDisplay(displayValues.actualShippingDate as string) || "Dec 15, 2024"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex gap-5 border-b border-[var(--erp-border)] text-[0.65rem] font-bold">
-          <span className="px-2 py-2 text-[var(--erp-muted)]">Overview</span>
-          <span className="px-2 py-2 text-[var(--erp-muted)]">Irrigation</span>
-          <span className="px-2 py-2 text-[var(--erp-muted)]">Nutrients</span>
-          <span className="border-b-2 border-primary px-2 py-2 text-primary">Post Harvest</span>
-          <span className="px-2 py-2 text-[var(--erp-muted)]">Inventory</span>
-        </div>
+      <div className="flex items-center justify-end gap-4">
         {editing ? (
           <div className="flex items-center gap-2">
             <Button
@@ -1104,6 +1160,16 @@ function NoteField({ label, children }: { label: string; children: ReactNode }) 
         {label}
       </p>
       <div className="mt-2 text-sm font-bold text-[var(--erp-ink)]">{children}</div>
+    </div>
+  );
+}
+
+function EnvMetric({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="border border-[var(--erp-border)] bg-white p-3 text-center">
+      <p className="text-[0.56rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+      <p className="mt-1 text-sm font-bold text-[var(--erp-ink)]">{value}</p>
+      <p className="mt-1 text-[0.55rem] font-semibold text-primary">{note}</p>
     </div>
   );
 }
