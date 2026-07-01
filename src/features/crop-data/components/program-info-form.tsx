@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { GitBranch, Printer, Save, Share2, Sprout, X } from "lucide-react";
+import { Printer, Save, Share2, Sprout, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   UpdateProgramInfoInputSchema,
@@ -192,15 +192,6 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,2.15fr)_minmax(16rem,1fr)]">
         <section className="overflow-hidden rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3">
-            <span className="flex size-7 items-center justify-center rounded-md bg-white text-primary">
-              <GitBranch className="size-4" />
-            </span>
-            <h3 className="text-base font-bold text-[var(--erp-ink)]">
-              Parent Information &amp; Propagation
-            </h3>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
@@ -209,10 +200,10 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
                     Metric
                   </th>
                   <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold text-[var(--brand-secondary)]">
-                    Male Parent
+                    Male
                   </th>
                   <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold text-[var(--erp-warning)]">
-                    Female Parent
+                    Female
                   </th>
                 </tr>
               </thead>

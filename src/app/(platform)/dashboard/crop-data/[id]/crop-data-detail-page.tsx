@@ -169,9 +169,6 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             </div>
 
             <h1 className="crop-card-title min-w-36 max-w-52 truncate font-bold">{displayName}</h1>
-            <span className="crop-badge shrink-0 bg-[var(--erp-green-muted)] text-primary">
-              Active Cycle
-            </span>
             <CompactFact label="Block" value={record.block} />
             <CompactFact label="Season" value={record.seasonName} />
             <CompactFact label="Contract Number" value={record.contractNo} />
