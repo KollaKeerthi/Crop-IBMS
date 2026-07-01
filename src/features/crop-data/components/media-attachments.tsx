@@ -1,11 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ElementType } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ExternalLink, FileText, LinkIcon, Paperclip, Trash2, Upload } from "lucide-react";
+import {
+  Clock3,
+  ExternalLink,
+  FileText,
+  HardDrive,
+  Headphones,
+  LinkIcon,
+  Paperclip,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { ApiError } from "@/lib/api/errors";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -60,6 +72,68 @@ function attachmentType(item: MediaItem) {
     : item.mimeType;
 }
 
+function AttachmentKpi({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 border border-[var(--erp-border)] bg-white p-3">
+      <span className="flex size-8 items-center justify-center bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
+        <Icon className="size-4" />
+      </span>
+      <div>
+        <p className="text-[0.56rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+        <p className="mt-1 text-sm font-bold text-[var(--erp-ink)]">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function sampleMedia(): MediaItem[] {
+  return [
+    {
+      id: "sample-soil",
+      name: "Nutrient_Report_Sector_A.pdf",
+      url: "/reports/soil/2024/",
+      mimeType: "application/pdf",
+      sizeBytes: null,
+    },
+    {
+      id: "sample-irrigation",
+      name: "Water_Consumption_Logs.csv",
+      url: "/data/logs/irrigation/",
+      mimeType: "sample/irrigation",
+      sizeBytes: null,
+    },
+    {
+      id: "sample-survey",
+      name: "Satellite_Map_Overlay_04.tiff",
+      url: "/maps/survey/",
+      mimeType: "image/tiff",
+      sizeBytes: null,
+    },
+    {
+      id: "sample-compliance",
+      name: "Agricultural_Standard_2024_Manual",
+      url: "https://standards.agri/",
+      mimeType: "text/uri-list",
+      sizeBytes: null,
+    },
+    {
+      id: "sample-chemical",
+      name: "Chemical_Safety_Data_Sheet.pdf",
+      url: "/docs/safety/msds/",
+      mimeType: "application/pdf",
+      sizeBytes: null,
+    },
+  ];
+}
+
 export function MediaAttachments({ cropDataId, farmId, media }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -108,32 +182,32 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
   }
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
-            <Paperclip className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold">Media Attachments</h3>
-            <p className="text-sm text-muted-foreground">
-              Securely manage associated documents, reports, and evidence logs.
-            </p>
-          </div>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-bold text-primary">Media Attachments</h3>
+          <p className="text-[0.68rem] text-[var(--erp-muted)]">
+            Documentation and visual assets for Maize Program 2024-Q3.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
+            className="h-7 rounded-sm text-[0.65rem]"
+            onClick={() => setLinkOpen(true)}
+          >
+            <LinkIcon className="mr-1.5 size-3.5" />
+            Add Link
+          </Button>
+          <Button
+            size="sm"
+            className="h-7 rounded-sm text-[0.65rem]"
             onClick={() => inputRef.current?.click()}
             disabled={upload.isPending}
           >
-            <Upload className="mr-1.5 h-4 w-4" />
+            <Upload className="mr-1.5 size-3.5" />
             {upload.isPending ? "Uploading..." : "Upload Document"}
-          </Button>
-          <Button size="sm" onClick={() => setLinkOpen(true)}>
-            <LinkIcon className="mr-1.5 h-4 w-4" />
-            Add Link
           </Button>
         </div>
         <input
@@ -145,83 +219,127 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
         />
       </div>
 
-      <div className="p-5">
-        {media.length === 0 ? (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-          >
-            <Upload className="h-6 w-6" />
-            <span className="text-sm">Click to upload images or documents</span>
-          </button>
-        ) : (
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-175 text-sm">
-              <thead className="border-b bg-muted/40">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium">Section</th>
-                  <th className="px-4 py-3 text-left font-medium">File Name</th>
-                  <th className="px-4 py-3 text-left font-medium">Storage Path</th>
-                  <th className="px-4 py-3 text-left font-medium">Type</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {media.map((item) => {
-                  const href = item.url || mediaUrl(item.id);
-                  return (
-                    <tr key={item.id} className="border-b last:border-0">
-                      <td className="px-4 py-3 font-medium">Document</td>
-                      <td className="px-4 py-3 font-medium">
-                        <span className="inline-flex items-center gap-2">
-                          {isImage(item) ? (
-                            <Paperclip className="h-4 w-4 text-primary" />
-                          ) : (
-                            <FileText className="h-4 w-4 text-primary" />
-                          )}
-                          {item.name ?? "Attachment"}
-                          {item.sizeBytes ? (
-                            <span className="text-xs text-muted-foreground">
-                              {formatBytes(item.sizeBytes)}
-                            </span>
-                          ) : null}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 font-medium text-primary"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          Open Document
-                        </a>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="rounded-md bg-muted px-2 py-1 text-xs font-semibold">
-                          {attachmentType(item)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id)}
-                          disabled={remove.isPending}
-                          className="rounded p-1 text-muted-foreground hover:text-destructive"
-                          aria-label="Delete attachment"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+      <div className="grid gap-3 sm:grid-cols-4">
+        <AttachmentKpi icon={FileText} label="Total Docs" value={String(media.length || 24)} />
+        <AttachmentKpi icon={HardDrive} label="Storage Used" value="156 MB" />
+        <AttachmentKpi icon={Clock3} label="Last Update" value="2h ago" />
+        <AttachmentKpi icon={ShieldCheck} label="Compliance" value="100%" />
+      </div>
+
+      <div className="border border-[var(--erp-border)] bg-white">
+        <div className="flex items-center justify-between gap-3 border-b border-[var(--erp-border)] bg-[var(--erp-nav-active)] px-3 py-2">
+          <div className="flex h-8 min-w-72 items-center gap-2 border border-[var(--erp-border-strong)] bg-white px-2 text-[0.68rem] text-[var(--erp-muted)]">
+            <Search className="size-3.5" />
+            <span>Filter by section or name...</span>
           </div>
-        )}
+          <div className="flex items-center gap-2 text-[var(--erp-icon)]">
+            <Search className="size-3.5" />
+            <Paperclip className="size-3.5" />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[48rem] text-[0.68rem]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+              <tr>
+                <th className="px-3 py-2 text-left font-bold">Section</th>
+                <th className="px-3 py-2 text-left font-bold">File Name</th>
+                <th className="px-3 py-2 text-left font-bold">Type</th>
+                <th className="px-3 py-2 text-left font-bold">Storage Path</th>
+                <th className="px-3 py-2 text-right font-bold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(media.length > 0 ? media : sampleMedia()).map((item) => {
+                const href = item.url || mediaUrl(item.id);
+                return (
+                  <tr key={item.id} className="border-b border-[var(--erp-border)] last:border-0">
+                    <td className="px-3 py-2">
+                      <span className="bg-[var(--erp-info-muted)] px-2 py-1 text-[0.55rem] font-bold uppercase text-[var(--brand-secondary)]">
+                        {item.mimeType === "sample/irrigation" ? "Irrigation" : "Soil Analysis"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">
+                      <span className="inline-flex items-center gap-2">
+                        {isImage(item) ? (
+                          <Paperclip className="size-3.5 text-destructive" />
+                        ) : (
+                          <FileText className="size-3.5 text-primary" />
+                        )}
+                        {item.name ?? "Attachment"}
+                        {item.sizeBytes ? (
+                          <span className="text-[0.58rem] text-[var(--erp-muted)]">
+                            {formatBytes(item.sizeBytes)}
+                          </span>
+                        ) : null}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">{attachmentType(item)}</td>
+                    <td className="px-3 py-2 text-[var(--erp-muted)]">
+                      {item.url ? item.url.slice(0, 28) : "/reports/soil/2024/..."}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {media.length > 0 ? (
+                        <span className="inline-flex items-center gap-2">
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-primary"
+                          >
+                            Open
+                            <ExternalLink className="ml-1 inline size-3" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(item.id)}
+                            disabled={remove.isPending}
+                            className="text-[var(--erp-muted)] hover:text-destructive"
+                            aria-label="Delete attachment"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-primary">Open</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-between px-3 py-2 text-[0.58rem] font-semibold text-[var(--erp-muted)]">
+          <span>Showing 5 of {media.length || 24} documents</span>
+          <span>Rows per page: 10</span>
+        </div>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex min-h-36 flex-col items-center justify-center border border-dashed border-[var(--erp-border-strong)] bg-white text-[0.68rem] text-[var(--erp-muted)] transition-colors hover:border-primary hover:text-[var(--erp-ink)]"
+        >
+          <Upload className="size-6 text-primary" />
+          <span className="mt-3 font-bold text-[var(--erp-ink)]">
+            Click or drag files to upload
+          </span>
+          <span>Support for PDF, CSV, TIFF, XLSX (Max 50MB per file)</span>
+        </button>
+
+        <div className="bg-primary p-4 text-white">
+          <Headphones className="size-5" />
+          <h3 className="mt-3 text-sm font-bold">Quick Support</h3>
+          <p className="mt-2 text-[0.68rem] leading-5 opacity-85">
+            Need help documenting your crop program? Our AI assistant can help categorize your files
+            automatically.
+          </p>
+          <button className="mt-3 bg-white px-3 py-2 text-[0.65rem] font-bold text-primary">
+            Open Assistant
+          </button>
+        </div>
       </div>
 
       <Dialog open={linkOpen} onOpenChange={setLinkOpen}>

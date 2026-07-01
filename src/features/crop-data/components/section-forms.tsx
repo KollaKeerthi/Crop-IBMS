@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Activity, Flower2, Pencil, Plus, Sprout, Truck, X } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
@@ -554,6 +554,240 @@ export function PostHarvestForm({
   }
 
   return (
+    <div className="space-y-3">
+      <div className="border border-[var(--erp-border)] bg-white">
+        <div className="grid gap-4 p-3 md:grid-cols-[8rem_minmax(0,1fr)_9rem]">
+          <div className="min-h-24 overflow-hidden bg-[url('/images/crop-field-aerial.jpg')] bg-cover bg-center" />
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--erp-ink)]">Tomato_North_24</h3>
+              <span className="bg-[var(--erp-green-muted)] px-2 py-0.5 text-[0.58rem] font-bold uppercase text-primary">
+                Active
+              </span>
+            </div>
+            <p className="mt-1 text-[0.65rem] text-[var(--erp-muted)]">
+              Block B-12 / Variety: Sem Marzano / Area: 4.5 Hectares
+            </p>
+            <div className="mt-4 grid gap-3 text-[0.62rem] font-bold uppercase text-[var(--erp-muted)] sm:grid-cols-3">
+              <div>
+                Growth Stage
+                <p className="mt-1 text-xs normal-case text-[var(--erp-ink)]">Harvesting</p>
+              </div>
+              <div>
+                Current Yield
+                <p className="mt-1 text-xs normal-case text-[var(--erp-ink)]">
+                  {fieldDisplay(displayValues.totalKgs)} / Ha
+                </p>
+              </div>
+              <div>
+                Health Index
+                <p className="mt-1 text-xs normal-case text-[var(--brand-secondary)]">94% Stable</p>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[0.58rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
+              Estimated Completion
+            </p>
+            <p className="mt-1 text-xs font-bold text-primary">
+              {formatDateDisplay(displayValues.actualShippingDate as string) || "Dec 15, 2024"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex gap-5 border-b border-[var(--erp-border)] text-[0.65rem] font-bold">
+          <span className="px-2 py-2 text-[var(--erp-muted)]">Overview</span>
+          <span className="px-2 py-2 text-[var(--erp-muted)]">Irrigation</span>
+          <span className="px-2 py-2 text-[var(--erp-muted)]">Nutrients</span>
+          <span className="border-b-2 border-primary px-2 py-2 text-primary">Post Harvest</span>
+          <span className="px-2 py-2 text-[var(--erp-muted)]">Inventory</span>
+        </div>
+        {editing ? (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 rounded-sm text-[0.65rem]"
+              onClick={() => setEditing(false)}
+            >
+              <X className="mr-1.5 size-3.5" />
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 rounded-sm text-[0.65rem]"
+              onClick={savePostHarvest}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Saving..." : "Save Details"}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 rounded-sm text-[0.65rem]"
+            onClick={startEdit}
+          >
+            <Pencil className="mr-1.5 size-3.5" />
+            Edit Details
+          </Button>
+        )}
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)]">
+        <div className="border border-[var(--erp-border)] bg-white">
+          <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
+            <h3 className="text-xs font-bold uppercase text-[var(--erp-ink)]">Harvest Timeline</h3>
+            <Truck className="size-3.5 text-[var(--erp-muted)]" />
+          </div>
+          <table className="w-full text-[0.68rem]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+              <tr>
+                <th className="px-3 py-2 text-left font-bold">Phase</th>
+                <th className="px-3 py-2 text-left font-bold">Start/End</th>
+                <th className="px-3 py-2 text-right font-bold">Total KG</th>
+                <th className="px-3 py-2 text-right font-bold">Yield %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Main Picking", "Nov 01 - 05", "4,250", "98.2%"],
+                ["Secondary", "Nov 08 - 10", "1,120", "94.5%"],
+                ["Final Strip", "Nov 14 - 15", "480", "89.1%"],
+              ].map(([phase, range, kg, yieldPct]) => (
+                <tr key={phase} className="border-b border-[var(--erp-border)] last:border-b-0">
+                  <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">{phase}</td>
+                  <td className="px-3 py-2 text-[var(--erp-ink)]">{range}</td>
+                  <td className="px-3 py-2 text-right font-bold">{kg}</td>
+                  <td className="px-3 py-2 text-right font-bold text-[var(--brand-secondary)]">
+                    {yieldPct}
+                  </td>
+                </tr>
+              ))}
+              <tr className="bg-[var(--erp-table-head)] font-bold">
+                <td className="px-3 py-2">Aggregate</td>
+                <td className="px-3 py-2">{fieldDisplay(displayValues.totalNoOfHarvests)} Days</td>
+                <td className="px-3 py-2 text-right">{fieldDisplay(displayValues.totalKgs)}</td>
+                <td className="px-3 py-2 text-right text-primary">
+                  {fmtNum(computations.actualYieldPct, 1)}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div className="bg-primary px-3 py-3 text-white">
+            <p className="text-[0.58rem] uppercase opacity-80">Grade A Quality</p>
+            <div className="mt-1 flex justify-between text-sm font-bold">
+              <span>4,890 KG</span>
+              <span>+2.4%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border border-[var(--erp-border)] bg-white">
+          <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
+            <h3 className="text-xs font-bold uppercase text-[var(--erp-ink)]">Harvest Summary</h3>
+            <div className="flex gap-2">
+              <button className="border border-[var(--erp-border)] px-2 py-1 text-[0.58rem] font-bold">
+                Filter
+              </button>
+              <button className="border border-[var(--erp-border)] px-2 py-1 text-[0.58rem] font-bold">
+                Export
+              </button>
+            </div>
+          </div>
+          <table className="w-full text-[0.68rem]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+              <tr>
+                <th className="px-3 py-2 text-left font-bold">Date</th>
+                <th className="px-3 py-2 text-left font-bold">Operator</th>
+                <th className="px-3 py-2 text-left font-bold">Bin ID</th>
+                <th className="px-3 py-2 text-right font-bold">Net Wt.</th>
+                <th className="px-3 py-2 text-right font-bold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {["Mark Johnson", "Sarah Lee", "Raj Kapoor", "Mark Johnson"].map(
+                (operator, index) => (
+                  <tr
+                    key={`${operator}-${index}`}
+                    className="border-b border-[var(--erp-border)] last:border-0"
+                  >
+                    <td className="px-3 py-2">2024-11-{String(index + 1).padStart(2, "0")}</td>
+                    <td className="px-3 py-2 font-semibold">{operator}</td>
+                    <td className="px-3 py-2">BIN-882{index + 1}</td>
+                    <td className="px-3 py-2 text-right">{450 + index * 8}.2 kg</td>
+                    <td className="px-3 py-2 text-right">
+                      <span className="bg-[var(--erp-green-muted)] px-2 py-1 text-[0.52rem] font-bold text-primary">
+                        Certified
+                      </span>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="border border-[var(--erp-border)] bg-white p-4">
+          <h3 className="mb-3 text-xs font-bold text-[var(--erp-ink)]">
+            Operational Recommendations
+          </h3>
+          <div className="space-y-3 text-[0.68rem]">
+            {[
+              [
+                "Adjust Storage Humidity",
+                "Relative humidity in Cold Storage Room 3 should be maintained at 90-95%.",
+              ],
+              ["Bin Calibration Required", "Digital scale for BIN-8823 shows variance of 3%."],
+              ["Expedite Logistics", "Main Picking batch ready for dispatch."],
+            ].map(([title, body], index) => (
+              <div key={title} className="flex gap-2">
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-white">
+                  {index + 1}
+                </span>
+                <div>
+                  <p className="font-bold text-[var(--erp-ink)]">{title}</p>
+                  <p className="text-[var(--erp-muted)]">{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border border-[var(--erp-border)] bg-white p-4">
+          <h3 className="text-xs font-bold text-[var(--erp-ink)]">Remarks & Observations</h3>
+          {editing ? (
+            <Textarea
+              className="mt-3 min-h-28 rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
+              rows={4}
+              value={(values.remarks ?? "") as string}
+              onChange={(event) => setField("remarks", event.target.value)}
+            />
+          ) : (
+            <div className="mt-3 min-h-28 bg-[var(--erp-table-head)] px-4 py-3 text-[0.68rem] italic leading-5 text-[var(--erp-ink)]">
+              {fieldDisplay(displayValues.remarks)}
+            </div>
+          )}
+          <div className="mt-3 flex items-center justify-between text-[0.62rem] font-semibold text-[var(--erp-muted)]">
+            <span>Last updated by Field Lead - 2 hours ago</span>
+            <button type="button" onClick={startEdit} className="font-bold text-primary">
+              Edit Entry
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4 rounded-lg border bg-card px-4 py-3">
         <div className="flex items-center gap-3">
@@ -686,6 +920,94 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
   const displayValues = editing ? values : (initial ?? {});
 
   return (
+    <div className="border border-[var(--erp-border)] bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-bold text-[var(--erp-ink)]">Add Operational Note</h3>
+          <p className="text-[0.68rem] text-[var(--erp-muted)]">
+            Capture a daily harvest summary, germination signal, and remarks.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {editing ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 rounded-sm text-[0.65rem]"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="h-7 rounded-sm text-[0.65rem]"
+                onClick={saveSummary}
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? "Saving..." : "Save Note"}
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 rounded-sm text-[0.65rem]"
+              onClick={startEdit}
+            >
+              <Plus className="mr-1.5 size-3.5" />
+              Add Operational Note
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <NoteField label="Date">
+          {editing ? (
+            <Input
+              className="h-8 rounded-sm"
+              type="date"
+              value={(values.date ?? "") as string}
+              onChange={(event) => setField("date", event.target.value)}
+            />
+          ) : (
+            formatDateDisplay(displayValues.date as string) || "-"
+          )}
+        </NoteField>
+        <NoteField label="KGs">
+          {editing ? (
+            <Input
+              className="h-8 rounded-sm"
+              type="number"
+              step="any"
+              value={numberInputValue(values.kgs)}
+              onChange={(event) => setField("kgs", event.target.value)}
+            />
+          ) : (
+            fieldDisplay(displayValues.kgs)
+          )}
+        </NoteField>
+        <NoteField label="Germination %">
+          {editing ? (
+            <Input
+              className="h-8 rounded-sm"
+              type="number"
+              step="any"
+              value={numberInputValue(values.germinationPct)}
+              onChange={(event) => setField("germinationPct", event.target.value)}
+            />
+          ) : (
+            `${fieldDisplay(displayValues.germinationPct)}%`
+          )}
+        </NoteField>
+      </div>
+    </div>
+  );
+
+  return (
     <div className="overflow-hidden rounded-lg border bg-card">
       <div className="flex items-center justify-between gap-4 px-4 py-3">
         <h3 className="text-sm font-semibold">Harvest Summaries</h3>
@@ -771,6 +1093,17 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
           </tr>
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function NoteField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="border border-[var(--erp-border)] bg-[var(--erp-table-head)] p-3">
+      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
+        {label}
+      </p>
+      <div className="mt-2 text-sm font-bold text-[var(--erp-ink)]">{children}</div>
     </div>
   );
 }

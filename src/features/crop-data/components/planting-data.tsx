@@ -1,9 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AlertCircle, ArrowDownUp, Eye, Grid3X3, Plus, Save, Shuffle, Trash2 } from "lucide-react";
+import { useMemo, useState, type ElementType } from "react";
+import {
+  AlertCircle,
+  ArrowDownUp,
+  Clock3,
+  Droplets,
+  Eye,
+  Grid3X3,
+  MoreVertical,
+  Plus,
+  Save,
+  Search,
+  Shuffle,
+  SlidersHorizontal,
+  Trash2,
+  Wifi,
+  Zap,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/errors";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -199,7 +216,7 @@ function initialViewGroups(data: Record<string, unknown> | null): ViewGroups {
 function initialSubtab(data: Record<string, unknown> | null): PlantingSubtab {
   return data?.selectedSubtab === "detail" || data?.selectedSubtab === "visual"
     ? data.selectedSubtab
-    : "summary";
+    : "visual";
 }
 
 function sortEntries(entries: PlantingEntry[]) {
@@ -457,16 +474,16 @@ export function PlantingData({
   }
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-lg border bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+    <div className="space-y-3">
+      <div className="border border-[var(--erp-border)] bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="rounded-md bg-primary/10 p-2 text-primary">
-              <Grid3X3 className="h-4 w-4" />
+            <div className="bg-[var(--erp-green-muted)] p-2 text-primary">
+              <Grid3X3 className="size-4" />
             </div>
             <div>
-              <h3 className="text-base font-semibold">Planting data</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-sm font-bold text-[var(--erp-ink)]">Planting Data</h3>
+              <p className="text-[0.68rem] text-[var(--erp-muted)]">
                 Track planting summary, detail rows, and row-level visualization.
               </p>
             </div>
@@ -475,7 +492,8 @@ export function PlantingData({
             <Button
               type="button"
               size="sm"
-              variant={subtab === "summary" ? "secondary" : "ghost"}
+              variant={subtab === "summary" ? "secondary" : "outline"}
+              className="h-7 rounded-sm text-[0.68rem]"
               onClick={() => setTab("summary")}
             >
               Planting Summary
@@ -483,47 +501,61 @@ export function PlantingData({
             <Button
               type="button"
               size="sm"
-              variant={subtab === "detail" ? "secondary" : "ghost"}
+              variant={subtab === "detail" ? "secondary" : "outline"}
+              className="h-7 rounded-sm text-[0.68rem]"
               onClick={() => setTab("detail")}
             >
-              <Grid3X3 className="mr-1.5 h-4 w-4" />
+              <Grid3X3 className="mr-1.5 size-3.5" />
               Planting Detail
             </Button>
             <Button
               type="button"
               size="sm"
-              variant={subtab === "visual" ? "secondary" : "ghost"}
+              variant={subtab === "visual" ? "secondary" : "outline"}
+              className="h-7 rounded-sm text-[0.68rem]"
               onClick={() => setTab("visual")}
             >
-              <Eye className="mr-1.5 h-4 w-4" />
+              <Eye className="mr-1.5 size-3.5" />
               Visual
             </Button>
             <Button
               type="button"
               size="sm"
               variant={showBulkFill ? "secondary" : "outline"}
+              className="h-7 rounded-sm text-[0.68rem]"
               onClick={() => {
-                setSubtab("detail");
+                setSubtab("visual");
                 setShowBulkFill((value) => !value);
               }}
             >
-              <Shuffle className="mr-1.5 h-4 w-4" />
+              <Shuffle className="mr-1.5 size-3.5" />
               Bulk Fill Selection
             </Button>
-            <Button type="button" size="sm" onClick={addEntry}>
-              <Plus className="mr-1.5 h-4 w-4" />
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 rounded-sm text-[0.68rem]"
+              onClick={addEntry}
+            >
+              <Plus className="mr-1.5 size-3.5" />
               New Entry
             </Button>
-            <Button type="button" size="sm" variant="outline" onClick={saveEntries}>
-              <Save className="mr-1.5 h-4 w-4" />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-sm text-[0.68rem]"
+              onClick={saveEntries}
+            >
+              <Save className="mr-1.5 size-3.5" />
               Save
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-5 rounded-lg border bg-card px-5 py-3 text-sm">
-        <span className="font-semibold">View</span>
+      <div className="flex flex-wrap items-center gap-5 border border-[var(--erp-border)] bg-white px-4 py-2 text-xs">
+        <span className="font-bold text-[var(--erp-ink)]">View</span>
         <label className="flex items-center gap-2">
           <Checkbox
             checked={viewGroups.planned}
@@ -556,7 +588,7 @@ export function PlantingData({
       </div>
 
       {showBulkFill && subtab === "detail" ? (
-        <div className="rounded-lg border bg-card p-5">
+        <div className="border border-[var(--erp-border)] bg-white p-4">
           <h3 className="text-base font-semibold">Bulk Fill Selection</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Fill crop, variety, gender, row length, plant count, spacing, and density inputs from
@@ -604,7 +636,7 @@ export function PlantingData({
       ) : null}
 
       {subtab === "summary" ? (
-        <div className="overflow-x-auto rounded-lg border bg-card">
+        <div className="overflow-x-auto border border-[var(--erp-border)] bg-white">
           <table className="w-full min-w-300 text-sm">
             <thead className="bg-muted/40">
               <tr>
@@ -681,7 +713,7 @@ export function PlantingData({
       ) : null}
 
       {subtab === "detail" ? (
-        <div className="overflow-x-auto rounded-lg border bg-card">
+        <div className="overflow-x-auto border border-[var(--erp-border)] bg-white">
           <table className="w-full min-w-320 text-sm">
             <thead className="bg-muted/40">
               <tr>
@@ -842,76 +874,201 @@ export function PlantingData({
       ) : null}
 
       {subtab === "visual" ? (
-        <div className="overflow-x-auto rounded-lg border border-primary/20 bg-emerald-50 p-4">
-          <div className="mb-3 flex flex-wrap items-center gap-3 text-sm font-medium text-emerald-950">
-            <span>{fallbackCrop ?? "Crop"}</span>
-            <span className="text-muted-foreground">Rows: {visualRows.length}</span>
-            <span className="text-muted-foreground">
-              Plants: {sum(entries.map((entry) => entry.plantedPlants ?? entry.plannedPlants)) ?? 0}
-            </span>
-          </div>
-          <div className="min-w-220 rounded-lg border border-emerald-900/20 bg-emerald-100 p-3">
-            {visualRows.map(([rowNo, rowEntries]) => (
-              <div key={rowNo} className="mb-2 flex items-center gap-2 rounded-md bg-white/75 p-2">
-                <span className="w-12 rounded bg-primary px-2 py-1 text-center text-xs font-semibold text-primary-foreground">
-                  R{rowNo}
-                </span>
-                <div
-                  className={
-                    plantingOrder === "right-left" || plantingOrder === "bottom-top"
-                      ? "flex flex-1 flex-row-reverse gap-2"
-                      : "flex flex-1 gap-2"
-                  }
-                >
-                  {rowEntries.map((entry) => {
-                    const dots = plantDots(entry.plantedPlants ?? entry.plannedPlants);
-                    return (
-                      <div
-                        key={entry.id}
-                        draggable
-                        onDragStart={() => setDraggedEntryId(entry.id)}
-                        onDragOver={(event) => event.preventDefault()}
-                        onDrop={() => {
-                          if (!draggedEntryId) return;
-                          setEntries((current) => moveWithinRow(current, draggedEntryId, entry.id));
-                          setDraggedEntryId(null);
-                        }}
-                        title={`R${entry.rowNo} ${entry.crop} ${entry.cropVariety} ${entry.gender}`}
-                        className="flex cursor-move items-center gap-1 rounded-md border bg-background/80 px-2 py-1"
-                      >
-                        {dots > 0 ? (
-                          Array.from({ length: dots }, (_, index) => (
-                            <span
-                              key={`${entry.id}-${index}`}
-                              className={
-                                entry.gender === "Female"
-                                  ? "h-3 w-3 rounded-full bg-emerald-500"
-                                  : "h-3 w-3 rounded-full bg-sky-500"
-                              }
-                            />
-                          ))
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Unassigned</span>
-                        )}
-                      </div>
-                    );
-                  })}
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-4">
+              <PlantingKpi
+                icon={Wifi}
+                label="Real-Time Statistics"
+                value="82.4%"
+                detail="Planting Progress"
+                tone="green"
+              />
+              <PlantingKpi
+                icon={Droplets}
+                label="Row Units"
+                value={`${visualRows.length} / ${maxRows ?? 200}`}
+                detail="Active Configuration"
+                tone="blue"
+              />
+              <PlantingKpi
+                icon={Eye}
+                label="Soil Moisture"
+                value="24.2%"
+                detail="Avg. Sensor Read"
+                tone="neutral"
+              />
+              <PlantingKpi
+                icon={Clock3}
+                label="Est. Completion"
+                value="16:45"
+                detail="Today, June 14"
+                tone="amber"
+              />
+            </div>
+
+            <div className="border border-[var(--erp-border)] bg-white">
+              <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-xs font-bold text-[var(--erp-ink)]">
+                    Spatial Row Allocation Map
+                  </h3>
+                  <MapLegend />
+                </div>
+                <div className="flex items-center gap-2 text-[var(--erp-icon)]">
+                  <Search className="size-3.5" />
+                  <SlidersHorizontal className="size-3.5" />
+                  <MoreVertical className="size-3.5" />
                 </div>
               </div>
-            ))}
+
+              <div className="overflow-x-auto p-3">
+                <div className="min-w-[42rem] space-y-1">
+                  {visualRows.map(([rowNo, rowEntries], index) => (
+                    <div
+                      key={rowNo}
+                      className="grid grid-cols-[2rem_minmax(0,1fr)] items-center gap-2"
+                    >
+                      <span className="text-[0.55rem] font-medium text-[var(--erp-muted)]">
+                        {String(rowNo).padStart(2, "0")}
+                      </span>
+                      <div
+                        className={
+                          plantingOrder === "right-left" || plantingOrder === "bottom-top"
+                            ? "grid grid-flow-col-dense grid-cols-[repeat(42,minmax(0,1fr))] gap-1"
+                            : "grid grid-cols-[repeat(42,minmax(0,1fr))] gap-1"
+                        }
+                      >
+                        {visualSegments(rowNo, rowEntries, index).map((segment, segmentIndex) => (
+                          <span
+                            key={`${rowNo}-${segmentIndex}`}
+                            className={cn(
+                              "h-2.5 min-w-2.5",
+                              segment === "male" && "bg-[var(--brand-secondary)]",
+                              segment === "female" && "bg-primary",
+                              segment === "open" && "bg-[var(--erp-track)]"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[5rem_minmax(0,1fr)_6rem] items-center border-t border-[var(--erp-border)] px-3 py-2 text-[0.58rem] font-semibold text-[var(--erp-muted)]">
+                <span>North Entry</span>
+                <div className="h-1.5 bg-[var(--erp-track)]">
+                  <div className="h-full w-[82%] bg-primary" />
+                </div>
+                <span className="text-right">South Boundary</span>
+              </div>
+            </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-4 rounded-md bg-emerald-900 px-4 py-2 text-xs font-medium text-white">
-            <span>FIELD LEGEND</span>
-            <span className="inline-flex items-center gap-1">
-              <span className="h-3 w-3 rounded-full bg-emerald-500" />
-              Female
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="h-3 w-3 rounded-full bg-sky-500" />
-              Male
-            </span>
-            <span>Unassigned</span>
-          </div>
+
+          <aside className="space-y-3">
+            <div className="border border-[var(--erp-border)] bg-white">
+              <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
+                <h3 className="text-xs font-bold text-[var(--erp-ink)]">Bulk Fill Panel</h3>
+                <MoreVertical className="size-3.5 text-[var(--erp-muted)]" />
+              </div>
+              <div className="space-y-4 p-3">
+                <label className="block text-[0.68rem] font-semibold text-[var(--erp-muted)]">
+                  Seed Variety
+                  <Input
+                    readOnly
+                    value={`${fallbackCrop ?? "Hybrid"}-${fallbackVariety ?? "708-MA (Male)"}`}
+                    className="mt-1 h-8 rounded-sm border-[var(--erp-border)] bg-white text-[0.68rem]"
+                  />
+                </label>
+
+                <div>
+                  <p className="mb-2 text-[0.68rem] font-semibold text-[var(--erp-muted)]">
+                    Allocation Logic
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className="border border-primary bg-primary px-2 py-3 text-[0.62rem] font-bold text-white"
+                    >
+                      Linear Row
+                    </button>
+                    <button
+                      type="button"
+                      className="border border-[var(--erp-border)] bg-white px-2 py-3 text-[0.62rem] font-bold text-[var(--erp-ink)]"
+                    >
+                      Checkerboard
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border border-[var(--erp-border)] bg-[var(--erp-table-head)] p-3">
+                  <div className="flex justify-between text-[0.62rem] font-semibold text-[var(--erp-muted)]">
+                    <span>Application Strength</span>
+                    <span className="text-primary">75%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-white">
+                    <div className="h-full w-3/4 bg-primary" />
+                  </div>
+                  <div className="mt-2 flex justify-between text-[0.55rem] text-[var(--erp-muted)]">
+                    <span>Compact</span>
+                    <span>Sparse</span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-[0.68rem] font-semibold text-[var(--erp-muted)]">
+                    Row Range Selection
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={maxRows ?? undefined}
+                      value={fillToStart}
+                      placeholder="From"
+                      className="h-8 rounded-sm text-[0.68rem]"
+                      onChange={(event) => setFillToStart(Number(event.target.value) || 1)}
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={maxRows ?? undefined}
+                      value={fillToEnd}
+                      placeholder="To"
+                      className="h-8 rounded-sm text-[0.68rem]"
+                      onChange={(event) => setFillToEnd(Number(event.target.value) || 1)}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={fillRows}
+                  className="flex h-10 w-full items-center justify-center gap-2 bg-primary text-[0.68rem] font-bold text-white"
+                >
+                  <Zap className="size-3.5" />
+                  Execute Bulk Fill
+                </button>
+                <p className="text-center text-[0.58rem] text-[var(--erp-muted)]">
+                  System will apply to {Math.max(0, fillToEnd - fillToStart + 1)} currently
+                  unallocated rows.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-destructive/30 bg-[var(--erp-danger-row)] p-3 text-destructive">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                <div>
+                  <p className="text-[0.68rem] font-bold uppercase">Deviation Alert</p>
+                  <p className="mt-1 text-[0.62rem] font-semibold leading-4">
+                    Block WBL-782 Rows 14-16 show 4.2% spacing variance outside threshold.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       ) : null}
     </div>
@@ -927,6 +1084,76 @@ function MetricHead() {
       <th className="px-3 py-2 text-left">Density</th>
       <th className="px-3 py-2 text-left">No of Rows</th>
     </>
+  );
+}
+
+type SegmentKind = "male" | "female" | "open";
+
+function visualSegments(rowNo: number, rowEntries: PlantingEntry[], index: number): SegmentKind[] {
+  const filled = rowEntries.reduce(
+    (count, entry) => count + Math.min(18, Math.max(2, Math.round(plantCount(entry) / 2))),
+    0
+  );
+  const femaleShare = rowEntries.some((entry) => entry.gender === "Female") ? 14 : 0;
+  return Array.from({ length: 42 }, (_, segment) => {
+    if (segment < Math.min(femaleShare, filled)) return "female";
+    if (segment < filled || (segment + rowNo + index) % 9 < 3) return "male";
+    if ((segment + rowNo) % 13 < 5) return "female";
+    return "open";
+  });
+}
+
+function MapLegend() {
+  return (
+    <div className="hidden items-center gap-3 text-[0.58rem] font-semibold text-[var(--erp-muted)] md:flex">
+      <span className="inline-flex items-center gap-1">
+        <span className="size-2 bg-[var(--brand-secondary)]" />
+        Male Segment
+      </span>
+      <span className="inline-flex items-center gap-1">
+        <span className="size-2 bg-primary" />
+        Female Segment
+      </span>
+      <span className="inline-flex items-center gap-1">
+        <span className="size-2 bg-[var(--erp-track)]" />
+        Unallocated
+      </span>
+    </div>
+  );
+}
+
+function PlantingKpi({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  icon: ElementType;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "green" | "blue" | "neutral" | "amber";
+}) {
+  const toneClass =
+    tone === "blue"
+      ? "bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]"
+      : tone === "amber"
+        ? "bg-[var(--erp-warning-muted)] text-[var(--erp-warning)]"
+        : tone === "neutral"
+          ? "bg-[var(--erp-track)] text-[var(--erp-muted)]"
+          : "bg-primary text-primary-foreground";
+  return (
+    <div className="flex items-center gap-3 border border-[var(--erp-border)] bg-white p-3">
+      <span className={cn("flex size-8 shrink-0 items-center justify-center", toneClass)}>
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[0.55rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+        <p className="mt-1 text-lg font-bold leading-none text-[var(--erp-ink)]">{value}</p>
+        <p className="mt-1 text-[0.58rem] font-semibold text-[var(--erp-muted)]">{detail}</p>
+      </div>
+    </div>
   );
 }
 

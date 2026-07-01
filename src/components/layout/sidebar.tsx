@@ -54,7 +54,9 @@ export function Sidebar({
           <div className="flex items-start gap-2">
             <BookOpen className="mt-0.5 size-3.5 shrink-0 text-primary" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold leading-tight text-primary">iBMS-Crop</p>
+              <p className="truncate bg-gradient-to-r from-[var(--brand-secondary)] via-[#087c8f] to-primary bg-clip-text text-sm font-extrabold leading-tight text-transparent">
+                iBMS-Crop
+              </p>
               <p className="mt-1 truncate text-[0.7rem] leading-none text-[var(--erp-muted)]">
                 Agricultural Ops
               </p>

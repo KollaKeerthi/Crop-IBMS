@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { ProgramInfoForm } from "./program-info-form";
@@ -98,14 +100,14 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     : null;
 
   const triggerClassName = cn(
-    "relative shrink-0 px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground",
-    "after:absolute after:inset-x-4 after:bottom-0 after:h-1 after:rounded-full after:bg-transparent",
+    "relative shrink-0 px-6 py-3 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
+    "after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:bg-transparent",
     "data-active:text-primary data-active:after:bg-primary"
   );
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={handleChange} className="w-full">
-      <TabsPrimitive.List className="mb-6 flex w-full overflow-x-auto border-b bg-background">
+      <TabsPrimitive.List className="flex w-full overflow-x-auto border-b border-[var(--erp-border)] bg-[var(--erp-canvas)]">
         <TabsPrimitive.Tab value="program-info" className={triggerClassName}>
           Program Info
         </TabsPrimitive.Tab>
@@ -130,19 +132,31 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
           Seeds Quality
         </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
-          SQ Breakdown
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
-          Harvest Details
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="media" className={triggerClassName}>
-          Media Attachment
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="performance" className={triggerClassName}>
-          Performance
-        </TabsPrimitive.Tab>
       </TabsPrimitive.List>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] py-2">
+        <span className="mr-1 text-[0.62rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
+          Operations
+        </span>
+        <OperationLink
+          href={`/dashboard/crop-data/${record.id}/harvest`}
+          active={activeTab === "harvest"}
+        >
+          Harvest Details
+        </OperationLink>
+        <OperationLink
+          href={`/dashboard/crop-data/${record.id}/performance`}
+          active={activeTab === "performance"}
+        >
+          Performance Tracking
+        </OperationLink>
+        <OperationLink
+          href={`/dashboard/crop-data/${record.id}/media`}
+          active={activeTab === "media"}
+        >
+          Media Attachments
+        </OperationLink>
+      </div>
 
       {/* Program Info */}
       <TabsPrimitive.Panel value="program-info" className="mt-0">
@@ -267,5 +281,27 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
         <MediaAttachments cropDataId={record.id} farmId={farmId} media={record.media ?? []} />
       </TabsPrimitive.Panel>
     </TabsPrimitive.Root>
+  );
+}
+
+function OperationLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "border border-[var(--erp-border)] bg-white px-3 py-1.5 text-[0.68rem] font-semibold text-[var(--erp-ink)]",
+        active && "border-primary bg-[var(--erp-green-muted)] text-primary"
+      )}
+    >
+      {children}
+    </Link>
   );
 }

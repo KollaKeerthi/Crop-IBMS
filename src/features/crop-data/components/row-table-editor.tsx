@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { ZodType } from "zod";
 import { toast } from "sonner";
 import { Download, Plus, Trash2, Pencil, Upload, X } from "lucide-react";
@@ -41,6 +41,7 @@ type Props = {
   mutations: Mutations;
   defaultValues?: Vals;
   readOnly?: boolean;
+  after?: ReactNode;
 };
 
 function emptyForm(columns: RowColumn[]): Vals {
@@ -85,6 +86,7 @@ export function RowTableEditor({
   mutations,
   defaultValues = {},
   readOnly = false,
+  after,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -184,39 +186,46 @@ export function RowTableEditor({
   }
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+    <div className="overflow-hidden border border-[var(--erp-border)] bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--erp-border)] px-3 py-2">
         <div>
-          <h3 className="text-base font-semibold">{title}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-xs font-bold text-[var(--erp-ink)]">{title}</h3>
+            {description ? (
+              <span className="text-[0.62rem] font-semibold text-[var(--erp-muted)]">
+                {description}
+              </span>
+            ) : null}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {showExport ? (
-            <Button size="sm" variant="outline">
-              <Download className="mr-1.5 h-4 w-4" /> Export
+            <Button size="sm" variant="outline" className="h-7 rounded-sm text-[0.65rem]">
+              <Download className="mr-1.5 size-3.5" /> Export
             </Button>
           ) : null}
           {showBulkUpload ? (
-            <Button size="sm" variant="outline">
-              <Upload className="mr-1.5 h-4 w-4" /> Bulk Upload
+            <Button size="sm" variant="outline" className="h-7 rounded-sm text-[0.65rem]">
+              <Upload className="mr-1.5 size-3.5" /> Bulk Upload
             </Button>
           ) : null}
           {!showForm && !readOnly && (
-            <Button size="sm" onClick={openNew}>
-              <Plus className="mr-1.5 h-4 w-4" /> {newLabel}
+            <Button size="sm" className="h-7 rounded-sm text-[0.65rem]" onClick={openNew}>
+              <Plus className="mr-1.5 size-3.5" /> {newLabel}
             </Button>
           )}
         </div>
       </div>
 
       {showForm && (
-        <div className="border-b bg-muted/20 px-5 py-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3">
+          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
             {editingId ? "Edit Record" : "New Record"}
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {columns.map((c) => (
               <div key={c.name}>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                <label className="mb-1 block text-[0.65rem] font-semibold text-[var(--erp-muted)]">
                   {c.label}
                 </label>
                 {renderInput(c)}
@@ -227,10 +236,21 @@ export function RowTableEditor({
             ))}
           </div>
           <div className="mt-4 flex items-center justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={close} disabled={saving}>
-              <X className="mr-1 h-4 w-4" /> Cancel
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 rounded-sm text-[0.65rem]"
+              onClick={close}
+              disabled={saving}
+            >
+              <X className="mr-1 size-3.5" /> Cancel
             </Button>
-            <Button size="sm" onClick={submit} disabled={saving}>
+            <Button
+              size="sm"
+              className="h-7 rounded-sm text-[0.65rem]"
+              onClick={submit}
+              disabled={saving}
+            >
               {saving ? "Saving…" : editingId ? "Update Record" : "Add Record"}
             </Button>
           </div>
@@ -238,20 +258,20 @@ export function RowTableEditor({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[52rem] text-[0.68rem]">
           <thead>
-            <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] uppercase text-[var(--erp-muted)]">
               {columns.map((c) => (
-                <th key={c.name} className="px-3 py-2.5 text-left font-medium">
+                <th key={c.name} className="px-3 py-2 text-left font-bold">
                   {c.label}
                 </th>
               ))}
               {computed.map((c) => (
-                <th key={c.label} className="px-3 py-2.5 text-left font-medium">
+                <th key={c.label} className="px-3 py-2 text-left font-bold">
                   {c.label}
                 </th>
               ))}
-              {!readOnly && <th className="px-3 py-2.5 text-right font-medium">Actions</th>}
+              {!readOnly && <th className="px-3 py-2 text-right font-bold">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -259,23 +279,26 @@ export function RowTableEditor({
               <tr>
                 <td
                   colSpan={columns.length + computed.length + (readOnly ? 0 : 1)}
-                  className="px-3 py-6 text-center text-muted-foreground"
+                  className="px-3 py-6 text-center text-[var(--erp-muted)]"
                 >
                   No records yet. Click &quot;New&quot; to add one.
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={String(row.id)} className="border-b last:border-0">
+                <tr
+                  key={String(row.id)}
+                  className="border-b border-[var(--erp-border)] last:border-0"
+                >
                   {columns.map((c) => (
-                    <td key={c.name} className="px-3 py-2">
+                    <td key={c.name} className="px-3 py-2.5">
                       {displayCell(row[c.name], c.type)}
                     </td>
                   ))}
                   {computed.map((c) => (
                     <td
                       key={c.label}
-                      className={`px-3 py-2 font-medium ${c.className?.(row) ?? ""}`}
+                      className={`px-3 py-2.5 font-bold ${c.className?.(row) ?? ""}`}
                     >
                       {c.compute(row)}
                     </td>
@@ -307,6 +330,11 @@ export function RowTableEditor({
           </tbody>
         </table>
       </div>
+      {after ? (
+        <div className="border-t border-[var(--erp-border)] bg-[var(--erp-canvas)] p-3">
+          {after}
+        </div>
+      ) : null}
     </div>
   );
 }
