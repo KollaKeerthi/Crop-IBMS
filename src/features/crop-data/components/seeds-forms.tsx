@@ -165,7 +165,7 @@ export function SeedsQualityForm({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="text-[0.62rem] font-semibold uppercase tracking-wide text-primary"
+                className="text-[0.62rem] font-semibold tracking-wide text-primary"
               >
                 Download CSV
               </button>
@@ -178,7 +178,7 @@ export function SeedsQualityForm({
 
           <table className="w-full text-[0.72rem]">
             <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
-              <tr className="text-[0.58rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <tr className="text-[0.58rem] font-bold tracking-wide text-[var(--erp-muted)]">
                 <th className="px-4 py-3 text-left">Metric Parameter</th>
                 <th className="px-4 py-3 text-right">Value</th>
               </tr>
@@ -228,9 +228,7 @@ export function SeedsQualityForm({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-                Planting Week
-              </p>
+              <p className="text-[0.55rem] font-bold text-[var(--erp-muted)]">Planting Week</p>
               <p className="text-2xl font-bold leading-none text-primary">{plantingWeekValue}</p>
             </div>
           </div>
@@ -238,17 +236,17 @@ export function SeedsQualityForm({
           <div className="p-4">
             <div className="overflow-hidden rounded-sm border border-[var(--erp-border)]">
               <div className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-2">
-                <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                <p className="text-[0.62rem] font-bold text-[var(--erp-muted)]">
                   Germination Tier Analysis
                 </p>
               </div>
               <div className="grid grid-cols-[4.5rem_minmax(0,1fr)]">
-                <div className="flex items-center justify-center border-r border-[var(--erp-border)] bg-[var(--erp-info-muted)] p-3 text-[0.6rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                <div className="flex items-center justify-center border-r border-[var(--erp-border)] bg-[var(--erp-info-muted)] p-3 text-[0.6rem] font-bold text-[var(--erp-muted)]">
                   Batch Value
                 </div>
                 <table className="w-full text-[0.7rem]">
                   <thead className="border-b border-[var(--erp-border)] bg-white">
-                    <tr className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                    <tr className="text-[0.55rem] font-bold text-[var(--erp-muted)]">
                       <th className="px-3 py-2 text-left">Tier</th>
                       <th className="px-3 py-2 text-left">KG Yield%</th>
                     </tr>
@@ -291,7 +289,7 @@ export function SeedsQualityForm({
 
         <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
           <div>
-            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
               Customer Directives
             </p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
@@ -300,7 +298,7 @@ export function SeedsQualityForm({
           </div>
 
           <div className="mt-5">
-            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
               Strategic Recommendations
             </p>
             <div className="rounded-sm border border-[#bfe6cf] bg-[#ebfaf0] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
@@ -315,9 +313,7 @@ export function SeedsQualityForm({
               <Info className="size-5" />
             </span>
             <div>
-              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
-                Total Capacity Utilization
-              </p>
+              <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
                   {capacityUtilization.toFixed(1)}%
@@ -330,7 +326,7 @@ export function SeedsQualityForm({
 
         <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
           <div className="h-28 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
-            <div className="flex h-full items-end rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(12,22,34,0.72))] p-3 text-[0.62rem] font-bold uppercase tracking-wide text-white">
+            <div className="flex h-full items-end rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(12,22,34,0.72))] p-3 text-[0.62rem] font-bold text-white">
               View Lab Samples
             </div>
           </div>
@@ -343,9 +339,7 @@ export function SeedsQualityForm({
 function SeedsMiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-3">
-      <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-        {label}
-      </p>
+      <p className="text-[0.55rem] font-bold text-[var(--erp-muted)]">{label}</p>
       <p className="mt-2 text-[0.78rem] font-semibold text-[var(--erp-ink)]">{value}</p>
     </div>
   );
@@ -358,7 +352,7 @@ function SqStat({ label, value, blue = false }: { label: string; value: string; 
         blue ? "border-l-4 border-l-[var(--brand-secondary)]" : "border-l-4 border-l-primary"
       }`}
     >
-      <p className="text-[0.58rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+      <p className="text-[0.58rem] font-bold text-[var(--erp-muted)]">{label}</p>
       <p
         className={`mt-2 text-lg font-bold ${blue ? "text-[var(--brand-secondary)]" : "text-[var(--erp-ink)]"}`}
       >

@@ -99,16 +99,16 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
         <table className="w-full table-fixed border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
-              <th className="w-[48%] px-4 py-3 text-left text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <th className="w-[48%] px-4 py-3 text-left text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Revenue Category
               </th>
-              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Planned
               </th>
-              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <th className="w-[17%] px-3 py-3 text-center text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Actual
               </th>
-              <th className="w-[18%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <th className="w-[18%] px-3 py-3 text-center text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Variance
               </th>
             </tr>
@@ -233,7 +233,7 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
             {editing ? (
               <div className="space-y-3 border border-[var(--erp-border)] p-3">
                 <div>
-                  <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                  <p className="mb-2 text-[0.7rem] font-bold text-[var(--erp-muted)]">
                     Planned Remark
                   </p>
                   <Textarea
@@ -246,7 +246,7 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
                   ) : null}
                 </div>
                 <div>
-                  <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                  <p className="mb-2 text-[0.7rem] font-bold text-[var(--erp-muted)]">
                     Actual Remark
                   </p>
                   <Textarea

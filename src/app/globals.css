@@ -235,7 +235,6 @@
     font-size: var(--text-caption);
     font-weight: 600;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
   }
 
   .app-section-title {
@@ -259,7 +258,6 @@
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0;
-    text-transform: uppercase;
   }
 
   .crop-data-module {
@@ -341,7 +339,6 @@
     font-weight: 600;
     line-height: 1.4;
     letter-spacing: 0;
-    text-transform: none;
   }
 
   .crop-field-label {
@@ -383,7 +380,6 @@
     font-weight: 600;
     line-height: 1.4;
     letter-spacing: 0;
-    text-transform: none;
   }
 
   .crop-table-shell table {

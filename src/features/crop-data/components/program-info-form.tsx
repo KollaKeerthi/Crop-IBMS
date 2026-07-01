@@ -205,13 +205,13 @@ export function ProgramInfoForm({ cropDataId, farmId, programInfo }: Props) {
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
-                  <th className="w-[30%] px-3 py-2 text-left text-[0.68rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                  <th className="w-[30%] px-3 py-2 text-left text-[0.68rem] font-bold text-[var(--erp-muted)]">
                     Metric
                   </th>
-                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold uppercase tracking-wide text-[var(--brand-secondary)]">
+                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold text-[var(--brand-secondary)]">
                     Male Parent
                   </th>
-                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold uppercase tracking-wide text-[var(--erp-warning)]">
+                  <th className="w-[35%] px-3 py-2 text-center text-[0.68rem] font-bold text-[var(--erp-warning)]">
                     Female Parent
                   </th>
                 </tr>
@@ -526,9 +526,7 @@ function LifecycleField({
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_7rem] items-start gap-3">
-      <div className="pt-1 text-[0.64rem] font-bold uppercase leading-4 tracking-wide text-[var(--erp-muted)]">
-        {label}
-      </div>
+      <div className="pt-1 text-[0.64rem] font-bold leading-4 text-[var(--erp-muted)]">{label}</div>
       <div>
         {editing ? (
           <MetricInput name={name} type={type} value={value} onFieldChange={onFieldChange} />

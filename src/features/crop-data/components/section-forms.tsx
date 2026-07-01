@@ -434,9 +434,7 @@ export function ProductionForm({
 
         <div className="grid gap-6 p-4 lg:grid-cols-2">
           <div>
-            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-              Realized Counts
-            </p>
+            <p className="text-[0.62rem] font-bold text-[var(--erp-muted)]">Realized Counts</p>
             <div className="mt-4 space-y-3">
               {productionRows.map(([label, name]) => (
                 <ProdValueRow
@@ -463,7 +461,7 @@ export function ProductionForm({
           </div>
 
           <div>
-            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            <p className="text-[0.62rem] font-bold text-[var(--erp-muted)]">
               Environmental Cycle Data
             </p>
             <div className="mt-4 space-y-3">
@@ -493,9 +491,7 @@ export function ProductionForm({
         </div>
 
         <div className="border-t border-[var(--erp-border)] px-4 py-4">
-          <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-            Operational Notes
-          </p>
+          <p className="text-[0.62rem] font-bold text-[var(--erp-muted)]">Operational Notes</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_11.5rem]">
             <div>
               <label className="mb-2 block text-[0.72rem] font-semibold text-[var(--erp-ink)]">
@@ -541,16 +537,14 @@ export function ProductionForm({
               <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Program Details</h3>
             </div>
             <div className="text-right">
-              <p className="text-[0.55rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-                Planting Week
-              </p>
+              <p className="text-[0.55rem] font-bold text-[var(--erp-muted)]">Planting Week</p>
               <p className="text-2xl font-bold leading-none text-primary">{plantingWeekValue}</p>
             </div>
           </div>
 
           <div className="mt-5 space-y-5">
             <div>
-              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Customer Directives
               </p>
               <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
@@ -559,7 +553,7 @@ export function ProductionForm({
             </div>
 
             <div>
-              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 General Remarks
               </p>
               <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
@@ -570,7 +564,7 @@ export function ProductionForm({
             </div>
 
             <div>
-              <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+              <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
                 Recommendations
               </p>
               {editing ? (
@@ -600,9 +594,7 @@ export function ProductionForm({
               <CircleAlert className="size-5" />
             </span>
             <div>
-              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
-                Total Capacity Utilization
-              </p>
+              <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
                   {utilization.value}
@@ -750,9 +742,7 @@ export function PollinationForm({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--erp-border)] px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-primary" />
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
-              Pollination Overview
-            </h3>
+            <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Pollination Overview</h3>
           </div>
           <div className="flex items-center gap-2">
             <Button type="button" variant="outline" size="sm" onClick={startEdit}>
@@ -773,9 +763,7 @@ export function PollinationForm({
         <div className="space-y-4 p-4">
           <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
             <div className="border-b border-[var(--erp-border)] px-4 py-3">
-              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
-                Timeline & Yield
-              </p>
+              <p className="text-[0.62rem] font-bold text-[var(--erp-ink)]">Timeline & Yield</p>
             </div>
             <div className="grid gap-x-6 gap-y-4 p-4 md:grid-cols-2">
               <PollinationField
@@ -842,9 +830,7 @@ export function PollinationForm({
 
           <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
             <div className="border-b border-[var(--erp-border)] px-4 py-3">
-              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
-                Operational Data
-              </p>
+              <p className="text-[0.62rem] font-bold text-[var(--erp-ink)]">Operational Data</p>
             </div>
             <div className="grid gap-x-6 gap-y-4 p-4 md:grid-cols-2">
               <PollinationField
@@ -922,7 +908,7 @@ export function PollinationForm({
 
           <div className="rounded-[0.75rem] border border-[var(--erp-border)]">
             <div className="border-b border-[var(--erp-border)] px-4 py-3">
-              <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-ink)]">
+              <p className="text-[0.62rem] font-bold text-[var(--erp-ink)]">
                 Environmental Conditions
               </p>
             </div>
@@ -982,7 +968,7 @@ export function PollinationForm({
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_11.5rem]">
             <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
-              <label className="mb-3 block text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
+              <label className="mb-3 block text-[0.72rem] font-semibold text-[var(--erp-ink)]">
                 Remarks
               </label>
               {editing ? (
@@ -1000,7 +986,7 @@ export function PollinationForm({
             </div>
 
             <div className="rounded-[0.75rem] border border-[var(--erp-border)] p-4">
-              <label className="mb-3 block text-[0.72rem] font-semibold uppercase tracking-wide text-[var(--erp-ink)]">
+              <label className="mb-3 block text-[0.72rem] font-semibold text-[var(--erp-ink)]">
                 Pictures
               </label>
               <button
@@ -1021,7 +1007,7 @@ export function PollinationForm({
       <div className="space-y-4">
         <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
           <div>
-            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">
               Customer Directives
             </p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
@@ -1030,18 +1016,14 @@ export function PollinationForm({
           </div>
 
           <div className="mt-5">
-            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-              General Remarks
-            </p>
+            <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">General Remarks</p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
               {generalRemarks}
             </div>
           </div>
 
           <div className="mt-5">
-            <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-              Recommendations
-            </p>
+            <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">Recommendations</p>
             {editing ? (
               <Textarea
                 className="rounded-sm border-[var(--erp-border)] bg-[var(--erp-table-head)] text-xs"
@@ -1068,9 +1050,7 @@ export function PollinationForm({
               <CircleAlert className="size-5" />
             </span>
             <div>
-              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
-                Total Capacity Utilization
-              </p>
+              <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
                   {capacityUtilization.toFixed(1)}%
@@ -1083,9 +1063,7 @@ export function PollinationForm({
 
         <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
           <div className="border-b border-[var(--erp-border)] px-4 py-3">
-            <p className="text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-              Field Live Status
-            </p>
+            <p className="text-[0.62rem] font-bold text-[var(--erp-muted)]">Field Live Status</p>
           </div>
           <div className="h-40 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
             <div className="flex h-full items-center justify-center rounded-md border border-dashed border-[var(--erp-border)] bg-white/60 text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
@@ -1226,11 +1204,11 @@ function LegacyPostHarvestForm({
       <div className="grid gap-3 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)]">
         <div className="border border-[var(--erp-border)] bg-white">
           <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
-            <h3 className="text-xs font-bold uppercase text-[var(--erp-ink)]">Harvest Timeline</h3>
+            <h3 className="text-xs font-bold text-[var(--erp-ink)]">Harvest Timeline</h3>
             <Truck className="size-3.5 text-[var(--erp-muted)]" />
           </div>
           <table className="w-full text-[0.68rem]">
-            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] text-[var(--erp-muted)]">
               <tr>
                 <th className="px-3 py-2 text-left font-bold">Phase</th>
                 <th className="px-3 py-2 text-left font-bold">Start/End</th>
@@ -1264,7 +1242,7 @@ function LegacyPostHarvestForm({
             </tbody>
           </table>
           <div className="bg-primary px-3 py-3 text-white">
-            <p className="text-[0.58rem] uppercase opacity-80">Grade A Quality</p>
+            <p className="text-[0.58rem] opacity-80">Grade A Quality</p>
             <div className="mt-1 flex justify-between text-sm font-bold">
               <span>4,890 KG</span>
               <span>+2.4%</span>
@@ -1274,7 +1252,7 @@ function LegacyPostHarvestForm({
 
         <div className="border border-[var(--erp-border)] bg-white">
           <div className="flex items-center justify-between border-b border-[var(--erp-border)] px-3 py-2">
-            <h3 className="text-xs font-bold uppercase text-[var(--erp-ink)]">Harvest Summary</h3>
+            <h3 className="text-xs font-bold text-[var(--erp-ink)]">Harvest Summary</h3>
             <div className="flex gap-2">
               <button className="border border-[var(--erp-border)] px-2 py-1 text-[0.58rem] font-bold">
                 Filter
@@ -1285,7 +1263,7 @@ function LegacyPostHarvestForm({
             </div>
           </div>
           <table className="w-full text-[0.68rem]">
-            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] uppercase text-[var(--erp-muted)]">
+            <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.56rem] text-[var(--erp-muted)]">
               <tr>
                 <th className="px-3 py-2 text-left font-bold">Date</th>
                 <th className="px-3 py-2 text-left font-bold">Operator</th>
@@ -1974,17 +1952,14 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
           </span>
           <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Post Harvest Summary</h3>
         </div>
-        <button
-          type="button"
-          className="text-[0.62rem] font-semibold uppercase tracking-wide text-primary"
-        >
+        <button type="button" className="text-[0.62rem] font-semibold text-primary">
           Export Excel
         </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-[0.72rem]">
           <thead className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
-            <tr className="text-[0.58rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+            <tr className="text-[0.58rem] font-bold text-[var(--erp-muted)]">
               <th className="px-4 py-3 text-left">Date</th>
               <th className="px-4 py-3 text-left">KGS</th>
               <th className="px-4 py-3 text-left">%Germination</th>
@@ -2075,9 +2050,7 @@ function PostHarvestMetricField({
 function NoteField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="border border-[var(--erp-border)] bg-[var(--erp-table-head)] p-3">
-      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-[var(--erp-muted)]">
-        {label}
-      </p>
+      <p className="text-[0.6rem] font-bold text-[var(--erp-muted)]">{label}</p>
       <div className="mt-2 text-sm font-bold text-[var(--erp-ink)]">{children}</div>
     </div>
   );
@@ -2086,7 +2059,7 @@ function NoteField({ label, children }: { label: string; children: ReactNode }) 
 function EnvMetric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <div className="border border-[var(--erp-border)] bg-white p-3 text-center">
-      <p className="text-[0.56rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+      <p className="text-[0.56rem] font-bold text-[var(--erp-muted)]">{label}</p>
       <p className="mt-1 text-sm font-bold text-[var(--erp-ink)]">{value}</p>
       <p className="mt-1 text-[0.55rem] font-semibold text-primary">{note}</p>
     </div>

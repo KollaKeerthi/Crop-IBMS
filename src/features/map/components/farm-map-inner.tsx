@@ -395,9 +395,7 @@ export default function FarmMapInner({
 
       <div className="leaflet-top leaflet-right">
         <div className="leaflet-control bg-card/95 border shadow-lg rounded-2xl p-3 w-[230px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-2">
-            Map view
-          </p>
+          <p className="mb-2 text-[11px] font-semibold text-muted-foreground">Map view</p>
           <div className="space-y-2">
             {(Object.keys(MAP_TILE_LAYERS) as Array<keyof typeof MAP_TILE_LAYERS>).map(
               (layerKey) => (

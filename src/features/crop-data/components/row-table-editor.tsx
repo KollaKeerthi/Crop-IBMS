@@ -217,7 +217,7 @@ export function RowTableEditor({
 
       {showForm && (
         <div className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3">
-          <p className="crop-field-label mb-3 uppercase tracking-wide">
+          <p className="crop-field-label mb-3 tracking-wide">
             {editingId ? "Edit Record" : "New Record"}
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

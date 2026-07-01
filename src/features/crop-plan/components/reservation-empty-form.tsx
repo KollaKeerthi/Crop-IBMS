@@ -270,9 +270,7 @@ export function ReservationEmptyForm({ farmId, year, reservation, onSaved, onCan
 
       {/* ── Surface ── */}
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Surface
-        </p>
+        <p className="text-[10px] font-bold text-muted-foreground">Surface</p>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <Label className="text-[10px] font-medium">Surface Female (m²)</Label>

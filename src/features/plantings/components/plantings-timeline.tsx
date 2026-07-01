@@ -171,7 +171,7 @@ export function PlantingsTimeline({ plantings, onEdit, viewMode, year: yearProp 
             {monthGroups.map((g, i) => (
               <div
                 key={i}
-                className="absolute top-0 flex h-full items-center border-r border-border/40 pl-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+                className="absolute top-0 flex h-full items-center border-r border-border/40 pl-2 text-[10px] font-semibold text-muted-foreground"
                 style={{ left: g.startX, width: g.width }}
               >
                 {g.label}

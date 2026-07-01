@@ -363,7 +363,7 @@ function RecentTasks() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[42rem] border-collapse text-left text-[0.68rem]">
           <thead>
-            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] uppercase tracking-normal text-[var(--erp-muted)]">
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] text-[var(--erp-muted)]">
               <th className="px-4 py-2 font-semibold">Task Details</th>
               <th className="px-3 py-2 font-semibold">Block</th>
               <th className="px-3 py-2 font-semibold">Deadline</th>

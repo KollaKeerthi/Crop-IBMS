@@ -87,7 +87,7 @@ function AttachmentKpi({
         <Icon className="size-4" />
       </span>
       <div>
-        <p className="crop-field-label uppercase">{label}</p>
+        <p className="crop-field-label">{label}</p>
         <p className="crop-body-text mt-1 font-semibold">{value}</p>
       </div>
     </div>

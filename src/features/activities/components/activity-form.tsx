@@ -97,7 +97,7 @@ export function ActivityForm({ farmId, activity, onSuccess }: Props) {
                     {...field}
                     value={field.value ?? ""}
                     placeholder="e.g. PLOW"
-                    className="font-mono uppercase"
+                    className="font-mono"
                     onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                   />
                 </FormControl>

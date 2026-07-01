@@ -85,16 +85,22 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
     <button
       type="button"
       onClick={() => setExpanded((value) => !value)}
-      className="crop-button-text flex shrink-0 items-center gap-2 px-2 text-[var(--erp-muted)]"
+      aria-label={expanded ? "Collapse crop header" : "Expand crop header"}
+      className="crop-button-text flex shrink-0 items-center justify-center rounded-sm p-2 text-[var(--erp-muted)] transition-colors hover:bg-white"
     >
-      {expanded ? "Expanded View" : "Compact View"}
       {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
     </button>
   );
 
   return (
     <div className="crop-data-module w-full bg-[var(--erp-canvas)] px-4 pb-4 pt-3">
-      <section className="border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] pb-3">
+      <div className="sticky top-0 z-10 bg-[var(--erp-canvas)]">
+        <div className="crop-helper-text border-b border-[var(--erp-border)] pb-2 text-[var(--erp-muted)]">
+          {breadcrumbText}
+        </div>
+      </div>
+
+      <section className="border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] py-3">
         {expanded ? (
           <div className="grid gap-5 pt-1 lg:grid-cols-[8rem_minmax(0,1fr)]">
             <div className="h-28 w-28 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
@@ -150,10 +156,6 @@ export function CropDataDetailPage({ activeTab }: { activeTab: string }) {
             >
               <ArrowLeft className="size-4" />
             </Button>
-
-            <p className="crop-helper-text min-w-32 max-w-56 truncate font-semibold">
-              {breadcrumbText}
-            </p>
 
             <div className="size-12 shrink-0 overflow-hidden rounded-sm border border-[var(--erp-border)] bg-white">
               {record.cropImageUrl ? (
@@ -218,7 +220,7 @@ function FactBlock({
 }) {
   return (
     <div>
-      <div className="crop-field-label mb-2 flex items-center gap-2 uppercase tracking-wide">
+      <div className="crop-field-label mb-2 flex items-center gap-2">
         {icon}
         {label}
       </div>

@@ -317,9 +317,7 @@ export function CropGantt({
     <div className="flex h-full flex-col overflow-hidden bg-card">
       {/* View toggle */}
       <div className="flex shrink-0 items-center gap-1.5 border-b border-border bg-card/50 px-4 py-2">
-        <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-          View
-        </span>
+        <span className="mr-1 text-[10px] font-bold text-muted-foreground/60">View</span>
         {[
           { mode: "block" as const, Icon: LayoutGrid, label: "By Block" },
           { mode: "crop" as const, Icon: Sprout, label: "By Crop" },

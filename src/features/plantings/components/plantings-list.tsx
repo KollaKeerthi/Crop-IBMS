@@ -752,9 +752,7 @@ export function PlantingsList() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-base">{ev.icon}</span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                          {ev.type}
-                        </span>
+                        <span className="text-xs font-bold text-foreground">{ev.type}</span>
                       </div>
                       <Badge variant="outline" className="text-[10px] font-semibold">
                         {ev.planting.status}
@@ -786,7 +784,7 @@ export function PlantingsList() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-base">{t.icon}</span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400">
+                        <span className="text-xs font-bold text-violet-700 dark:text-violet-400">
                           Task Due
                         </span>
                       </div>

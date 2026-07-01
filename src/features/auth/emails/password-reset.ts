@@ -17,7 +17,7 @@ export function passwordResetEmailHtml(opts: {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:520px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb;padding:40px;">
           <tr>
             <td>
-              <p style="margin:0 0 24px;font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b7280;">Crop Management</p>
+              <p style="margin:0 0 24px;font-size:13px;font-weight:600;letter-spacing:0.05em;color:#6b7280;">Crop Management</p>
               <h1 style="margin:0 0 12px;font-size:22px;font-weight:600;color:#111827;line-height:1.3;">Reset your password</h1>
               <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.6;">Hi ${opts.name}, click the button below to set a new password for your account.</p>
               <a href="${opts.resetUrl}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:500;">Reset password</a>

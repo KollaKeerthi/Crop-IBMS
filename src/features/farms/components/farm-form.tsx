@@ -70,9 +70,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className="block h-3.5 w-0.5 rounded-full bg-primary" />
-      <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-        {children}
-      </span>
+      <span className="text-caption font-bold text-muted-foreground">{children}</span>
     </div>
   );
 }

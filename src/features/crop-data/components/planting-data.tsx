@@ -1061,7 +1061,7 @@ export function PlantingData({
               <div className="flex items-start gap-2">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <div>
-                  <p className="text-[0.68rem] font-bold uppercase">Deviation Alert</p>
+                  <p className="text-[0.68rem] font-bold">Deviation Alert</p>
                   <p className="mt-1 text-[0.62rem] font-semibold leading-4">
                     Block WBL-782 Rows 14-16 show 4.2% spacing variance outside threshold.
                   </p>
@@ -1149,7 +1149,7 @@ function PlantingKpi({
         <Icon className="size-4" />
       </span>
       <div className="min-w-0">
-        <p className="text-[0.55rem] font-bold uppercase text-[var(--erp-muted)]">{label}</p>
+        <p className="text-[0.55rem] font-bold text-[var(--erp-muted)]">{label}</p>
         <p className="mt-1 text-lg font-bold leading-none text-[var(--erp-ink)]">{value}</p>
         <p className="mt-1 text-[0.58rem] font-semibold text-[var(--erp-muted)]">{detail}</p>
       </div>

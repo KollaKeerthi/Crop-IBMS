@@ -342,9 +342,7 @@ export function CropPlanPageClient() {
 
         {/* Week jump */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Week
-          </span>
+          <span className="text-[10px] font-bold text-muted-foreground/60">Week</span>
           <select
             value={selectedWeek ?? ""}
             onChange={(e) => setSelectedWeek(e.target.value ? Number(e.target.value) : null)}
@@ -408,7 +406,7 @@ export function CropPlanPageClient() {
                 >
                   <span
                     className={cn(
-                      "mt-0.5 rounded px-1 text-[9px] font-bold uppercase",
+                      "mt-0.5 rounded px-1 text-[9px] font-bold",
                       c.severity === "error"
                         ? "bg-red-200 text-red-800"
                         : "bg-amber-200 text-amber-800"
@@ -437,7 +435,7 @@ export function CropPlanPageClient() {
             >
               <PanelLeftOpen className="size-4" />
             </button>
-            <span className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground [writing-mode:vertical-rl]">
+            <span className="mt-3 text-[10px] font-semibold text-muted-foreground [writing-mode:vertical-rl]">
               {mainLabel}
             </span>
           </div>
@@ -748,7 +746,7 @@ export function CropPlanPageClient() {
             <div className="border-t border-border px-4 py-3 bg-muted/20 shrink-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                  <p className="text-[10px] font-bold text-muted-foreground/70">
                     {selectedItem.kind === "reservation" ? "Reservation" : "Contract"}
                   </p>
                   <p className="text-xs font-semibold text-foreground truncate mt-0.5">

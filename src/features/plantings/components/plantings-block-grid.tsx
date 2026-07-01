@@ -92,7 +92,7 @@ export function PlantingsBlockGrid({ plantings, blocks, onEdit, year: yearProp }
           {MONTHS.map((m) => (
             <div
               key={m}
-              className="shrink-0 border-r flex items-center justify-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+              className="shrink-0 border-r flex items-center justify-center text-[10px] font-semibold text-muted-foreground"
               style={{ width: CELL_W, height: 34 }}
             >
               {m}

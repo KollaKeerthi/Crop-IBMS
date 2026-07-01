@@ -28,7 +28,7 @@ export function SectionHeader({
           <div className="flex items-center gap-3">
             <h2 className="text-h4 font-bold text-foreground">{title}</h2>
             {showCount && (
-              <span className="text-caption font-bold uppercase tracking-wider rounded-full bg-primary/10 px-2.5 py-0.5 text-primary">
+              <span className="text-caption font-bold tracking-wider rounded-full bg-primary/10 px-2.5 py-0.5 text-primary">
                 {count} {unit}
               </span>
             )}

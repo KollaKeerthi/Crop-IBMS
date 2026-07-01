@@ -429,7 +429,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
       {/* ── Lead-time schedule (auto-filled from active time config) ── */}
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] font-bold text-muted-foreground">
             Lead-time schedule <span className="font-normal normal-case">(auto-calculated)</span>
           </p>
           {detectedLeadTimeCode && (
@@ -535,9 +535,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
       {/* ── Surface calculation ── */}
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Surface
-          </p>
+          <p className="text-[10px] font-bold text-muted-foreground">Surface</p>
           <span
             className={
               "rounded px-1.5 py-0.5 text-[9px] font-semibold " +

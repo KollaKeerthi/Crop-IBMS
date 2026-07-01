@@ -106,11 +106,11 @@ export function NurseryForm({ cropDataId, farmId, nursery, programInfo }: Props)
           <table className="w-full table-fixed border-collapse text-sm">
             <thead>
               <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)]">
-                <th className="w-[50%] px-4 py-3 text-left text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]"></th>
-                <th className="w-[25%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                <th className="w-[50%] px-4 py-3 text-left text-[0.62rem] font-bold text-[var(--erp-muted)]"></th>
+                <th className="w-[25%] px-3 py-3 text-center text-[0.62rem] font-bold text-[var(--erp-muted)]">
                   Male
                 </th>
-                <th className="w-[25%] px-3 py-3 text-center text-[0.62rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
+                <th className="w-[25%] px-3 py-3 text-center text-[0.62rem] font-bold text-[var(--erp-muted)]">
                   Female
                 </th>
               </tr>
@@ -326,9 +326,7 @@ export function NurseryForm({ cropDataId, farmId, nursery, programInfo }: Props)
               <Leaf className="size-5" />
             </span>
             <div>
-              <p className="text-[0.58rem] font-bold uppercase tracking-wide text-primary">
-                Total Capacity Utilization
-              </p>
+              <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
                   {capacity.utilization}
@@ -581,9 +579,7 @@ function NotesCard({
 }) {
   return (
     <section className="rounded-[0.875rem] border border-[var(--erp-border)] bg-white p-4 shadow-sm">
-      <div className="mb-3 text-[0.7rem] font-bold uppercase tracking-wide text-[var(--erp-muted)]">
-        {title}
-      </div>
+      <div className="mb-3 text-[0.7rem] font-bold text-[var(--erp-muted)]">{title}</div>
       {editing ? (
         <>
           <Textarea value={value} rows={6} onChange={(event) => onChange(event.target.value)} />

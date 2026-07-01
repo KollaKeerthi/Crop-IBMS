@@ -77,7 +77,7 @@ function MetricColumn({
       <Icon className={cn("mb-1 h-5 w-5 shrink-0 opacity-90 sm:h-6 sm:w-6", iconClassName)} />
       <span className="text-sm font-bold leading-tight sm:text-base">{primary}</span>
       <span className="text-xs font-semibold leading-tight opacity-75 sm:text-sm">{secondary}</span>
-      <span className="mt-1 text-[10px] font-bold uppercase tracking-wide opacity-80">{label}</span>
+      <span className="mt-1 text-[10px] font-bold opacity-80">{label}</span>
     </div>
   );
 }
@@ -141,7 +141,7 @@ export function WeatherWidget({
         <button
           type="button"
           onClick={() => refetch()}
-          className="mt-3 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all hover:bg-primary/20"
+          className="mt-3 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold transition-all hover:bg-primary/20"
         >
           Manual Retry
         </button>

@@ -46,9 +46,7 @@ export function SubBlocksList({ blockId, farmId, blockName }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-          Sub-blocks of {blockName}
-        </p>
+        <p className="text-xs font-medium text-muted-foreground">Sub-blocks of {blockName}</p>
         <Button
           size="sm"
           variant="outline"

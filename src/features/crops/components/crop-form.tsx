@@ -388,7 +388,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
                         value={field.value ?? ""}
                         onChange={(e) => field.onChange(e.target.value)}
                         placeholder="#048FC2"
-                        className="pl-10 font-mono uppercase"
+                        className="pl-10 font-mono"
                       />
                     </div>
                   </FormControl>
@@ -504,7 +504,7 @@ export function CropForm({ crop, onSuccess, onCancel }: Props) {
                       value={t.colour}
                       onChange={(e) => updateType(t.id, { colour: e.target.value })}
                       placeholder="Colour"
-                      className="pl-10 font-mono uppercase"
+                      className="pl-10 font-mono"
                     />
                   </div>
                   <Input
