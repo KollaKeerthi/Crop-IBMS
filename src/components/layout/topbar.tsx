@@ -17,12 +17,6 @@ import { cn } from "@/lib/utils";
 type Farm = { id: string; name: string };
 type User = { name: string | null; email: string; image: string | null };
 
-const TABS = [
-  { label: "Overview", href: "/dashboard", active: true },
-  { label: "Yield Data", href: "/dashboard/crop-data" },
-  { label: "Irrigation", href: "/dashboard/crop-plan" },
-];
-
 function getInitials(name: string | null, email: string): string {
   if (name) {
     return name
@@ -67,21 +61,6 @@ export function Topbar({ user, farms }: { user: User; farms: Farm[] }) {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <nav className="hidden h-full items-center gap-4 md:flex">
-          {TABS.map((tab) => (
-            <Link
-              key={tab.label}
-              href={tab.href}
-              className={cn(
-                "flex h-full items-center border-b-2 border-transparent px-1 text-[0.68rem] font-medium text-[var(--erp-muted)]",
-                tab.active && "border-primary text-[var(--erp-ink)]"
-              )}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </nav>
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
@@ -106,15 +85,6 @@ export function Topbar({ user, farms }: { user: User; farms: Farm[] }) {
         >
           <CircleHelp className="size-3.5" />
         </button>
-
-        <div className="ml-2 hidden border-l border-[var(--erp-border)] pl-3 text-right sm:block">
-          <p className="text-[0.68rem] font-bold leading-none text-[var(--erp-ink)]">
-            Harvest Mode
-          </p>
-          <p className="mt-1 text-[0.58rem] font-semibold leading-none text-[var(--brand-secondary)]">
-            Operational Phase 2
-          </p>
-        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger className="ml-1 flex size-8 items-center justify-center">

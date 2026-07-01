@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { ProgramInfoForm } from "./program-info-form";
@@ -68,8 +68,24 @@ type Props = {
   activeTab: string;
 };
 
+const CROP_DATA_TABS = [
+  { value: "program-info", label: "Program Info" },
+  { value: "revenue", label: "Revenue" },
+  { value: "nursery", label: "Nursery" },
+  { value: "planting-data", label: "Planting Data" },
+  { value: "production", label: "Production" },
+  { value: "pollination", label: "Pollination" },
+  { value: "post_harvest", label: "Post Harvest" },
+  { value: "seeds_quality", label: "Seeds Quality" },
+  { value: "sq_breakdown", label: "SQ Breakdown" },
+  { value: "harvest", label: "Harvest" },
+  { value: "performance", label: "Performance Tracking" },
+  { value: "media", label: "Media Attachments" },
+] as const;
+
 export function CropDataDetail({ record, farmId, activeTab }: Props) {
   const router = useRouter();
+  const tabsRef = useRef<HTMLDivElement>(null);
   const postHarvestContext = {
     ...(record.programInfo ?? {}),
     ...(record.sections.production ?? {}),
@@ -89,6 +105,17 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     router.push(`/dashboard/crop-data/${record.id}/${next}`);
   }
 
+  function scrollTabs(direction: "left" | "right") {
+    const element = tabsRef.current;
+    if (!element) return;
+
+    const amount = Math.max(element.clientWidth * 0.75, 240);
+    element.scrollBy({
+      left: direction === "left" ? -amount : amount,
+      behavior: "smooth",
+    });
+  }
+
   const suitableCropCapacity = Array.isArray(record.blockMasterSuitableCrops)
     ? record.blockMasterSuitableCrops.find(
         (item): item is { cropId?: string; rows?: number; plantsPerRow?: number } =>
@@ -100,60 +127,41 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
     : null;
 
   const triggerClassName = cn(
-    "relative shrink-0 px-6 py-3 text-[0.72rem] font-bold text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
+    "relative shrink-0 whitespace-nowrap px-5 py-3 text-[0.72rem] font-bold text-[var(--erp-muted)] transition-colors hover:text-[var(--erp-ink)]",
     "after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:bg-transparent",
     "data-active:text-primary data-active:after:bg-primary"
   );
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={handleChange} className="w-full">
-      <TabsPrimitive.List className="flex w-full overflow-x-auto border-b border-[var(--erp-border)] bg-[var(--erp-canvas)]">
-        <TabsPrimitive.Tab value="program-info" className={triggerClassName}>
-          Program Info
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="revenue" className={triggerClassName}>
-          Revenue
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="nursery" className={triggerClassName}>
-          Nursery
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="planting-data" className={triggerClassName}>
-          Planting Data
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="production" className={triggerClassName}>
-          Production
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="pollination" className={triggerClassName}>
-          Pollination
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="post_harvest" className={triggerClassName}>
-          Post Harvest
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="seeds_quality" className={triggerClassName}>
-          Seeds Quality
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="sq_breakdown" className={triggerClassName}>
-          SQ Breakdown
-        </TabsPrimitive.Tab>
-        <TabsPrimitive.Tab value="harvest" className={triggerClassName}>
-          Harvest
-        </TabsPrimitive.Tab>
-      </TabsPrimitive.List>
+      <div className="mb-4 flex items-center gap-2 border-b border-[var(--erp-border)] bg-[var(--erp-canvas)]">
+        <button
+          type="button"
+          onClick={() => scrollTabs("left")}
+          aria-label="Scroll tabs left"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[var(--erp-border)] bg-white text-[var(--erp-icon)] transition hover:bg-[var(--erp-nav-active)] hover:text-[var(--erp-ink)]"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-[var(--erp-border)] bg-[var(--erp-canvas)] py-2">
-        <span className="mr-1 text-[0.62rem] font-bold text-[var(--erp-muted)]">Operations</span>
-        <OperationLink
-          href={`/dashboard/crop-data/${record.id}/performance`}
-          active={activeTab === "performance"}
+        <div ref={tabsRef} className="scrollbar-none min-w-0 flex-1 overflow-x-auto">
+          <TabsPrimitive.List className="flex min-w-max whitespace-nowrap">
+            {CROP_DATA_TABS.map((tab) => (
+              <TabsPrimitive.Tab key={tab.value} value={tab.value} className={triggerClassName}>
+                {tab.label}
+              </TabsPrimitive.Tab>
+            ))}
+          </TabsPrimitive.List>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => scrollTabs("right")}
+          aria-label="Scroll tabs right"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[var(--erp-border)] bg-white text-[var(--erp-icon)] transition hover:bg-[var(--erp-nav-active)] hover:text-[var(--erp-ink)]"
         >
-          Performance Tracking
-        </OperationLink>
-        <OperationLink
-          href={`/dashboard/crop-data/${record.id}/media`}
-          active={activeTab === "media"}
-        >
-          Media Attachments
-        </OperationLink>
+          <ChevronRight className="size-4" />
+        </button>
       </div>
 
       {/* Program Info */}
@@ -252,7 +260,6 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           initial={record.sections.sq_breakdown ?? null}
         />
       </TabsPrimitive.Panel>
-
       {/* Performance Per Person (multi-row) */}
       <TabsPrimitive.Panel value="performance" className="mt-0">
         <PerformanceTable
@@ -273,33 +280,10 @@ export function CropDataDetail({ record, farmId, activeTab }: Props) {
           seedsQuality={record.sections.seeds_quality ?? null}
         />
       </TabsPrimitive.Panel>
-
       {/* Media Attachment */}
       <TabsPrimitive.Panel value="media" className="mt-0">
         <MediaAttachments cropDataId={record.id} farmId={farmId} media={record.media ?? []} />
       </TabsPrimitive.Panel>
     </TabsPrimitive.Root>
-  );
-}
-
-function OperationLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "border border-[var(--erp-border)] bg-white px-3 py-1.5 text-[0.68rem] font-semibold text-[var(--erp-ink)]",
-        active && "border-primary bg-[var(--erp-green-muted)] text-primary"
-      )}
-    >
-      {children}
-    </Link>
   );
 }

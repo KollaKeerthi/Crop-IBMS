@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BookOpen,
   CalendarRange,
   CheckSquare,
   Database,
-  Grid2X2,
   LayoutDashboard,
   Map,
   Settings,
@@ -28,12 +26,10 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
   { label: "Crop Masters", href: "/dashboard/crop-information", icon: Sprout },
-  { label: "Block Master", href: "/dashboard/crop-information", icon: Grid2X2 },
   { label: "Crop Planning", href: "/dashboard/crop-plan", icon: CalendarRange },
   { label: "Crop Programs", href: "/dashboard/crop-data", icon: Database },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
   { label: "Map", href: "/dashboard/map", icon: Map },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar({
@@ -51,17 +47,9 @@ export function Sidebar({
     <aside className="h-screen w-44 shrink-0 border-r border-[var(--erp-border)] bg-[var(--erp-sidebar)]">
       <div className="flex h-full flex-col">
         <div className="border-b border-[var(--erp-border)] px-3 py-4">
-          <div className="flex items-start gap-2">
-            <BookOpen className="mt-0.5 size-3.5 shrink-0 text-primary" />
-            <div className="min-w-0">
-              <p className="truncate bg-gradient-to-r from-[var(--brand-secondary)] via-[#087c8f] to-primary bg-clip-text text-sm font-extrabold leading-tight text-transparent">
-                iBMS-Crop
-              </p>
-              <p className="mt-1 truncate text-[0.7rem] leading-none text-[var(--erp-muted)]">
-                Agricultural Ops
-              </p>
-            </div>
-          </div>
+          <p className="truncate bg-gradient-to-r from-[var(--brand-secondary)] via-[#087c8f] to-primary bg-clip-text text-sm font-extrabold leading-tight text-transparent">
+            iBMS-Crop
+          </p>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
@@ -85,6 +73,20 @@ export function Sidebar({
             );
           })}
         </nav>
+
+        <div className="mt-auto border-t border-[var(--erp-border)] px-2 py-3">
+          <Link
+            href="/dashboard/settings"
+            className={cn(
+              "flex h-8 items-center gap-2 border border-transparent px-2 text-[0.72rem] font-medium leading-none text-[var(--erp-ink)] transition hover:border-[var(--erp-border)] hover:bg-[var(--erp-nav-active)]",
+              pathname.startsWith("/dashboard/settings") &&
+                "border-[var(--erp-border)] bg-[var(--erp-nav-active)] font-semibold text-primary"
+            )}
+          >
+            <Settings className="size-3.5 shrink-0" />
+            <span className="truncate">Settings</span>
+          </Link>
+        </div>
       </div>
     </aside>
   );
