@@ -445,6 +445,10 @@ export function CropPlanPageClient() {
         <div
           className={cn(
             "relative flex shrink-0 flex-col border-r border-border bg-card overflow-hidden",
+            isEditing &&
+              (selectedItem?.kind === "contract"
+                ? "border-l-4 border-l-violet-500"
+                : "border-l-4 border-l-emerald-500"),
             panelCollapsed && "hidden"
           )}
           style={{ width: panelWidth }}

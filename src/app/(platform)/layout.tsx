@@ -41,13 +41,11 @@ export default async function PlatformLayout({ children }: { children: React.Rea
   return (
     <FarmProvider defaultFarmId={selectedFarmId}>
       <SidebarProvider>
-        <div className="min-h-screen bg-transparent p-2 sm:p-3">
-          <div className="app-frame flex h-[calc(100vh-1rem)] overflow-hidden rounded-[2.5rem] sm:h-[calc(100vh-1.5rem)]">
-            <Sidebar farms={userFarms} user={sessionUser} isOwner={isOwner} />
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <Topbar user={sessionUser} />
-              <main className="flex-1 overflow-y-auto bg-transparent pb-4">{children}</main>
-            </div>
+        <div className="flex h-screen overflow-hidden bg-[var(--erp-canvas)] text-[var(--erp-ink)]">
+          <Sidebar farms={userFarms} user={sessionUser} isOwner={isOwner} />
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <Topbar user={sessionUser} farms={userFarms} />
+            <main className="flex-1 overflow-y-auto bg-[var(--erp-canvas)]">{children}</main>
           </div>
         </div>
       </SidebarProvider>

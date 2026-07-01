@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, Bell, ChevronDown, User, LogOut, Home, CircleHelp } from "lucide-react";
+import { Bell, ChevronDown, CircleHelp, LogOut, MapPin, Search, User } from "lucide-react";
 import Link from "next/link";
+import { useFarm } from "@/lib/farm-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,10 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOutUser } from "@/features/auth/actions";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
+type Farm = { id: string; name: string };
 type User = { name: string | null; email: string; image: string | null };
+
+const TABS = [
+  { label: "Overview", href: "/dashboard", active: true },
+  { label: "Yield Data", href: "/dashboard/crop-data" },
+  { label: "Irrigation", href: "/dashboard/crop-plan" },
+];
 
 function getInitials(name: string | null, email: string): string {
   if (name) {
@@ -28,77 +35,118 @@ function getInitials(name: string | null, email: string): string {
   return email[0]?.toUpperCase() ?? "U";
 }
 
-export function Topbar({ user }: { user: User }) {
+export function Topbar({ user, farms }: { user: User; farms: Farm[] }) {
+  const { selectedFarmId, setSelectedFarmId } = useFarm();
+  const selectedFarm = farms.find((farm) => farm.id === selectedFarmId) ?? farms[0] ?? null;
+  const farmName = selectedFarm?.name ?? "Green Valley Farm";
+
   return (
-    <header className="relative z-20 px-4 pb-2 pt-4 sm:px-6 sm:pt-6">
-      <div className="app-panel-strong flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0">
-          <p className="app-kicker">Workspace</p>
-          <h1 className="mt-1 text-xl font-semibold text-foreground sm:text-2xl">
-            Application Shell
-          </h1>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-3 lg:max-w-3xl lg:flex-row lg:items-center lg:justify-end">
-          <div className="relative min-w-0 flex-1 lg:max-w-xl">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search for crops, farms, tasks, or records"
-              className="pl-11"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" aria-label="Home">
-              <Home className="size-4" />
-            </Button>
-            <Button variant="outline" size="icon" aria-label="Support">
-              <CircleHelp className="size-4" />
-            </Button>
-            <Button variant="outline" size="icon" aria-label="Notifications">
-              <Bell className="size-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div className="mt-3 flex justify-end px-1">
+    <header className="flex h-12 shrink-0 items-center border-b border-[var(--erp-border)] bg-[var(--erp-topbar)] px-3">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <DropdownMenu>
-          <DropdownMenuTrigger className="app-pill flex items-center gap-3 px-2 py-2 transition hover:bg-card">
-            <Avatar className="h-9 w-9 ring-1 ring-border/60 shadow-sm">
+          <DropdownMenuTrigger className="flex h-8 min-w-40 items-center gap-2 border border-[var(--erp-border-strong)] bg-[var(--erp-farm-button)] px-2 text-[0.72rem] font-semibold text-[var(--erp-ink)] transition hover:bg-[var(--erp-nav-active)]">
+            <MapPin className="size-3.5 text-primary" />
+            <span className="max-w-32 truncate">{farmName}</span>
+            <ChevronDown className="ml-auto size-3 text-[var(--erp-muted)]" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className="w-56 rounded-sm border-[var(--erp-border)] p-1"
+          >
+            {farms.map((farm) => (
+              <DropdownMenuItem
+                key={farm.id}
+                onClick={() => setSelectedFarmId(farm.id)}
+                className={cn(
+                  "cursor-pointer rounded-sm text-xs",
+                  farm.id === selectedFarmId && "bg-[var(--erp-nav-active)] font-semibold"
+                )}
+              >
+                {farm.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <nav className="hidden h-full items-center gap-4 md:flex">
+          {TABS.map((tab) => (
+            <Link
+              key={tab.label}
+              href={tab.href}
+              className={cn(
+                "flex h-full items-center border-b-2 border-transparent px-1 text-[0.68rem] font-medium text-[var(--erp-muted)]",
+                tab.active && "border-primary text-[var(--erp-ink)]"
+              )}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          aria-label="Search"
+          className="flex size-7 items-center justify-center text-[var(--erp-icon)] transition hover:bg-[var(--erp-nav-active)] hover:text-[var(--erp-ink)]"
+        >
+          <Search className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="flex size-7 items-center justify-center text-[var(--erp-icon)] transition hover:bg-[var(--erp-nav-active)] hover:text-[var(--erp-ink)]"
+        >
+          <Bell className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Help"
+          className="flex size-7 items-center justify-center text-[var(--erp-icon)] transition hover:bg-[var(--erp-nav-active)] hover:text-[var(--erp-ink)]"
+        >
+          <CircleHelp className="size-3.5" />
+        </button>
+
+        <div className="ml-2 hidden border-l border-[var(--erp-border)] pl-3 text-right sm:block">
+          <p className="text-[0.68rem] font-bold leading-none text-[var(--erp-ink)]">
+            Harvest Mode
+          </p>
+          <p className="mt-1 text-[0.58rem] font-semibold leading-none text-[var(--brand-secondary)]">
+            Operational Phase 2
+          </p>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="ml-1 flex size-8 items-center justify-center">
+            <Avatar className="size-7">
               {user.image && <AvatarImage src={user.image} alt={user.name ?? user.email} />}
-              <AvatarFallback className="bg-secondary text-xs font-semibold text-secondary-foreground">
+              <AvatarFallback className="bg-primary text-[0.65rem] font-semibold text-primary-foreground">
                 {getInitials(user.name, user.email)}
               </AvatarFallback>
             </Avatar>
-            <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-foreground">{user.name ?? "User"}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <ChevronDown className="size-4 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="mt-2 w-60 rounded-[1.5rem] border border-border bg-popover/95 p-2 shadow-md backdrop-blur-md"
+            className="mt-1 w-56 rounded-sm border border-[var(--erp-border)] p-1"
           >
-            <div className="px-3 py-2">
-              {user.name && <p className="text-sm font-semibold text-foreground">{user.name}</p>}
-              <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">
-                {user.email}
-              </p>
+            <div className="px-2 py-2">
+              {user.name && (
+                <p className="text-xs font-semibold text-[var(--erp-ink)]">{user.name}</p>
+              )}
+              <p className="mt-1 truncate text-[0.68rem] text-[var(--erp-muted)]">{user.email}</p>
             </div>
             <DropdownMenuSeparator />
             <Link href="/dashboard/settings" className="w-full">
-              <DropdownMenuItem className="cursor-pointer rounded-2xl py-2 text-sm">
-                <User className="mr-2 h-4 w-4 text-muted-foreground" />
+              <DropdownMenuItem className="cursor-pointer rounded-sm py-2 text-xs">
+                <User className="mr-2 size-3.5 text-[var(--erp-muted)]" />
                 View Profile
               </DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
             <form action={signOutUser} className="w-full">
               <button type="submit" className="w-full">
-                <DropdownMenuItem className="cursor-pointer rounded-2xl py-2 text-sm text-destructive hover:text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4 text-destructive" />
+                <DropdownMenuItem className="cursor-pointer rounded-sm py-2 text-xs text-destructive hover:text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 size-3.5 text-destructive" />
                   Sign Out
                 </DropdownMenuItem>
               </button>

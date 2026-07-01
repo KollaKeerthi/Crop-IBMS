@@ -200,7 +200,10 @@ export function buildGanttModel(
     const isEmpty = e.kind === "reservation" && (item as Reservation).type === "empty";
     const startWeek = cycleStartWeek(item);
     const endWeek = Math.max(cycleEndWeek(item), startWeek);
-    const label = barLabel(item, e.kind, isEmpty, shortNameById);
+    const label =
+      view === "crop"
+        ? (item.blockName ?? (item.blockId ? "Block" : "Unallocated"))
+        : barLabel(item, e.kind, isEmpty, shortNameById);
     const cropColor = item.cropId ? colorById.get(item.cropId) : undefined;
 
     // Lifecycle phase boundaries as fractions of the bar width:

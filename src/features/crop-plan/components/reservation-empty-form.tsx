@@ -213,7 +213,7 @@ export function ReservationEmptyForm({ farmId, year, reservation, onSaved, onCan
             <SelectTrigger className="h-9 text-sm">
               <SelectValue>
                 {(v) => {
-                  if (!v || v === NONE) return "— Unallocated —";
+                  if (!v || v === NONE) return "Unallocated";
                   const b = blocks.find((bl) => bl.id === v);
                   return b
                     ? `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`
@@ -222,8 +222,8 @@ export function ReservationEmptyForm({ farmId, year, reservation, onSaved, onCan
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE} label="— Unallocated —">
-                — Unallocated —
+              <SelectItem value={NONE} label="Unallocated">
+                Unallocated
               </SelectItem>
               {blocks.map((b) => {
                 const blockLabel = `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`;

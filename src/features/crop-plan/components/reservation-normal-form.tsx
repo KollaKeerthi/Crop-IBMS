@@ -133,14 +133,15 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
   // Auto-detect season from pollinationYear + pollinationStartWeek
   useEffect(() => {
     if (!watchPollinationWeek || !watchPollinationYear || !seasons.length) return;
-    const match = seasons.find(
-      (s) =>
-        s.year === watchPollinationYear &&
-        s.startWeek != null &&
-        s.endWeek != null &&
-        s.startWeek <= watchPollinationWeek &&
-        s.endWeek >= watchPollinationWeek
-    );
+    const absoluteWeek = watchPollinationYear * 52 + watchPollinationWeek;
+    const match = seasons.find((s) => {
+      if (s.startWeek == null || s.endWeek == null) return false;
+      const sameYear = s.year === watchPollinationYear || s.year === 0;
+      const localWeekMatch =
+        sameYear && s.startWeek <= watchPollinationWeek && s.endWeek >= watchPollinationWeek;
+      const absoluteWeekMatch = s.startWeek <= absoluteWeek && s.endWeek >= absoluteWeek;
+      return localWeekMatch || absoluteWeekMatch;
+    });
     if (match) form.setValue("seasonId", match.id);
   }, [watchPollinationWeek, watchPollinationYear, seasons, form]);
 
@@ -499,10 +500,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
 
       {/* ── Block allocation ── */}
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium">
-          Block{" "}
-          <span className="text-muted-foreground font-normal">(leave empty → Unallocated)</span>
-        </Label>
+        <Label className="text-xs font-medium">Block</Label>
         <Select
           value={form.watch("blockId") ?? NONE}
           onValueChange={(v) => form.setValue("blockId", v === NONE ? null : v)}
@@ -510,7 +508,7 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
           <SelectTrigger className="h-9 text-sm">
             <SelectValue>
               {(v: string) => {
-                if (!v || v === NONE) return "— Unallocated —";
+                if (!v || v === NONE) return "Unallocated";
                 const b = blocks.find((bl) => bl.id === v);
                 return b
                   ? `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`
@@ -519,8 +517,8 @@ export function ReservationNormalForm({ farmId, year, reservation, onSaved, onCa
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NONE} label="— Unallocated —">
-              — Unallocated —
+            <SelectItem value={NONE} label="Unallocated">
+              Unallocated
             </SelectItem>
             {planningBlocks.map((b) => {
               const blockLabel = `${b.blockName}${b.subBlockName ? ` · ${b.subBlockName}` : ""}`;

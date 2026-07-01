@@ -25,16 +25,16 @@
   --wx-background-hover: #f1f5f9;
   --wx-color-font: #1e293b;
   --wx-color-font-alt: #64748b;
-  --wx-border-color: #f1f5f9;
-  --wx-border-light: rgba(226, 232, 240, 0.42);
-  --wx-border-medium: rgba(226, 232, 240, 0.62);
+  --wx-border-color: rgba(226, 232, 240, 0.28);
+  --wx-border-light: rgba(226, 232, 240, 0.24);
+  --wx-border-medium: rgba(226, 232, 240, 0.44);
 
   /* Accent used by selection / links */
   --wx-color-primary: #0f766e;
   --wx-color-primary-selected: #ccfbf1;
 
   /* Gantt specifics */
-  --wx-gantt-border-color: rgba(226, 232, 240, 0.42);
+  --wx-gantt-border-color: rgba(226, 232, 240, 0.24);
   --wx-gantt-bar-border-radius: 7px;
   --wx-gantt-bar-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
   --wx-gantt-link-color: #94a3b8;
@@ -85,13 +85,22 @@
   font-size: 9px;
   font-weight: 600;
   color: var(--wx-color-font-alt);
-  border-right: 1px solid var(--wx-border-light);
+  border-right: 1px solid rgba(226, 232, 240, 0.22);
   /* Clip + center so narrow week labels ("W52") never bleed into neighbours. */
   overflow: hidden;
   text-overflow: clip;
   white-space: nowrap;
   text-align: center;
   padding: 0 1px;
+}
+.cg-wrap .wx-scale .wx-row:nth-child(1) .wx-cell {
+  color: #2563eb;
+  line-height: 1.1;
+}
+.cg-wrap .wx-scale .wx-row:nth-child(2) .wx-cell,
+.cg-wrap .wx-scale .wx-row:nth-child(3) .wx-cell {
+  color: #dc2626;
+  line-height: 1.1;
 }
 
 /* ── Chart rows / grid lines ──────────────────────────────────────────── */

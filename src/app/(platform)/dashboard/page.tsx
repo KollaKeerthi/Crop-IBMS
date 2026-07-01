@@ -3,186 +3,93 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
-  CalendarDays,
-  CheckCircle2,
-  ClipboardCheck,
+  Cloud,
+  CloudRain,
   CloudSun,
-  Database,
-  Download,
-  FileText,
-  FileWarning,
-  History,
-  MapPin,
-  Plus,
+  Droplets,
+  Filter,
+  Leaf,
   RefreshCcw,
   Sprout,
+  Sun,
   TrendingUp,
+  Wind,
+  Zap,
 } from "lucide-react";
 import { auth } from "@/features/auth";
-import { db } from "@/db";
-import { farms } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { resolveSelectedFarmId } from "@/lib/selected-farm";
-import { PageShell } from "@/components/layout/page-shell";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const summaryCards = [
-  {
-    label: "Active Programs",
-    value: "24",
-    meta: "+2 this week",
-    icon: ClipboardCheck,
-    tone: "primary",
-  },
-  {
-    label: "Reservations",
-    value: "112",
-    meta: "Autumn cycle",
-    icon: Sprout,
-    tone: "blue",
-  },
-  {
-    label: "Active Contracts",
-    value: "09",
-    meta: "Verified",
-    icon: FileText,
-    tone: "neutral",
-  },
-  {
-    label: "Pending Tasks",
-    value: "16",
-    meta: "Due today",
-    icon: AlertTriangle,
-    tone: "orange",
-  },
+const outlook = [
+  { day: "TUE", temp: "26", icon: Sun, note: "2%" },
+  { day: "WED", temp: "22", icon: CloudRain, note: "24%" },
+  { day: "THU", temp: "19", icon: Cloud, note: "10%" },
+  { day: "FRI", temp: "23", icon: CloudSun, note: "5%" },
+  { day: "SAT", temp: "25", icon: Sun, note: "0%" },
+  { day: "SUN", temp: "21", icon: CloudRain, note: "18%" },
+  { day: "MON", temp: "24", icon: CloudSun, note: "6%" },
 ];
 
-const events = [
+const programs = [
   {
-    date: "Mon 16 Oct",
-    event: "Winter Wheat Seeding - S1",
-    location: "North Cluster B",
-    status: "Active",
-    tone: "primary",
+    name: "Organic Romaine",
+    location: "Block A1-A4",
+    badge: "SOWN",
+    progress: "62%",
+    eta: "Sep 12",
+    icon: Leaf,
+    tone: "green",
   },
   {
-    date: "Tue 17 Oct",
-    event: "Soil Analysis: Nitrogen Check",
-    location: "South Sector 4",
-    status: "Scheduled",
-    tone: "blue",
-  },
-  {
-    date: "Wed 18 Oct",
-    event: "Irrigation Maintenance - Pump B",
-    location: "Regional Hub",
-    status: "Urgent",
-    tone: "orange",
-  },
-  {
-    date: "Fri 20 Oct",
-    event: "Canola Contract Expiration",
-    location: "Headquarters",
-    status: "Alert",
-    tone: "error",
-  },
-];
-
-const alerts = [
-  {
-    title: "Resource Conflict: Unit 04",
-    body: "Seeder S1 is assigned to two parallel tasks in North Sector.",
-    action: "Resolve conflict",
-    icon: FileWarning,
-    tone: "error",
-  },
-  {
-    title: "Overdue Task",
-    body: "Maintenance check for Tractor #12 was due 48h ago.",
-    action: "Review task queue",
-    icon: AlertTriangle,
-    tone: "orange",
-  },
-  {
-    title: "Missing Data Points",
-    body: "Field moisture sensors are reporting incomplete telemetry.",
-    action: "Inspect telemetry",
-    icon: Database,
+    name: "Precision Wheat",
+    location: "Sector 8 West",
+    badge: "IRRIGATING",
+    progress: "38%",
+    eta: "Oct 05",
+    icon: Droplets,
     tone: "blue",
   },
 ];
 
-const activities = [
+const tasks = [
   {
-    actor: "M. Schmidt",
-    action: 'completed task "Silo 2 Ventilation Check".',
-    time: "14:22",
-    icon: CheckCircle2,
-    tone: "primary",
+    task: "Soil pH Sampling",
+    block: "B-09",
+    deadline: "Today, 16:00",
+    status: "PENDING",
+    priority: "High",
+    priorityTone: "text-destructive",
+    statusTone: "bg-[var(--erp-warning-muted)] text-[var(--erp-warning)]",
   },
   {
-    actor: "System",
-    action: "updated Crop Plan for 2024 Barley.",
-    time: "11:05",
-    icon: RefreshCcw,
-    tone: "blue",
+    task: "Calibrate Sprayer System",
+    block: "Main Shop",
+    deadline: "Tomorrow",
+    status: "SCHEDULED",
+    priority: "Medium",
+    priorityTone: "text-[var(--erp-ink)]",
+    statusTone: "bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]",
   },
   {
-    actor: "Lars V.",
-    action: 'added new contractor "AgroServ GmbH".',
-    time: "09:45",
-    icon: FileText,
-    tone: "neutral",
-  },
-  {
-    actor: "Weather Alert",
-    action: "predicted hail in North Region.",
-    time: "07:30",
-    icon: CloudSun,
-    tone: "orange",
+    task: "Irrigation Log Missing",
+    block: "C-02",
+    deadline: "Overdue 2h",
+    status: "ACTION REQ",
+    priority: "Urgent",
+    priorityTone: "text-destructive",
+    statusTone: "bg-[var(--erp-danger-muted)] text-destructive",
+    alert: true,
   },
 ];
 
-function toneClasses(tone: string) {
-  switch (tone) {
-    case "blue":
-      return {
-        icon: "text-[var(--brand-secondary)]",
-        badge: "bg-[var(--brand-secondary)] text-white",
-        border: "border-[var(--brand-secondary)]",
-        dot: "bg-[var(--brand-secondary)]",
-      };
-    case "orange":
-      return {
-        icon: "text-[var(--brand-tertiary)]",
-        badge: "bg-[var(--brand-tertiary)] text-white",
-        border: "border-[var(--brand-tertiary)]",
-        dot: "bg-[var(--brand-tertiary)]",
-      };
-    case "error":
-      return {
-        icon: "text-destructive",
-        badge: "bg-destructive text-white",
-        border: "border-destructive",
-        dot: "bg-destructive",
-      };
-    case "neutral":
-      return {
-        icon: "text-[var(--brand-neutral)]",
-        badge: "bg-[var(--brand-neutral)] text-white",
-        border: "border-[var(--brand-neutral)]",
-        dot: "bg-[var(--brand-neutral)]",
-      };
-    default:
-      return {
-        icon: "text-primary",
-        badge: "bg-primary text-primary-foreground",
-        border: "border-primary",
-        dot: "bg-primary",
-      };
-  }
-}
+const forecastBars = [
+  { label: "W1", value: "45%" },
+  { label: "W2", value: "63%" },
+  { label: "W3", value: "78%" },
+  { label: "Current", value: "86%", active: true },
+  { label: "W5", value: "92%" },
+  { label: "W6", value: "58%" },
+];
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -190,290 +97,365 @@ export default async function DashboardPage() {
 
   const { selectedFarmId } = await resolveSelectedFarmId(session.user.id);
 
-  let farm: typeof farms.$inferSelect | null = null;
-
-  if (selectedFarmId) {
-    const farmRows = await db.select().from(farms).where(eq(farms.id, selectedFarmId)).limit(1);
-    farm = farmRows[0] ?? null;
-  }
-
   if (!selectedFarmId) {
     return (
-      <PageShell maxWidth="full">
-        <div className="app-panel-strong flex min-h-[24rem] flex-col items-center justify-center px-6 py-12 text-center">
-          <p className="app-kicker">Dashboard</p>
-          <h2 className="mt-3 text-2xl font-semibold text-foreground">No farm selected</h2>
-          <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            Select or create a farm before using the shared workspace template.
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="border border-[var(--erp-border)] bg-white px-8 py-7 text-center">
+          <p className="erp-kicker">Dashboard</p>
+          <h2 className="mt-2 text-xl font-semibold text-[var(--erp-ink)]">No farm selected</h2>
+          <p className="mt-2 max-w-md text-xs leading-5 text-[var(--erp-muted)]">
+            Select or create a farm before using the operational dashboard.
           </p>
-          <div className="mt-6">
-            <Link href="/dashboard/farms">
-              <Button>Go to Farms</Button>
-            </Link>
-          </div>
+          <Link
+            href="/dashboard/farms"
+            className="mt-5 inline-flex h-8 items-center border border-primary bg-primary px-3 text-xs font-semibold text-primary-foreground"
+          >
+            Go to Farms
+          </Link>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
   return (
-    <PageShell maxWidth="full">
-      <section className="app-panel-strong grid gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.8fr)]">
-        <div>
-          <p className="app-kicker">Core Screen Template</p>
-          <h2 className="mt-2 text-3xl font-semibold text-foreground">Operational Dashboard</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            This page now uses the new shared shell, palette, typography, and panel language that
-            future application screens can inherit.
-          </p>
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/dashboard/crop-data">
-              <Button className="gap-2">
-                <Plus className="size-4" />
-                New Resource
-              </Button>
-            </Link>
-            <Button variant="outline" className="gap-2">
-              <Download className="size-4" />
-              Export Report
-            </Button>
-          </div>
+    <div className="min-h-full p-3">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,7fr)_minmax(19rem,3fr)]">
+        <div className="space-y-3">
+          <CurrentConditions />
+          <ActivePrograms />
+          <RecentTasks />
         </div>
 
-        <div className="app-panel grid gap-4 px-5 py-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="app-kicker">Selected Farm</p>
-              <p className="mt-2 text-lg font-semibold text-foreground">
-                {farm?.name ?? "Unknown farm"}
-              </p>
-            </div>
-            <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-              Optimal
-            </span>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <MetricStrip label="Cycle" value="Week 42" />
-            <MetricStrip label="Region" value="North Hub" />
-            <MetricStrip label="Health" value="Stable" />
-          </div>
+        <div className="space-y-3">
+          <BlockUsage />
+          <HarvestForecast />
+          <FieldStatusMap />
         </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => {
-          const tone = toneClasses(card.tone);
-          const Icon = card.icon;
-
-          return (
-            <article key={card.label} className="app-grid-card px-5 py-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="app-kicker">{card.label}</p>
-                  <p className="mt-3 text-3xl font-semibold text-foreground">{card.value}</p>
-                </div>
-                <span
-                  className={cn(
-                    "flex size-11 items-center justify-center rounded-3xl border bg-card",
-                    tone.border
-                  )}
-                >
-                  <Icon className={cn("size-5", tone.icon)} />
-                </span>
-              </div>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">{card.meta}</p>
-                <TrendingUp className={cn("size-4", tone.icon)} />
-              </div>
-            </article>
-          );
-        })}
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,0.9fr)]">
-        <article className="app-panel px-5 py-5">
-          <div className="flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="app-kicker">Timeline</p>
-              <h3 className="app-section-title mt-1">Upcoming Crop Plan Events</h3>
-            </div>
-            <div className="app-pill inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
-              <CalendarDays className="size-4 text-primary" />
-              Oct 2026
-            </div>
-          </div>
-
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-[42rem] w-full border-separate border-spacing-y-2 text-sm">
-              <thead>
-                <tr className="text-left">
-                  <th className="app-kicker px-3 py-2 font-semibold">Date</th>
-                  <th className="app-kicker px-3 py-2 font-semibold">Event</th>
-                  <th className="app-kicker px-3 py-2 font-semibold">Location</th>
-                  <th className="app-kicker px-3 py-2 font-semibold">Status</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((event) => {
-                  const tone = toneClasses(event.tone);
-
-                  return (
-                    <tr key={event.event} className="app-grid-card">
-                      <td className="rounded-l-3xl px-3 py-3 text-muted-foreground">
-                        {event.date}
-                      </td>
-                      <td className="px-3 py-3 font-semibold text-foreground">{event.event}</td>
-                      <td className="px-3 py-3 text-muted-foreground">{event.location}</td>
-                      <td className="px-3 py-3">
-                        <span
-                          className={cn("rounded-full px-3 py-1 text-xs font-semibold", tone.badge)}
-                        >
-                          {event.status}
-                        </span>
-                      </td>
-                      <td className="rounded-r-3xl px-3 py-3 text-right">
-                        <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article className="app-panel px-5 py-5">
-          <div className="flex items-center justify-between border-b border-border/70 pb-4">
-            <div>
-              <p className="app-kicker">Live Feed</p>
-              <h3 className="app-section-title mt-1">Recent Activity</h3>
-            </div>
-            <History className="size-4 text-muted-foreground" />
-          </div>
-
-          <div className="mt-5 space-y-5">
-            {activities.map((activity, index) => {
-              const tone = toneClasses(activity.tone);
-              const Icon = activity.icon;
-
-              return (
-                <div key={`${activity.actor}-${activity.time}`} className="relative flex gap-3">
-                  {index < activities.length - 1 && (
-                    <span className="absolute left-[0.9rem] top-10 h-10 w-px bg-border" />
-                  )}
-                  <span
-                    className={cn(
-                      "relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-white",
-                      tone.dot
-                    )}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      <span className="font-semibold text-foreground">{activity.actor}</span>{" "}
-                      {activity.action}
-                    </p>
-                    <p className="mt-1 text-xs font-medium text-muted-foreground">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </article>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <article className="app-panel px-5 py-5">
-          <div className="flex items-center justify-between border-b border-border/70 pb-4">
-            <div>
-              <p className="app-kicker">Attention</p>
-              <h3 className="app-section-title mt-1">Operational Alerts</h3>
-            </div>
-            <AlertTriangle className="size-4 text-destructive" />
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {alerts.map((alert) => {
-              const tone = toneClasses(alert.tone);
-              const Icon = alert.icon;
-
-              return (
-                <div
-                  key={alert.title}
-                  className={cn(
-                    "rounded-[1.75rem] border-l-4 bg-[var(--app-panel-strong)] px-4 py-4",
-                    tone.border
-                  )}
-                >
-                  <div className="flex gap-3">
-                    <Icon className={cn("mt-0.5 size-5 shrink-0", tone.icon)} />
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{alert.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{alert.body}</p>
-                      <button className={cn("mt-3 text-sm font-semibold", tone.icon)}>
-                        {alert.action}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </article>
-
-        <article className="app-panel px-5 py-5">
-          <div className="flex items-center justify-between border-b border-border/70 pb-4">
-            <div>
-              <p className="app-kicker">Spatial Context</p>
-              <h3 className="app-section-title mt-1">Farm Geospatial Overview</h3>
-            </div>
-            <MapPin className="size-4 text-primary" />
-          </div>
-
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
-            The new template supports richer data panels without losing the calm, tiled structure
-            from your reference board.
-          </p>
-
-          <div className="mt-4 rounded-[1.75rem] border border-border bg-[var(--app-panel-muted)] p-3">
-            <div className="relative h-56 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(135deg,var(--app-panel-strong)_0%,var(--app-panel-strong)_30%,var(--accent)_30%,var(--accent)_58%,var(--secondary)_58%,var(--secondary)_100%)]">
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.45)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.45)_1px,transparent_1px)] bg-[size:2.75rem_2.75rem]" />
-              <MapNode className="left-[18%] top-[24%] bg-primary" />
-              <MapNode className="left-[52%] top-[50%] bg-[var(--brand-secondary)]" />
-              <MapNode className="left-[76%] top-[34%] bg-[var(--brand-tertiary)]" />
-              <div className="app-pill absolute bottom-3 right-3 px-3 py-2 text-xs font-semibold text-muted-foreground">
-                52.52 N / 13.40 E
-              </div>
-            </div>
-          </div>
-        </article>
-      </section>
-    </PageShell>
-  );
-}
-
-function MetricStrip({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1.5rem] border border-border bg-[var(--app-panel-strong)] px-4 py-3">
-      <p className="app-kicker">{label}</p>
-      <p className="mt-2 text-base font-semibold text-foreground">{value}</p>
+      </div>
     </div>
   );
 }
 
-function MapNode({ className }: { className: string }) {
+function CurrentConditions() {
   return (
-    <span
-      className={cn(
-        "absolute size-4 rounded-full border-2 border-white shadow-sm ring-4 ring-white/50",
-        className
-      )}
-    />
+    <section className="erp-card relative min-h-44 overflow-hidden p-4">
+      <CloudSun className="absolute right-7 top-6 size-28 text-[var(--erp-border)] opacity-70" />
+      <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,1.15fr)]">
+        <div>
+          <p className="erp-kicker">Current Conditions</p>
+          <div className="mt-2 flex items-end gap-3">
+            <p className="text-5xl font-medium leading-none text-[var(--erp-ink)]">24°C</p>
+            <p className="pb-1 text-sm font-bold text-primary">Partly Cloudy</p>
+          </div>
+          <div className="mt-5 grid max-w-xs grid-cols-2 gap-4 text-[0.68rem] text-[var(--erp-ink)]">
+            <div className="flex items-center gap-2">
+              <Droplets className="size-4 text-[var(--brand-secondary)]" />
+              <div>
+                <p className="font-semibold">Humidity:</p>
+                <p className="text-[var(--erp-muted)]">64%</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Wind className="size-4 text-[var(--brand-secondary)]" />
+              <div>
+                <p className="font-semibold">Wind:</p>
+                <p className="text-[var(--erp-muted)]">12 km/h NW</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-l border-[var(--erp-border)] pl-5">
+          <p className="mb-3 text-[0.7rem] font-semibold text-[var(--erp-ink)]">7-Day Outlook</p>
+          <div className="grid grid-cols-7 gap-1.5">
+            {outlook.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.day} className="min-w-0 text-center">
+                  <p className="text-[0.55rem] font-semibold text-[var(--erp-muted)]">{item.day}</p>
+                  <p className="mt-1 text-[0.65rem] font-semibold text-[var(--erp-ink)]">
+                    {item.temp}°
+                  </p>
+                  <Icon className="mx-auto mt-1 size-4 text-[var(--brand-secondary)]" />
+                  <p className="mt-1 text-[0.55rem] text-[var(--erp-muted)]">{item.note}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlockUsage() {
+  return (
+    <section className="erp-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-bold text-[var(--erp-ink)]">Block Usage</h2>
+          <p className="mt-1 text-[0.68rem] font-medium text-[var(--erp-muted)]">Greenhouse A-12</p>
+        </div>
+        <AlertTriangle className="size-5 text-destructive" />
+      </div>
+
+      <div className="mt-4 flex items-center justify-between text-[0.68rem] font-semibold">
+        <span>Sector 4 North</span>
+        <span>78%</span>
+      </div>
+      <div className="mt-2 h-2 border border-[var(--erp-border)] bg-[var(--erp-track)]">
+        <div className="h-full w-[78%] bg-primary" />
+      </div>
+      <button
+        type="button"
+        className="mt-4 flex h-9 w-full items-center justify-center gap-2 border border-primary bg-white text-[0.7rem] font-semibold text-primary"
+      >
+        Adjust Allocations
+        <ArrowRight className="size-3.5" />
+      </button>
+    </section>
+  );
+}
+
+function ActivePrograms() {
+  return (
+    <section>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-base font-bold text-[var(--erp-ink)]">Active Programs</h2>
+        <Link
+          href="/dashboard/crop-data"
+          className="text-[0.68rem] font-semibold text-[var(--brand-secondary)]"
+        >
+          View All ↗
+        </Link>
+      </div>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {programs.map((program) => {
+          const Icon = program.icon;
+          const isBlue = program.tone === "blue";
+
+          return (
+            <article key={program.name} className="erp-card p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span
+                    className={cn(
+                      "flex size-9 shrink-0 items-center justify-center border",
+                      isBlue
+                        ? "border-[var(--erp-info-muted)] bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]"
+                        : "border-[var(--erp-green-muted)] bg-[var(--erp-green-muted)] text-primary"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-bold text-[var(--erp-ink)]">
+                      {program.name}
+                    </h3>
+                    <p className="mt-1 text-[0.68rem] font-medium text-[var(--erp-muted)]">
+                      {program.location}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={cn(
+                    "shrink-0 px-2 py-1 text-[0.55rem] font-bold",
+                    isBlue
+                      ? "bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]"
+                      : "bg-[var(--erp-green-muted)] text-primary"
+                  )}
+                >
+                  {program.badge}
+                </span>
+              </div>
+
+              <div className="mt-5">
+                <div className="mb-1 flex items-center justify-between text-[0.58rem] font-semibold text-[var(--erp-muted)]">
+                  <span>Program Progress</span>
+                  <span>{program.progress}</span>
+                </div>
+                <div className="h-1.5 bg-[var(--erp-track)]">
+                  <div
+                    className={cn("h-full", isBlue ? "bg-[var(--brand-secondary)]" : "bg-primary")}
+                    style={{ width: program.progress }}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex -space-x-2">
+                  <span className="size-4 rounded-full bg-[var(--erp-avatar-a)] ring-1 ring-white" />
+                  <span className="size-4 rounded-full bg-[var(--erp-avatar-b)] ring-1 ring-white" />
+                </div>
+                <p className="text-[0.65rem] font-semibold text-[var(--erp-muted)]">
+                  ETA: <span className="text-[var(--erp-ink)]">{program.eta}</span>
+                </p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function HarvestForecast() {
+  return (
+    <section className="erp-card p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-[var(--erp-ink)]">Harvest Forecast</h2>
+        <TrendingUp className="size-4 text-[var(--erp-ink)]" />
+      </div>
+
+      <div className="mt-4 flex h-28 items-end gap-3 border-b border-[var(--erp-border)] px-2 pb-3">
+        {forecastBars.map((bar) => (
+          <div key={bar.label} className="flex flex-1 flex-col items-center justify-end gap-1">
+            {bar.active && (
+              <span className="bg-[var(--erp-ink)] px-1 py-0.5 text-[0.5rem] font-bold text-white">
+                Current
+              </span>
+            )}
+            <div
+              className={cn("w-full bg-[var(--erp-chart)]", bar.active && "bg-primary")}
+              style={{ height: bar.value }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 flex items-end justify-between">
+        <div>
+          <p className="erp-kicker">Predicted Total</p>
+          <p className="mt-1 text-base font-bold text-primary">84.2 Tons</p>
+        </div>
+        <div className="text-right">
+          <p className="erp-kicker">Vs Last Year</p>
+          <p className="mt-1 text-sm font-bold text-[var(--brand-secondary)]">+12.4%</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentTasks() {
+  return (
+    <section className="erp-card overflow-hidden">
+      <div className="flex h-11 items-center justify-between border-b border-[var(--erp-border)] px-4">
+        <h2 className="text-sm font-bold text-[var(--erp-ink)]">Recent & Upcoming Tasks</h2>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="Filter tasks"
+            className="flex size-7 items-center justify-center border border-[var(--erp-border)] bg-white text-[var(--erp-icon)]"
+          >
+            <Filter className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Refresh tasks"
+            className="flex size-7 items-center justify-center border border-[var(--erp-border)] bg-white text-[var(--erp-icon)]"
+          >
+            <RefreshCcw className="size-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[42rem] border-collapse text-left text-[0.68rem]">
+          <thead>
+            <tr className="border-b border-[var(--erp-border)] bg-[var(--erp-table-head)] text-[0.58rem] uppercase tracking-normal text-[var(--erp-muted)]">
+              <th className="px-4 py-2 font-semibold">Task Details</th>
+              <th className="px-3 py-2 font-semibold">Block</th>
+              <th className="px-3 py-2 font-semibold">Deadline</th>
+              <th className="px-3 py-2 font-semibold">Status</th>
+              <th className="px-3 py-2 text-right font-semibold">Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tasks.map((task) => (
+              <tr
+                key={task.task}
+                className={cn(
+                  "border-b border-[var(--erp-border)] last:border-b-0",
+                  task.alert && "bg-[var(--erp-danger-row)]"
+                )}
+              >
+                <td className="px-4 py-3 font-medium text-[var(--erp-ink)]">
+                  <div className="flex items-center gap-2">
+                    {task.alert ? (
+                      <AlertTriangle className="size-3.5 shrink-0 text-destructive" />
+                    ) : (
+                      <span className="size-3.5 shrink-0 border border-[var(--erp-border-strong)]" />
+                    )}
+                    <span>{task.task}</span>
+                  </div>
+                </td>
+                <td className="px-3 py-3 text-[var(--erp-ink)]">{task.block}</td>
+                <td
+                  className={cn(
+                    "px-3 py-3 font-medium",
+                    task.alert ? "text-destructive" : "text-[var(--erp-ink)]"
+                  )}
+                >
+                  {task.deadline}
+                </td>
+                <td className="px-3 py-3">
+                  <span className={cn("px-2 py-1 text-[0.55rem] font-bold", task.statusTone)}>
+                    {task.status}
+                  </span>
+                </td>
+                <td className={cn("px-3 py-3 text-right font-semibold", task.priorityTone)}>
+                  {task.priority}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex justify-end px-4 py-3">
+        <button
+          type="button"
+          className="flex h-8 items-center gap-1.5 bg-primary px-3 text-[0.68rem] font-semibold text-primary-foreground"
+        >
+          <span className="text-sm leading-none">+</span>
+          Create Task
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function FieldStatusMap() {
+  return (
+    <section className="erp-card overflow-hidden">
+      <div className="flex h-11 items-center justify-between border-b border-[var(--erp-border)] px-4">
+        <h2 className="text-sm font-bold text-[var(--erp-ink)]">Field Status Map</h2>
+        <RefreshCcw className="size-4 text-primary" />
+      </div>
+
+      <div className="p-3">
+        <div className="relative h-44 overflow-hidden border border-[var(--erp-border)] bg-[var(--erp-field-base)]">
+          <div className="absolute inset-0 bg-[linear-gradient(155deg,rgba(255,255,255,0.08)_0_8%,transparent_8%_16%),repeating-linear-gradient(150deg,var(--erp-field-row)_0_0.22rem,var(--erp-field-base)_0.22rem_0.7rem)]" />
+          <div className="absolute -bottom-8 left-0 h-24 w-48 rotate-[-23deg] bg-[var(--erp-road)] shadow-[0_0_0_0.18rem_var(--erp-road-edge)]" />
+          <div className="absolute -bottom-4 right-8 h-20 w-40 rotate-[34deg] bg-[var(--erp-road)] shadow-[0_0_0_0.18rem_var(--erp-road-edge)]" />
+          <div className="absolute left-[58%] top-[45%] size-1.5 rounded-full bg-[var(--brand-secondary)] ring-2 ring-white/60" />
+          <div className="absolute left-3 top-4 bg-white px-2 py-1 text-[0.55rem] font-bold text-[var(--erp-ink)]">
+            BLOCK A-1 OPTIMAL
+          </div>
+          <div className="absolute left-3 top-12 bg-destructive px-2 py-1 text-[0.55rem] font-bold text-white">
+            BLOCK C-2 ALERT
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="mt-3 flex h-9 w-full items-center justify-center gap-2 border border-[var(--erp-border)] bg-white text-[0.68rem] font-semibold text-[var(--erp-ink)]"
+        >
+          <Sprout className="size-3.5 text-primary" />
+          Launch Interactive Map
+        </button>
+      </div>
+    </section>
   );
 }

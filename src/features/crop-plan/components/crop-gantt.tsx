@@ -61,9 +61,9 @@ const MAX_CELL_WIDTH = 56;
 // Real calendar Year ▸ Month ▸ Week. Bars use ISO-week (Monday) dates so they
 // line up with SVAR's week columns.
 const SCALES: IScaleConfig[] = [
-  { unit: "year", step: 1, format: (d: Date) => String(d.getFullYear()) },
-  { unit: "month", step: 1, format: (d: Date) => d.toLocaleString("en-US", { month: "short" }) },
-  { unit: "week", step: 1, format: (d: Date) => `W${dateToWeekNum(d)}` },
+  { unit: "year", step: 1, format: (d: Date) => String(d.getFullYear()).slice(-2) },
+  { unit: "month", step: 1, format: (d: Date) => String(d.getMonth() + 1) },
+  { unit: "week", step: 1, format: (d: Date) => String(dateToWeekNum(d)) },
 ];
 
 const clampCell = (w: number) => Math.min(MAX_CELL_WIDTH, Math.max(MIN_CELL_WIDTH, w));
@@ -388,7 +388,22 @@ export function CropGantt({
         </div>
       </div>
 
-      <div className="cg-wrap min-h-0 flex-1" onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div
+        className="cg-wrap relative min-h-0 flex-1"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        {!gridOpen && (
+          <button
+            type="button"
+            onClick={toggleGrid}
+            title="Show table"
+            aria-label="Show table"
+            className="absolute left-0 top-1/2 z-20 flex h-10 w-5 -translate-y-1/2 items-center justify-center rounded-r-md border border-l-0 bg-card text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground"
+          >
+            <PanelLeftOpen className="size-3.5" />
+          </button>
+        )}
         {mounted && (
           <Willow>
             <Tooltip api={api ?? undefined} content={TooltipContent}>
