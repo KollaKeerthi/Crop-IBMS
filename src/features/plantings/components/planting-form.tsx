@@ -84,11 +84,10 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
       spacingM: planting?.spacingM ?? undefined,
       locationType: planting?.locationType ?? "",
       notes: planting?.notes ?? "",
-      //➕ Set fallback defaults for the form state fields
-      daysInNursery: plantingState?.daysInNursery ?? 28,
-      daysToMaturity: plantingState?.daysToMaturity ?? 60,
-      harvestWindowDays: plantingState?.harvestWindowDays ?? 30,
-      timeBetweenPlantingsDays: plantingState?.timeBetweenPlantingsDays ?? 14,
+      daysInNursery: plantingState?.daysInNursery ?? undefined,
+      daysToMaturity: plantingState?.daysToMaturity ?? undefined,
+      harvestWindowDays: plantingState?.harvestWindowDays ?? undefined,
+      timeBetweenPlantingsDays: plantingState?.timeBetweenPlantingsDays ?? undefined,
     },
   });
 
@@ -107,18 +106,26 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
   const watchedMethod = form.watch("plantingMethod");
   const watchedNurseryStart = form.watch("nurseryStartDate");
   const watchedFieldPlanting = form.watch("fieldPlantingDate");
+  const watchedDaysInNursery = form.watch("daysInNursery");
+  const watchedDaysToMaturity = form.watch("daysToMaturity");
+  const watchedHarvestWindowDays = form.watch("harvestWindowDays");
+  const watchedTimeBetweenPlantingsDays = form.watch("timeBetweenPlantingsDays");
 
   useEffect(() => {
     try {
+      if (!watchedDaysToMaturity || !watchedHarvestWindowDays || !watchedTimeBetweenPlantingsDays) {
+        return;
+      }
       // Only attempt calculations if critical base data coordinates are present
       if (watchedMethod === "Transplant" && watchedNurseryStart) {
+        if (!watchedDaysInNursery) return;
         const projection = calculatePlantingDates({
           plantingMethod: "Transplant",
           nurseryStartDate: watchedNurseryStart,
-          daysToMaturity: 60, // Standard crop index fallbacks
-          harvestWindowDays: 30,
-          timeBetweenPlantingsDays: 14,
-          daysInNursery: 28,
+          daysToMaturity: watchedDaysToMaturity,
+          harvestWindowDays: watchedHarvestWindowDays,
+          timeBetweenPlantingsDays: watchedTimeBetweenPlantingsDays,
+          daysInNursery: watchedDaysInNursery,
         });
 
         form.setValue("fieldPlantingDate", projection.fieldPlantingDate);
@@ -128,9 +135,9 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
         const projection = calculatePlantingDates({
           plantingMethod: watchedMethod,
           fieldPlantingDate: watchedFieldPlanting,
-          daysToMaturity: 60,
-          harvestWindowDays: 30,
-          timeBetweenPlantingsDays: 14,
+          daysToMaturity: watchedDaysToMaturity,
+          harvestWindowDays: watchedHarvestWindowDays,
+          timeBetweenPlantingsDays: watchedTimeBetweenPlantingsDays,
         });
 
         form.setValue("firstHarvestDate", projection.firstHarvestDate);
@@ -139,7 +146,16 @@ export function PlantingForm({ farmId, planting, onSuccess }: Props) {
     } catch (err) {
       console.error("Automated scheduling projection failed:", err);
     }
-  }, [watchedMethod, watchedNurseryStart, watchedFieldPlanting, form]);
+  }, [
+    watchedMethod,
+    watchedNurseryStart,
+    watchedFieldPlanting,
+    watchedDaysInNursery,
+    watchedDaysToMaturity,
+    watchedHarvestWindowDays,
+    watchedTimeBetweenPlantingsDays,
+    form,
+  ]);
   async function onSubmit(values: FormValues) {
     try {
       if (isEdit && planting) {

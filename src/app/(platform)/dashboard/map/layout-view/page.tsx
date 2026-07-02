@@ -1,5 +1,9 @@
-import { FarmLayoutSchematic } from "@/features/map/components/farm-layout-schematic";
+import { FullMapViewer } from "@/features/map/components/full-map-viewer";
 
 export default function MapLayoutViewPage() {
-  return <FarmLayoutSchematic />;
+  return (
+    <div className="h-full w-full">
+      <FullMapViewer />
+    </div>
+  );
 }

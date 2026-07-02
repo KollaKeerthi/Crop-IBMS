@@ -38,6 +38,7 @@ type MediaItem = {
   name?: string | null;
   mimeType?: string | null;
   sizeBytes?: number | null;
+  createdAt?: Date | string | null;
 };
 
 type Props = {
@@ -94,44 +95,12 @@ function AttachmentKpi({
   );
 }
 
-function sampleMedia(): MediaItem[] {
-  return [
-    {
-      id: "sample-soil",
-      name: "Nutrient_Report_Sector_A.pdf",
-      url: "/reports/soil/2024/",
-      mimeType: "application/pdf",
-      sizeBytes: null,
-    },
-    {
-      id: "sample-irrigation",
-      name: "Water_Consumption_Logs.csv",
-      url: "/data/logs/irrigation/",
-      mimeType: "sample/irrigation",
-      sizeBytes: null,
-    },
-    {
-      id: "sample-survey",
-      name: "Satellite_Map_Overlay_04.tiff",
-      url: "/maps/survey/",
-      mimeType: "image/tiff",
-      sizeBytes: null,
-    },
-    {
-      id: "sample-compliance",
-      name: "Agricultural_Standard_2024_Manual",
-      url: "https://standards.agri/",
-      mimeType: "text/uri-list",
-      sizeBytes: null,
-    },
-    {
-      id: "sample-chemical",
-      name: "Chemical_Safety_Data_Sheet.pdf",
-      url: "/docs/safety/msds/",
-      mimeType: "application/pdf",
-      sizeBytes: null,
-    },
-  ];
+function latestCreatedAt(media: MediaItem[]): string {
+  const latest = media
+    .map((item) => (item.createdAt ? new Date(item.createdAt).getTime() : Number.NaN))
+    .filter(Number.isFinite)
+    .sort((left, right) => right - left)[0];
+  return latest ? new Date(latest).toLocaleDateString() : "No data available";
 }
 
 export function MediaAttachments({ cropDataId, farmId, media }: Props) {
@@ -144,6 +113,9 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
   });
   const mediaUrl = (id: string) =>
     `/api/v1/crop-data/${cropDataId}/media/${id}?farmId=${encodeURIComponent(farmId)}`;
+  const totalBytes = media.reduce((sum, item) => sum + (item.sizeBytes ?? 0), 0);
+  const fileCount = media.filter((item) => item.mimeType !== "text/uri-list").length;
+  const linkCount = media.filter((item) => item.mimeType === "text/uri-list").length;
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -186,9 +158,7 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="crop-page-title text-primary">Media Attachments</h3>
-          <p className="crop-helper-text">
-            Documentation and visual assets for Maize Program 2024-Q3.
-          </p>
+          <p className="crop-helper-text">Documentation and visual assets for this crop record.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -220,10 +190,14 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">
-        <AttachmentKpi icon={FileText} label="Total Docs" value={String(media.length || 24)} />
-        <AttachmentKpi icon={HardDrive} label="Storage Used" value="156 MB" />
-        <AttachmentKpi icon={Clock3} label="Last Update" value="2h ago" />
-        <AttachmentKpi icon={ShieldCheck} label="Compliance" value="100%" />
+        <AttachmentKpi icon={FileText} label="Total Docs" value={String(media.length)} />
+        <AttachmentKpi
+          icon={HardDrive}
+          label="Storage Used"
+          value={formatBytes(totalBytes) || "0 B"}
+        />
+        <AttachmentKpi icon={Clock3} label="Last Update" value={latestCreatedAt(media)} />
+        <AttachmentKpi icon={ShieldCheck} label="Links" value={String(linkCount)} />
       </div>
 
       <div className="border border-[var(--erp-border)] bg-white">
@@ -250,34 +224,38 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
               </tr>
             </thead>
             <tbody>
-              {(media.length > 0 ? media : sampleMedia()).map((item) => {
-                const href = item.url || mediaUrl(item.id);
-                return (
-                  <tr key={item.id} className="border-b border-[var(--erp-border)] last:border-0">
-                    <td className="px-3 py-2">
-                      <span className="crop-badge bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
-                        {item.mimeType === "sample/irrigation" ? "Irrigation" : "Soil Analysis"}
-                      </span>
-                    </td>
-                    <td className="crop-body-text px-3 py-2 font-semibold text-[var(--erp-ink)]">
-                      <span className="inline-flex items-center gap-2">
-                        {isImage(item) ? (
-                          <Paperclip className="size-3.5 text-destructive" />
-                        ) : (
-                          <FileText className="size-3.5 text-primary" />
-                        )}
-                        {item.name ?? "Attachment"}
-                        {item.sizeBytes ? (
-                          <span className="crop-helper-text">{formatBytes(item.sizeBytes)}</span>
-                        ) : null}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">{attachmentType(item)}</td>
-                    <td className="crop-helper-text px-3 py-2">
-                      {item.url ? item.url.slice(0, 28) : "/reports/soil/2024/..."}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {media.length > 0 ? (
+              {media.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-center text-[var(--erp-muted)]">
+                    No records found
+                  </td>
+                </tr>
+              ) : (
+                media.map((item) => {
+                  const href = item.url || mediaUrl(item.id);
+                  return (
+                    <tr key={item.id} className="border-b border-[var(--erp-border)] last:border-0">
+                      <td className="px-3 py-2">
+                        <span className="crop-badge bg-[var(--erp-info-muted)] text-[var(--brand-secondary)]">
+                          Attachment
+                        </span>
+                      </td>
+                      <td className="crop-body-text px-3 py-2 font-semibold text-[var(--erp-ink)]">
+                        <span className="inline-flex items-center gap-2">
+                          {isImage(item) ? (
+                            <Paperclip className="size-3.5 text-destructive" />
+                          ) : (
+                            <FileText className="size-3.5 text-primary" />
+                          )}
+                          {item.name ?? "Attachment"}
+                          {item.sizeBytes ? (
+                            <span className="crop-helper-text">{formatBytes(item.sizeBytes)}</span>
+                          ) : null}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">{attachmentType(item)}</td>
+                      <td className="crop-helper-text px-3 py-2">{item.url}</td>
+                      <td className="px-3 py-2 text-right">
                         <span className="inline-flex items-center gap-2">
                           <a
                             href={href}
@@ -298,19 +276,17 @@ export function MediaAttachments({ cropDataId, farmId, media }: Props) {
                             <Trash2 className="size-3.5" />
                           </button>
                         </span>
-                      ) : (
-                        <span className="crop-body-text font-semibold text-primary">Open</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
         <div className="crop-helper-text flex items-center justify-between px-3 py-2 font-semibold">
-          <span>Showing 5 of {media.length || 24} documents</span>
-          <span>Rows per page: 10</span>
+          <span>Showing {media.length} documents</span>
+          <span>{fileCount} files</span>
         </div>
       </div>
 

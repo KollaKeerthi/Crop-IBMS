@@ -391,12 +391,8 @@ export function ProductionForm({
   const plantingWeekValue = prodDisplayPlantingWeek(nursery?.actualPlantingWeek);
   const customerDirectives =
     prodTextOrFallback(nursery?.remarksFromCustomer) ??
-    prodTextOrFallback(programInfo?.remarksFromCustomer) ??
-    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
-  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [
-    "Increase fertilization frequency in Week 46.",
-    "Monitor for leaf curl in sector 4B.",
-  ];
+    prodTextOrFallback(programInfo?.remarksFromCustomer);
+  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [];
   const utilization = prodUtilization(displayValues, nursery);
 
   return (
@@ -507,7 +503,7 @@ export function ProductionForm({
               ) : (
                 <div className="min-h-24 rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] text-[var(--erp-muted)]">
                   {fieldDisplay(displayValues.remarks) === "-"
-                    ? "Enter observational remarks..."
+                    ? "No data available"
                     : fieldDisplay(displayValues.remarks)}
                 </div>
               )}
@@ -548,7 +544,7 @@ export function ProductionForm({
                 Customer Directives
               </p>
               <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-                {customerDirectives}
+                {customerDirectives ?? "No data available"}
               </div>
             </div>
 
@@ -558,7 +554,7 @@ export function ProductionForm({
               </p>
               <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
                 {fieldDisplay(displayValues.remarks) === "-"
-                  ? "Batches delayed by 48 hours due to unexpected cold snap. Germination rates remain within operational tolerance."
+                  ? "No data available"
                   : fieldDisplay(displayValues.remarks)}
               </div>
             </div>
@@ -575,14 +571,20 @@ export function ProductionForm({
                   onChange={(event) => setField("recommendations", event.target.value)}
                 />
               ) : (
-                <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-                  {recommendationsList.map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  {recommendationsList.length === 0 ? (
+                    <p className="text-[0.72rem] text-[var(--erp-muted)]">No data available</p>
+                  ) : (
+                    <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+                      {recommendationsList.map((item) => (
+                        <li key={item} className="flex gap-2">
+                          <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -660,11 +662,11 @@ function prodUtilization(values: Vals, nursery: Vals | null) {
   const realized = toNum(values.realizedPlants);
   const planted = toNum(nursery?.femaleActualPlantsPlanted);
   const ratio =
-    realized !== null && planted !== null && planted > 0 ? (realized / planted) * 100 : 82.4;
+    realized !== null && planted !== null && planted > 0 ? (realized / planted) * 100 : null;
 
   return {
-    value: `${ratio.toFixed(1)}%`,
-    note: "+2.1% vs PW",
+    value: ratio === null ? "-" : `${ratio.toFixed(1)}%`,
+    note: "Database values",
   };
 }
 
@@ -726,15 +728,10 @@ export function PollinationForm({
   const estimatedYield = pollinationEstimatedYield(displayValues, production ?? {});
   const customerDirectives =
     prodTextOrFallback(production?.remarksFromCustomer) ??
-    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
-  const generalRemarks =
-    prodTextOrFallback(displayValues.remarks) ??
-    "Batches delayed by 48 hours due to unexpected cold snap. Germination rates remain within operational tolerance.";
-  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [
-    "Increase fertilization frequency in Week 46.",
-    "Monitor for leaf curl in sector 4B.",
-  ];
-  const capacityUtilization = toNum(production?.realizedPlantsPerSqm) ?? 82.4;
+    prodTextOrFallback(displayValues.remarks);
+  const generalRemarks = prodTextOrFallback(displayValues.remarks);
+  const recommendationsList = prodListOrFallback(displayValues.recommendations) ?? [];
+  const capacityUtilization = toNum(production?.realizedPlantsPerSqm);
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(12rem,1fr)]">
@@ -1011,14 +1008,14 @@ export function PollinationForm({
               Customer Directives
             </p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-              {customerDirectives}
+              {customerDirectives ?? "No data available"}
             </div>
           </div>
 
           <div className="mt-5">
             <p className="mb-2 text-[0.62rem] font-bold text-[var(--erp-muted)]">General Remarks</p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-table-head)] px-4 py-3 text-[0.72rem] italic leading-6 text-[var(--erp-ink)]">
-              {generalRemarks}
+              {generalRemarks ?? "No data available"}
             </div>
           </div>
 
@@ -1032,14 +1029,20 @@ export function PollinationForm({
                 onChange={(event) => setField("recommendations", event.target.value)}
               />
             ) : (
-              <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-                {recommendationsList.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                {recommendationsList.length === 0 ? (
+                  <p className="text-[0.72rem] text-[var(--erp-muted)]">No data available</p>
+                ) : (
+                  <ul className="space-y-2 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
+                    {recommendationsList.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
             )}
           </div>
         </section>
@@ -1053,9 +1056,8 @@ export function PollinationForm({
               <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
-                  {capacityUtilization.toFixed(1)}%
+                  {capacityUtilization === null ? "-" : `${capacityUtilization.toFixed(1)}%`}
                 </p>
-                <span className="text-[0.7rem] font-semibold text-primary">+2.1% vs PW</span>
               </div>
             </div>
           </div>
@@ -1067,7 +1069,7 @@ export function PollinationForm({
           </div>
           <div className="h-40 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
             <div className="flex h-full items-center justify-center rounded-md border border-dashed border-[var(--erp-border)] bg-white/60 text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
-              Live field map preview
+              No data available
             </div>
           </div>
         </section>
@@ -1217,17 +1219,15 @@ function LegacyPostHarvestForm({
               </tr>
             </thead>
             <tbody>
-              {[
-                ["Main Picking", "Nov 01 - 05", "4,250", "98.2%"],
-                ["Secondary", "Nov 08 - 10", "1,120", "94.5%"],
-                ["Final Strip", "Nov 14 - 15", "480", "89.1%"],
-              ].map(([phase, range, kg, yieldPct]) => (
+              {timelineRows.map(([phase, name, type]) => (
                 <tr key={phase} className="border-b border-[var(--erp-border)] last:border-b-0">
                   <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">{phase}</td>
-                  <td className="px-3 py-2 text-[var(--erp-ink)]">{range}</td>
-                  <td className="px-3 py-2 text-right font-bold">{kg}</td>
+                  <td className="px-3 py-2 text-[var(--erp-ink)]">
+                    {renderPostHarvestInput(name, type)}
+                  </td>
+                  <td className="px-3 py-2 text-right font-bold">-</td>
                   <td className="px-3 py-2 text-right font-bold text-[var(--brand-secondary)]">
-                    {yieldPct}
+                    -
                   </td>
                 </tr>
               ))}
@@ -1242,10 +1242,10 @@ function LegacyPostHarvestForm({
             </tbody>
           </table>
           <div className="bg-primary px-3 py-3 text-white">
-            <p className="text-[0.58rem] opacity-80">Grade A Quality</p>
+            <p className="text-[0.58rem] opacity-80">Total KGs</p>
             <div className="mt-1 flex justify-between text-sm font-bold">
-              <span>4,890 KG</span>
-              <span>+2.4%</span>
+              <span>{fieldDisplay(displayValues.totalKgs)} KG</span>
+              <span>{fmtNum(computations.actualYieldPct, 1)}%</span>
             </div>
           </div>
         </div>
@@ -1273,24 +1273,11 @@ function LegacyPostHarvestForm({
               </tr>
             </thead>
             <tbody>
-              {["Mark Johnson", "Sarah Lee", "Raj Kapoor", "Mark Johnson"].map(
-                (operator, index) => (
-                  <tr
-                    key={`${operator}-${index}`}
-                    className="border-b border-[var(--erp-border)] last:border-0"
-                  >
-                    <td className="px-3 py-2">2024-11-{String(index + 1).padStart(2, "0")}</td>
-                    <td className="px-3 py-2 font-semibold">{operator}</td>
-                    <td className="px-3 py-2">BIN-882{index + 1}</td>
-                    <td className="px-3 py-2 text-right">{450 + index * 8}.2 kg</td>
-                    <td className="px-3 py-2 text-right">
-                      <span className="bg-[var(--erp-green-muted)] px-2 py-1 text-[0.52rem] font-bold text-primary">
-                        Certified
-                      </span>
-                    </td>
-                  </tr>
-                )
-              )}
+              <tr>
+                <td colSpan={5} className="px-3 py-8 text-center text-[var(--erp-muted)]">
+                  No records found
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1302,24 +1289,18 @@ function LegacyPostHarvestForm({
             Operational Recommendations
           </h3>
           <div className="space-y-3 text-[0.68rem]">
-            {[
-              [
-                "Adjust Storage Humidity",
-                "Relative humidity in Cold Storage Room 3 should be maintained at 90-95%.",
-              ],
-              ["Bin Calibration Required", "Digital scale for BIN-8823 shows variance of 3%."],
-              ["Expedite Logistics", "Main Picking batch ready for dispatch."],
-            ].map(([title, body], index) => (
-              <div key={title} className="flex gap-2">
-                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-white">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="font-bold text-[var(--erp-ink)]">{title}</p>
+            {(prodListOrFallback(displayValues.recommendations) ?? []).length === 0 ? (
+              <p className="text-[var(--erp-muted)]">No data available</p>
+            ) : (
+              (prodListOrFallback(displayValues.recommendations) ?? []).map((body, index) => (
+                <div key={body} className="flex gap-2">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-white">
+                    {index + 1}
+                  </span>
                   <p className="text-[var(--erp-muted)]">{body}</p>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -1338,7 +1319,11 @@ function LegacyPostHarvestForm({
             </div>
           )}
           <div className="mt-3 flex items-center justify-between text-[0.62rem] font-semibold text-[var(--erp-muted)]">
-            <span>Last updated by Field Lead - 2 hours ago</span>
+            <span>
+              {displayValues.updatedAt
+                ? `Updated ${formatDateDisplay(displayValues.updatedAt as string)}`
+                : "No update metadata"}
+            </span>
             <button type="button" onClick={startEdit} className="font-bold text-primary">
               Edit Entry
             </button>
@@ -2005,11 +1990,6 @@ export function PostHarvestSummaryForm({ cropDataId, farmId, initial }: BaseProp
                 </button>
               </td>
             </tr>
-            {Array.from({ length: 7 }).map((_, index) => (
-              <tr key={index} className="h-12 border-b border-[var(--erp-border)] last:border-b-0">
-                <td colSpan={4} />
-              </tr>
-            ))}
             <tr className="bg-[var(--erp-table-head)] font-semibold text-[var(--erp-ink)]">
               <td className="px-4 py-3 text-primary">Total</td>
               <td className="px-4 py-3">{totalKgs.toFixed(2)}</td>

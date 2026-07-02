@@ -32,10 +32,12 @@ export function calculatePlantingDates(input: PlantingCalculationInput): Plantin
     if (!input.nurseryStartDate) {
       throw new Error("Nursery start date is required for transplant method.");
     }
-    const daysInNursery = input.daysInNursery || 28; // Fallback to 4 weeks
+    if (!input.daysInNursery) {
+      throw new Error("Days in nursery is required for transplant method.");
+    }
     const baseNurseryDate = parseISO(input.nurseryStartDate);
 
-    computedFieldDate = addDays(baseNurseryDate, daysInNursery);
+    computedFieldDate = addDays(baseNurseryDate, input.daysInNursery);
     actualNurseryStart = input.nurseryStartDate;
   } else {
     // Direct Sow, Cutting, or Seed

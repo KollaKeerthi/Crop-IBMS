@@ -67,7 +67,7 @@ function NameStep({ initialName, onNext }: { initialName: string; onNext: () => 
               <FormItem>
                 <FormLabel>Full name</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Jane Smith" autoFocus />
+                  <Input {...field} placeholder="Full name" autoFocus />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -331,7 +331,6 @@ export function NurseryForm({ cropDataId, farmId, nursery, programInfo }: Props)
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
                   {capacity.utilization}
                 </p>
-                <span className="text-[0.7rem] font-semibold text-primary">+2.1% vs PW</span>
               </div>
             </div>
           </div>

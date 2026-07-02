@@ -157,10 +157,10 @@ export function WeatherWidget({
   const soilMoisture = soilArr.length > currentHour ? soilArr[currentHour] : (soilArr[0] ?? null);
   const soilEndOfDay = soilArr.length > 0 ? soilArr[soilArr.length - 1] : null;
 
-  const temperature = current.temperature_2m ?? 0;
-  const humidity = current.relative_humidity_2m ?? 0;
-  const windspeed = current.wind_speed_10m ?? 0;
-  const precipitation = current.precipitation ?? 0;
+  const temperature = current.temperature_2m ?? null;
+  const humidity = current.relative_humidity_2m ?? null;
+  const windspeed = current.wind_speed_10m ?? null;
+  const precipitation = current.precipitation ?? null;
   const maxTemp = daily?.temperature_2m_max?.[0] ?? null;
   const dailyRain = daily?.precipitation_sum?.[0] ?? null;
   const dailyWindMax = daily?.wind_speed_10m_max?.[0] ?? null;
@@ -185,7 +185,7 @@ export function WeatherWidget({
           />
           <div className="relative flex flex-col">
             <div className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-              {temperature.toFixed(1)}°C
+              {temperature != null ? `${temperature.toFixed(1)}°C` : "--"}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium opacity-90">{conditionLabel}</span>
@@ -209,21 +209,21 @@ export function WeatherWidget({
         <div className="grid min-w-0 grid-cols-3 gap-4 sm:grid-cols-5 sm:gap-6 lg:pl-4">
           <MetricColumn
             icon={Droplets}
-            primary={`${humidity}%`}
+            primary={humidity != null ? `${humidity}%` : "--"}
             secondary={dailyHumidityMax != null ? `${dailyHumidityMax}%` : "--"}
             label="Humidity"
             iconClassName="text-primary-foreground/60"
           />
           <MetricColumn
             icon={Wind}
-            primary={windspeed.toFixed(1)}
+            primary={windspeed != null ? windspeed.toFixed(1) : "--"}
             secondary={dailyWindMax != null ? dailyWindMax.toFixed(1) : "--"}
             label="Wind"
             iconClassName="text-primary-foreground/70"
           />
           <MetricColumn
             icon={CloudRain}
-            primary={`${precipitation.toFixed(1)}mm`}
+            primary={precipitation != null ? `${precipitation.toFixed(1)}mm` : "--"}
             secondary={dailyRain != null ? `${dailyRain.toFixed(1)}mm` : "--"}
             label="Rain"
             iconClassName="text-primary-foreground/80"

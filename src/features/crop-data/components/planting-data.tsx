@@ -357,6 +357,10 @@ export function PlantingData({
   const detailEntries = useMemo(() => sortEntries(entries), [entries]);
   const summaryRows = useMemo(() => summarize(sortEntries(entries)), [entries]);
   const visualRows = useMemo(() => directionalRows(entries, nextRowOrder), [entries, nextRowOrder]);
+  const totalPlannedPlants = sum(entries.map((entry) => entry.plannedPlants)) ?? 0;
+  const totalPlantedPlants = sum(entries.map((entry) => entry.plantedPlants)) ?? 0;
+  const plantingProgress =
+    totalPlannedPlants > 0 ? Math.round((totalPlantedPlants / totalPlannedPlants) * 100) : null;
 
   function setTab(next: PlantingSubtab) {
     setSubtab(next);
@@ -880,29 +884,29 @@ export function PlantingData({
               <PlantingKpi
                 icon={Wifi}
                 label="Real-Time Statistics"
-                value="82.4%"
+                value={plantingProgress === null ? "-" : `${plantingProgress}%`}
                 detail="Planting Progress"
                 tone="green"
               />
               <PlantingKpi
                 icon={Droplets}
                 label="Row Units"
-                value={`${visualRows.length} / ${maxRows ?? 200}`}
+                value={maxRows ? `${visualRows.length} / ${maxRows}` : String(visualRows.length)}
                 detail="Active Configuration"
                 tone="blue"
               />
               <PlantingKpi
                 icon={Eye}
                 label="Soil Moisture"
-                value="24.2%"
-                detail="Avg. Sensor Read"
+                value="-"
+                detail="No sensor data"
                 tone="neutral"
               />
               <PlantingKpi
                 icon={Clock3}
                 label="Est. Completion"
-                value="16:45"
-                detail="Today, June 14"
+                value="-"
+                detail="No schedule data"
                 tone="amber"
               />
             </div>
@@ -957,11 +961,14 @@ export function PlantingData({
               </div>
 
               <div className="grid grid-cols-[5rem_minmax(0,1fr)_6rem] items-center border-t border-[var(--erp-border)] px-3 py-2 text-[0.58rem] font-semibold text-[var(--erp-muted)]">
-                <span>North Entry</span>
+                <span>Allocated</span>
                 <div className="h-1.5 bg-[var(--erp-track)]">
-                  <div className="h-full w-[82%] bg-primary" />
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${plantingProgress ?? 0}%` }}
+                  />
                 </div>
-                <span className="text-right">South Boundary</span>
+                <span className="text-right">{plantingProgress ?? 0}%</span>
               </div>
             </div>
           </div>
@@ -977,7 +984,7 @@ export function PlantingData({
                   Seed Variety
                   <Input
                     readOnly
-                    value={`${fallbackCrop ?? "Hybrid"}-${fallbackVariety ?? "708-MA (Male)"}`}
+                    value={[fallbackCrop, fallbackVariety].filter(Boolean).join(" - ") || "Not set"}
                     className="mt-1 h-8 rounded-sm border-[var(--erp-border)] bg-white text-[0.68rem]"
                   />
                 </label>
@@ -1005,14 +1012,17 @@ export function PlantingData({
                 <div className="border border-[var(--erp-border)] bg-[var(--erp-table-head)] p-3">
                   <div className="flex justify-between text-[0.62rem] font-semibold text-[var(--erp-muted)]">
                     <span>Application Strength</span>
-                    <span className="text-primary">75%</span>
+                    <span className="text-primary">{plantingProgress ?? 0}%</span>
                   </div>
                   <div className="mt-2 h-1.5 bg-white">
-                    <div className="h-full w-3/4 bg-primary" />
+                    <div
+                      className="h-full bg-primary"
+                      style={{ width: `${plantingProgress ?? 0}%` }}
+                    />
                   </div>
                   <div className="mt-2 flex justify-between text-[0.55rem] text-[var(--erp-muted)]">
-                    <span>Compact</span>
-                    <span>Sparse</span>
+                    <span>Planted</span>
+                    <span>Planned</span>
                   </div>
                 </div>
 
@@ -1061,10 +1071,8 @@ export function PlantingData({
               <div className="flex items-start gap-2">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <div>
-                  <p className="text-[0.68rem] font-bold">Deviation Alert</p>
-                  <p className="mt-1 text-[0.62rem] font-semibold leading-4">
-                    Block WBL-782 Rows 14-16 show 4.2% spacing variance outside threshold.
-                  </p>
+                  <p className="text-[0.68rem] font-bold">Deviation Data</p>
+                  <p className="mt-1 text-[0.62rem] font-semibold leading-4">No data available</p>
                 </div>
               </div>
             </div>
@@ -1089,16 +1097,23 @@ function MetricHead() {
 
 type SegmentKind = "male" | "female" | "open";
 
-function visualSegments(rowNo: number, rowEntries: PlantingEntry[], index: number): SegmentKind[] {
-  const filled = rowEntries.reduce(
-    (count, entry) => count + Math.min(18, Math.max(2, Math.round(plantCount(entry) / 2))),
-    0
-  );
-  const femaleShare = rowEntries.some((entry) => entry.gender === "Female") ? 14 : 0;
+function visualSegments(
+  _rowNo: number,
+  rowEntries: PlantingEntry[],
+  _index: number
+): SegmentKind[] {
+  const counts = rowEntries.map((entry) => Math.max(0, plantCount(entry)));
+  const total = sum(counts) ?? 0;
   return Array.from({ length: 42 }, (_, segment) => {
-    if (segment < Math.min(femaleShare, filled)) return "female";
-    if (segment < filled || (segment + rowNo + index) % 9 < 3) return "male";
-    if ((segment + rowNo) % 13 < 5) return "female";
+    if (total <= 0) return "open";
+    const current = ((segment + 1) / 42) * total;
+    let cumulative = 0;
+    for (let i = 0; i < rowEntries.length; i += 1) {
+      cumulative += counts[i] ?? 0;
+      if (current <= cumulative) {
+        return rowEntries[i]?.gender === "Female" ? "female" : "male";
+      }
+    }
     return "open";
   });
 }

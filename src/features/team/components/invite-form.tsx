@@ -68,7 +68,7 @@ export function InviteForm({ farmId, onSuccess }: Props) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Jane Smith" />
+                <Input {...field} placeholder="Full name" />
               </FormControl>
               <FormMessage />
             </FormItem>

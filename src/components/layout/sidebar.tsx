@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -47,9 +48,14 @@ export function Sidebar({
     <aside className="h-screen w-44 shrink-0 border-r border-[var(--erp-border)] bg-[var(--erp-sidebar)]">
       <div className="flex h-full flex-col">
         <div className="border-b border-[var(--erp-border)] px-3 py-4">
-          <p className="truncate bg-gradient-to-r from-[var(--brand-secondary)] via-[#087c8f] to-primary bg-clip-text text-sm font-extrabold leading-tight text-transparent">
-            iBMS-Crop
-          </p>
+          <Image
+            src="/images/ibms-crop-logo.png"
+            alt="iBMS-Crop"
+            width={526}
+            height={120}
+            priority
+            className="h-auto max-h-8 w-full object-contain object-left"
+          />
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">

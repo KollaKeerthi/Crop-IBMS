@@ -71,33 +71,32 @@ function seedsDisplayPlantingWeek(value: unknown) {
 }
 
 function seedsTierRows(initial: Vals | null) {
-  const goodKg = toNum(initial?.kgCustomerAfterCleaning);
+  const good1 = toNum(initial?.good1);
+  const good2 = toNum(initial?.good2);
+  const abnormal = toNum(initial?.abnormal);
+  const tooSmall = toNum(initial?.tooSmall);
+  const nonGerminated = toNum(initial?.nonGerminated);
   const germPct = seedsQualityGerminationPct(initial ?? {});
   const totalSeeds = toNum(initial?.totalSeedsSown);
-  const lowKg = totalSeeds !== null && goodKg !== null ? Math.max(totalSeeds - goodKg, 0) : null;
-  const custGoodKg = goodKg !== null ? goodKg * 0.065 : null;
-  const custLowKg = lowKg !== null ? lowKg * 0.12 : null;
+  const good = good1 !== null || good2 !== null ? (good1 ?? 0) + (good2 ?? 0) : null;
+  const other =
+    abnormal !== null || tooSmall !== null || nonGerminated !== null
+      ? (abnormal ?? 0) + (tooSmall ?? 0) + (nonGerminated ?? 0)
+      : null;
 
   return [
     {
       label: "Good",
-      kg: fmtNum(goodKg, 2),
+      count: fmtNum(good, 0),
       yieldPct: germPct === null ? "-" : `${germPct.toFixed(2)}%`,
     },
     {
-      label: "Low",
-      kg: fmtNum(lowKg, 2),
-      yieldPct: germPct === null ? "-" : `${Math.max(germPct - 9, 0).toFixed(2)}%`,
-    },
-    {
-      label: "Cust. Good",
-      kg: fmtNum(custGoodKg, 2),
-      yieldPct: germPct === null ? "-" : `${Math.max(germPct * 0.34, 0).toFixed(2)}%`,
-    },
-    {
-      label: "Cust. Low",
-      kg: fmtNum(custLowKg, 2),
-      yieldPct: germPct === null ? "-" : `${Math.max(germPct * 0.14, 0).toFixed(2)}%`,
+      label: "Other",
+      count: fmtNum(other, 0),
+      yieldPct:
+        totalSeeds !== null && other !== null && totalSeeds > 0
+          ? `${((other / totalSeeds) * 100).toFixed(2)}%`
+          : "-",
     },
   ];
 }
@@ -142,12 +141,9 @@ export function SeedsQualityForm({
   const plantingWeekValue = seedsDisplayPlantingWeek(nursery?.actualPlantingWeek);
   const customerDirectives =
     seedsTextOrFallback(nursery?.remarksFromCustomer) ??
-    seedsTextOrFallback(programInfo?.remarksFromCustomer) ??
-    "Maintain tray humidity between 65-70%. Ensure strict compliance with phytosanitary protocols before field transfer.";
-  const recommendations =
-    seedsTextOrFallback(initial?.remarks) ??
-    "Proceed to direct sowing for high-yield sectors. No pre-treatment required. Batch is suitable for late-season resilient cropping programs.";
-  const capacityUtilization = toNum(production?.realizedPlantsPerSqm) ?? 82.4;
+    seedsTextOrFallback(programInfo?.remarksFromCustomer);
+  const recommendations = seedsTextOrFallback(initial?.remarks);
+  const capacityUtilization = toNum(production?.realizedPlantsPerSqm);
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(12rem,1fr)]">
@@ -224,7 +220,7 @@ export function SeedsQualityForm({
               <Info className="size-4 text-[var(--brand-secondary)]" />
               <div>
                 <h3 className="text-sm font-semibold text-[var(--erp-ink)]">Program Details</h3>
-                <p className="text-[0.62rem] text-[var(--erp-muted)]">Genetic Sequence G-772</p>
+                <p className="text-[0.62rem] text-[var(--erp-muted)]">Database-backed values</p>
               </div>
             </div>
             <div className="text-right">
@@ -248,7 +244,7 @@ export function SeedsQualityForm({
                   <thead className="border-b border-[var(--erp-border)] bg-white">
                     <tr className="text-[0.55rem] font-bold text-[var(--erp-muted)]">
                       <th className="px-3 py-2 text-left">Tier</th>
-                      <th className="px-3 py-2 text-left">KG Yield%</th>
+                      <th className="px-3 py-2 text-left">Count / %</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -261,7 +257,7 @@ export function SeedsQualityForm({
                           {row.label}
                         </td>
                         <td className="px-3 py-2 font-semibold text-[var(--erp-ink)]">
-                          {row.kg} {row.yieldPct}
+                          {row.count} {row.yieldPct}
                         </td>
                       </tr>
                     ))}
@@ -271,18 +267,9 @@ export function SeedsQualityForm({
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
-              <SeedsMiniStat
-                label="Low Export Date"
-                value={seedsTextOrFallback(initial?.remarks) ? "28-04-2026" : "-"}
-              />
-              <SeedsMiniStat
-                label="Inbred Level (%)"
-                value={germinationPct == null ? "-" : `${(germinationPct * 0.51).toFixed(2)}%`}
-              />
-              <SeedsMiniStat
-                label="Off Type Level (%)"
-                value={germinationPct == null ? "-" : `${Math.min(germinationPct, 95).toFixed(2)}%`}
-              />
+              <SeedsMiniStat label="Low Export Date" value="-" />
+              <SeedsMiniStat label="Inbred Level (%)" value="-" />
+              <SeedsMiniStat label="Off Type Level (%)" value="-" />
             </div>
           </div>
         </section>
@@ -293,7 +280,7 @@ export function SeedsQualityForm({
               Customer Directives
             </p>
             <div className="rounded-sm border border-[var(--erp-border)] bg-[var(--erp-info-muted)] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-              {customerDirectives}
+              {customerDirectives ?? "No data available"}
             </div>
           </div>
 
@@ -302,7 +289,7 @@ export function SeedsQualityForm({
               Strategic Recommendations
             </p>
             <div className="rounded-sm border border-[#bfe6cf] bg-[#ebfaf0] px-4 py-3 text-[0.72rem] leading-6 text-[var(--erp-ink)]">
-              {recommendations}
+              {recommendations ?? "No data available"}
             </div>
           </div>
         </section>
@@ -316,19 +303,16 @@ export function SeedsQualityForm({
               <p className="text-[0.58rem] font-bold text-primary">Total Capacity Utilization</p>
               <div className="mt-1 flex items-end gap-2">
                 <p className="text-3xl font-bold leading-none text-[var(--erp-ink)]">
-                  {capacityUtilization.toFixed(1)}%
+                  {capacityUtilization === null ? "-" : `${capacityUtilization.toFixed(1)}%`}
                 </p>
-                <span className="text-[0.7rem] font-semibold text-primary">+2.1% vs PW</span>
               </div>
             </div>
           </div>
         </section>
 
         <section className="overflow-hidden rounded-[0.875rem] border border-[var(--erp-border)] bg-white shadow-sm">
-          <div className="h-28 bg-[linear-gradient(135deg,#d8f3dc_0%,#edf6ff_40%,#d6e9ff_100%)] p-4">
-            <div className="flex h-full items-end rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(12,22,34,0.72))] p-3 text-[0.62rem] font-bold text-white">
-              View Lab Samples
-            </div>
+          <div className="flex h-28 items-center justify-center bg-white p-4 text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
+            <div>No data available</div>
           </div>
         </section>
       </div>
@@ -407,6 +391,21 @@ const SQ_BREAKDOWN_ROWS: MetricRow[] = [
 export function SqBreakdownForm({ cropDataId, farmId, initial }: BaseProps) {
   const [editing, setEditing] = useState(false);
   const mutation = useUpdateSection(cropDataId, farmId, "sq_breakdown");
+  const categoryRows = [
+    ["Germination Good", initial?.germGoodKg, initial?.germGoodPct],
+    ["Germination Low", initial?.germLowKg, initial?.germLowPct],
+    ["Germination Customer Good", initial?.germCustomerGoodKg, initial?.germCustomerGoodPct],
+    ["Germination Customer Low", initial?.germCustomerLowKg, initial?.germCustomerLowPct],
+  ] as const;
+  const populatedRows = categoryRows.filter(
+    ([, kg, pct]) =>
+      (kg !== null && kg !== undefined && kg !== "") ||
+      (pct !== null && pct !== undefined && pct !== "")
+  );
+  const totalNetSq = categoryRows.reduce((sum, [, kg]) => sum + (toNum(kg) ?? 0), 0);
+  const lastUpdate = initial?.updatedAt
+    ? new Date(String(initial.updatedAt)).toLocaleDateString()
+    : "-";
 
   if (editing) {
     return (
@@ -430,9 +429,9 @@ export function SqBreakdownForm({ cropDataId, farmId, initial }: BaseProps) {
   return (
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-3">
-        <SqStat label="Total Net SQ" value="42,850.00 KG" />
-        <SqStat label="Active Categories" value="06" />
-        <SqStat label="Last Update" value="Today, 08:42" blue />
+        <SqStat label="Total Net SQ" value={`${fmtNum(totalNetSq, 2)} KG`} />
+        <SqStat label="Active Categories" value={String(populatedRows.length)} />
+        <SqStat label="Last Update" value={lastUpdate} blue />
       </div>
 
       <div className="overflow-hidden border border-[var(--erp-border)] bg-white">
@@ -463,26 +462,28 @@ export function SqBreakdownForm({ cropDataId, farmId, initial }: BaseProps) {
             </tr>
           </thead>
           <tbody>
-            {[
-              ["Premium Grade A1 - Export", "12,450.00"],
-              ["Standard Grade B - Domestic", "18,200.00"],
-              ["Processing Grade - Industrial", "6,800.50"],
-              ["Organic Certified - Specialty", "4,100.00"],
-              ["Seed Stock - Internal Use", "1,299.50"],
-            ].map(([category, value]) => (
-              <tr key={category} className="border-b border-[var(--erp-border)]">
-                <td className="px-4 py-3">{category}</td>
-                <td className="px-4 py-3 text-right font-semibold">{value}</td>
+            {populatedRows.length === 0 ? (
+              <tr>
+                <td colSpan={2} className="px-4 py-8 text-center text-[var(--erp-muted)]">
+                  No records found
+                </td>
               </tr>
-            ))}
-            <tr className="bg-[var(--erp-danger-row)] text-destructive">
-              <td className="px-4 py-3 font-semibold">Uncategorized Residuals</td>
-              <td className="px-4 py-3 text-right font-bold">Missing Data</td>
-            </tr>
-            <tr className="bg-[var(--erp-nav-active)] font-bold">
-              <td className="px-4 py-4">Total Inventory Weight</td>
-              <td className="px-4 py-4 text-right">42,850.00 KG</td>
-            </tr>
+            ) : (
+              populatedRows.map(([category, kg, pct]) => (
+                <tr key={category} className="border-b border-[var(--erp-border)]">
+                  <td className="px-4 py-3">{category}</td>
+                  <td className="px-4 py-3 text-right font-semibold">
+                    {fmtNum(toNum(kg), 2)} KG / {fmtNum(toNum(pct), 2)}%
+                  </td>
+                </tr>
+              ))
+            )}
+            {populatedRows.length > 0 ? (
+              <tr className="bg-[var(--erp-nav-active)] font-bold">
+                <td className="px-4 py-4">Total Inventory Weight</td>
+                <td className="px-4 py-4 text-right">{fmtNum(totalNetSq, 2)} KG</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

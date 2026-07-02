@@ -91,6 +91,8 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
   const planned = revenueSide(displayValues, programInfo, "male");
   const actual = revenueSide(displayValues, programInfo, "female");
   const variance = buildVarianceMetrics(displayValues, programInfo);
+  const trendBars = buildTrendBars(planned.totalRevenue, actual.totalRevenue);
+  const hasRemarks = Boolean(displayValues.actualRemarks || displayValues.plannedRemarks);
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,2.05fr)_minmax(13rem,1fr)]">
@@ -211,24 +213,26 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
       <div className="space-y-4">
         <section className="rounded-md border border-[var(--erp-border)] bg-white shadow-sm">
           <div className="space-y-3 p-3">
-            <SystemNoteCard
-              title="S. Henderson"
-              time="Oct 24, 08:30"
-              body={
-                displayValues.actualRemarks
-                  ? String(displayValues.actualRemarks)
-                  : "Higher than anticipated spot market prices in week 18 drove additional revenue surge. Monitoring harvest quality to maintain premiums."
-              }
-            />
-            <SystemNoteCard
-              title="System Log"
-              time="Oct 22, 16:45"
-              body={
-                displayValues.plannedRemarks
-                  ? String(displayValues.plannedRemarks)
-                  : "Automatic yield forecast updated. +2.4% projected increase in contract fulfillment."
-              }
-            />
+            {hasRemarks ? (
+              <>
+                {displayValues.actualRemarks ? (
+                  <SystemNoteCard
+                    title="Actual Remark"
+                    body={String(displayValues.actualRemarks)}
+                  />
+                ) : null}
+                {displayValues.plannedRemarks ? (
+                  <SystemNoteCard
+                    title="Planned Remark"
+                    body={String(displayValues.plannedRemarks)}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <div className="border border-dashed border-[var(--erp-border)] bg-[var(--erp-table-head)] px-3 py-6 text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
+                No data available
+              </div>
+            )}
 
             {editing ? (
               <div className="space-y-3 border border-[var(--erp-border)] p-3">
@@ -279,27 +283,37 @@ export function RevenueForm({ cropDataId, farmId, revenue, programInfo }: Props)
           </div>
 
           <div className="rounded-sm bg-[#eef3fb] px-4 pb-5 pt-4">
-            <div className="flex h-28 items-end justify-between gap-3">
-              {TREND_BARS.map((bar) => (
-                <div
-                  key={bar.label}
-                  className="flex flex-1 flex-col items-center justify-end gap-2"
-                >
+            {trendBars.length === 0 ? (
+              <div className="flex h-28 items-center justify-center text-center text-[0.72rem] font-medium text-[var(--erp-muted)]">
+                No data available
+              </div>
+            ) : (
+              <div className="flex h-28 items-end justify-between gap-3">
+                {trendBars.map((bar) => (
                   <div
-                    className={
-                      bar.active ? "w-full max-w-4 bg-[#0f5a7c]" : "w-full max-w-4 bg-[#9bd389]"
-                    }
-                    style={{ height: bar.height }}
-                  />
-                </div>
-              ))}
-            </div>
+                    key={bar.label}
+                    className="flex flex-1 flex-col items-center justify-end gap-2"
+                  >
+                    <div
+                      className={
+                        bar.active ? "w-full max-w-4 bg-[#0f5a7c]" : "w-full max-w-4 bg-[#9bd389]"
+                      }
+                      style={{ height: bar.height }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="mt-3 flex items-center justify-between text-[0.6rem] font-semibold text-[var(--erp-muted)]">
-              {TREND_BARS.map((bar) => (
-                <span key={bar.label} className={bar.active ? "text-[#0f5a7c]" : undefined}>
-                  {bar.label}
-                </span>
-              ))}
+              {trendBars.length === 0 ? (
+                <span>No revenue values</span>
+              ) : (
+                trendBars.map((bar) => (
+                  <span key={bar.label} className={bar.active ? "text-[#0f5a7c]" : undefined}>
+                    {bar.label}
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -394,6 +408,22 @@ function buildVarianceMetrics(values: Vals, programInfo: Vals | null) {
       planned.totalRevenuePerSqmWk
     ),
   };
+}
+
+function buildTrendBars(plannedTotal: number | null, actualTotal: number | null) {
+  const values = [
+    { label: "Planned", value: plannedTotal, active: false },
+    { label: "Actual", value: actualTotal, active: true },
+  ].filter(
+    (item): item is { label: string; value: number; active: boolean } => item.value !== null
+  );
+  const max = Math.max(...values.map((item) => item.value), 0);
+  if (max <= 0) return [];
+  return values.map((item) => ({
+    label: item.label,
+    active: item.active,
+    height: `${Math.max(8, Math.round((item.value / max) * 100))}%`,
+  }));
 }
 
 function renderStaticValue(value: unknown, emphasize = false) {
@@ -526,24 +556,13 @@ function RevenueMetricRow({
   );
 }
 
-function SystemNoteCard({ title, time, body }: { title: string; time: string; body: string }) {
+function SystemNoteCard({ title, body }: { title: string; body: string }) {
   return (
     <div className="border border-[var(--erp-border)] bg-[#fbfcfe] p-3">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[0.68rem] font-bold text-[var(--erp-ink)]">{title}</p>
-        <p className="text-[0.62rem] text-[var(--erp-muted)]">{time}</p>
       </div>
       <p className="mt-2 text-[0.68rem] leading-5 text-[var(--erp-ink)]">{body}</p>
     </div>
   );
 }
-
-const TREND_BARS = [
-  { label: "W14", height: "42%", active: false },
-  { label: "W16", height: "56%", active: false },
-  { label: "W18", height: "66%", active: false },
-  { label: "(Current)", height: "34%", active: false },
-  { label: "W20", height: "84%", active: true },
-  { label: "W22", height: "74%", active: false },
-  { label: "", height: "42%", active: false },
-] as const;

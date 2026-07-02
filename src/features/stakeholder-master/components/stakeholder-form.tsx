@@ -77,7 +77,7 @@ export function StakeholderForm({ farmId, stakeholder, onSuccess }: Props) {
                 Name <span className="text-destructive">*</span>
               </FormLabel>
               <FormControl>
-                <Input {...field} placeholder="e.g. John Smith, Acme Corp" autoFocus />
+                <Input {...field} placeholder="Name or organization" autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -60,7 +60,7 @@ export function SignUpForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-1.5">
         <Label htmlFor="name">Full name</Label>
-        <Input id="name" {...register("name")} placeholder="Jane Smith" autoComplete="name" />
+        <Input id="name" {...register("name")} placeholder="Full name" autoComplete="name" />
         {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
       </div>
 

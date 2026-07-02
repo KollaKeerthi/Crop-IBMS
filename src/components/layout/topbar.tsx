@@ -32,7 +32,7 @@ function getInitials(name: string | null, email: string): string {
 export function Topbar({ user, farms }: { user: User; farms: Farm[] }) {
   const { selectedFarmId, setSelectedFarmId } = useFarm();
   const selectedFarm = farms.find((farm) => farm.id === selectedFarmId) ?? farms[0] ?? null;
-  const farmName = selectedFarm?.name ?? "Green Valley Farm";
+  const farmName = selectedFarm?.name ?? "No farm selected";
 
   return (
     <header className="flex h-12 shrink-0 items-center border-b border-[var(--erp-border)] bg-[var(--erp-topbar)] px-3">
